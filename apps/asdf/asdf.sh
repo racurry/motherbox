@@ -15,6 +15,7 @@ Manage asdf plugins and runtime installations.
 
 Commands:
     setup       Run full setup (add plugins, install runtimes)
+    update      Update all asdf plugins to their latest versions
     help        Show this help message (also: -h, --help)
 EOF
 }
@@ -57,6 +58,15 @@ install_runtimes() {
     asdf install
 }
 
+update_plugins() {
+    print_heading "Update asdf plugins"
+
+    require_command asdf
+
+    log_info "Running 'asdf plugin update --all'"
+    asdf plugin update --all
+}
+
 do_setup() {
     link_config_files
     add_plugins
@@ -70,6 +80,10 @@ main() {
         case "$1" in
         setup)
             command="setup"
+            shift
+            ;;
+        update)
+            command="update"
             shift
             ;;
         help | --help | -h)
@@ -91,6 +105,9 @@ main() {
     case "${command}" in
     setup)
         do_setup
+        ;;
+    update)
+        update_plugins
         ;;
     "")
         show_help
