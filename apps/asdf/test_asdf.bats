@@ -81,3 +81,28 @@ EOF
   [[ "$output" == *"setup"* ]]
 }
 
+@test "asdf update command runs plugin update" {
+  # Create mock asdf command that logs the update command
+  mkdir -p "${TEST_TMPDIR}/bin"
+  cat > "${TEST_TMPDIR}/bin/asdf" << 'EOF'
+#!/bin/bash
+if [[ "$1" == "plugin" && "$2" == "update" && "$3" == "--all" ]]; then
+  echo "Updating all plugins"
+  exit 0
+fi
+exit 0
+EOF
+  chmod +x "${TEST_TMPDIR}/bin/asdf"
+
+  run env PATH="${TEST_TMPDIR}/bin:${PATH}" HOME="${HOME}" REPO_ROOT="${REPO_ROOT}" bash "${SCRIPT_PATH}" update
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Updating all plugins"* ]]
+}
+
+@test "asdf help shows update command" {
+  run bash "${SCRIPT_PATH}" help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"update"* ]]
+  [[ "$output" == *"Update all asdf plugins"* ]]
+}
+
