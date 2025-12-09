@@ -81,9 +81,20 @@ EOF
   [[ "$output" == *"setup"* ]]
 }
 
-@test "asdf update command runs plugin update" {
-  # Create mock asdf command that logs the update command
+@test "asdf update command runs brew update and plugin update" {
+  # Create mock brew command
   mkdir -p "${TEST_TMPDIR}/bin"
+  cat > "${TEST_TMPDIR}/bin/brew" << 'EOF'
+#!/bin/bash
+if [[ "$1" == "update" ]]; then
+  echo "Brew updated"
+  exit 0
+fi
+exit 0
+EOF
+  chmod +x "${TEST_TMPDIR}/bin/brew"
+
+  # Create mock asdf command that logs the update command
   cat > "${TEST_TMPDIR}/bin/asdf" << 'EOF'
 #!/bin/bash
 if [[ "$1" == "plugin" && "$2" == "update" && "$3" == "--all" ]]; then
@@ -96,6 +107,7 @@ EOF
 
   run env PATH="${TEST_TMPDIR}/bin:${PATH}" HOME="${HOME}" REPO_ROOT="${REPO_ROOT}" bash "${SCRIPT_PATH}" update
   [ "$status" -eq 0 ]
+  [[ "$output" == *"Brew updated"* ]]
   [[ "$output" == *"Updating all plugins"* ]]
 }
 
@@ -103,6 +115,6 @@ EOF
   run bash "${SCRIPT_PATH}" help
   [ "$status" -eq 0 ]
   [[ "$output" == *"update"* ]]
-  [[ "$output" == *"Update all asdf plugins"* ]]
+  [[ "$output" == *"Update brew and all asdf plugins"* ]]
 }
 

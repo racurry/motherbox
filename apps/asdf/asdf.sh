@@ -15,7 +15,7 @@ Manage asdf plugins and runtime installations.
 
 Commands:
     setup       Run full setup (add plugins, install runtimes)
-    update      Update all asdf plugins to their latest versions
+    update      Update brew and all asdf plugins to their latest versions
     help        Show this help message (also: -h, --help)
 EOF
 }
@@ -59,9 +59,13 @@ install_runtimes() {
 }
 
 update_plugins() {
-    print_heading "Update asdf plugins"
+    print_heading "Update brew and asdf plugins"
 
+    require_command brew
     require_command asdf
+
+    log_info "Running 'brew update'"
+    brew update
 
     log_info "Running 'asdf plugin update --all'"
     asdf plugin update --all
