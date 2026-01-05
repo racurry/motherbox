@@ -1,5 +1,5 @@
 # Work-specific packages
 brew "helm"
-brew "hemlfile"
+brew "helmfile"
 brew "snowflake-cli"
 
