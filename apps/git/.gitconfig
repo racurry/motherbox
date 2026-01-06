@@ -53,6 +53,8 @@
   pur = pull --rebase
   # Stash, pull, and reapply
   restash = !git stash push -u -m \"Auto-stash $(date +%Y-%m-%d)\" && git pull --rebase && git stash pop
+  # Stash, rebase onto latest default branch, reapply
+  resync = !git stash push -u -m \"Auto-stash $(date +%Y-%m-%d)\" && git fetch origin && git rebase origin/$(git default-branch) && git stash pop
   # Go to default branch, pull, cleanup
   reup = !git checkout $(git default-branch) && git pull --rebase && git cleanup
 
