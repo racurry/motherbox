@@ -35,7 +35,9 @@ do_rules() {
 }
 
 do_setup() {
-    ensure_brew_package codex codex cask
+    # Install via npm (not brew) for immediate updates
+    # Also added to apps/asdf/.default-npm-packages for new node versions
+    npm install -g @openai/codex
     do_rules
     log_success "Codex CLI setup complete"
 }
