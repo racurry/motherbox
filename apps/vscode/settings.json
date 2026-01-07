@@ -36,7 +36,5 @@
   "workbench.startupEditor": "none",
   "window.newWindowProfile": "Default",
   "github.copilot.nextEditSuggestions.enabled": true,
-  "redhat.telemetry.enabled": false,
-  "application.shellEnvironmentResolutionTimeout": 100,
-  "geminicodeassist.displayInlineContextHint": false
+  "redhat.telemetry.enabled": false
 }
