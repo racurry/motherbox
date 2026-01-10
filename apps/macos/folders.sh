@@ -93,6 +93,7 @@ do_setup() {
         "400_Topics"
         "700_Libraries"
         "800_Posterity"
+        "900_Sharing"
         "999_Meta"
     )
     for folder in "${documents_folders[@]}"; do
