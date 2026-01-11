@@ -27,7 +27,7 @@ config.send_composed_key_when_right_alt_is_pressed = true
 
 ----- TABS -----
 
-config.hide_tab_bar_if_only_one_tab = true
+config.hide_tab_bar_if_only_one_tab = false
 
 
 ----- SCROLLBACK -----

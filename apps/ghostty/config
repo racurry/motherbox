@@ -31,4 +31,4 @@ shell-integration = detect
 
 # Built-in theme (Ghostty includes many themes)
 # Use `ghostty +list-themes` to see available themes
-theme = catppuccin-mocha
+theme = Catppuccin Mocha
