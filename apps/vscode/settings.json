@@ -37,5 +37,8 @@
   "window.newWindowProfile": "Default",
   "github.copilot.nextEditSuggestions.enabled": true,
   "redhat.telemetry.enabled": false,
-  "terminal.integrated.enableBell": false
+  "accessibility.signals.terminalBell": {
+    "sound": "off"
+  },
+  "terminal.integrated.enableVisualBell": false
 }
