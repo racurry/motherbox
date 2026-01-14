@@ -15,9 +15,25 @@
 #   gwt clean-direnv            Creates ../frontend-monorepo__clean-direnv
 #   gwt -e main                 Creates clone tracking existing main branch
 #
-# After creating a clone, copies gitignored .env* files and .claude/ directory
+# After creating a clone, copies gitignored .env* files and .claude/ directory.
+# If a .gwt-reminders file exists in the repo root, displays setup reminders.
 
 set -euo pipefail
+
+# Display setup reminders for fresh clones
+show_setup_reminders() {
+    local src_root="$1"
+    local reminders_file="$src_root/.gwt-reminders"
+
+    if [[ -f "$reminders_file" ]]; then
+        echo ""
+        echo "Setup reminders:"
+        while IFS= read -r line || [[ -n "$line" ]]; do
+            [[ -n "$line" ]] && echo "  → $line"
+        done < "$reminders_file"
+        echo ""
+    fi
+}
 
 # Copy gitignored environment files to new clone
 copy_gitignored_files() {
@@ -208,6 +224,10 @@ main() {
         echo ""
         echo "Uses --reference clones for disk efficiency while avoiding worktree lock issues."
         echo "Note: You'll need to 'git fetch' separately in each clone."
+        echo ""
+        echo "Setup reminders:"
+        echo "  Create a .gwt-reminders file in your repo root with one reminder per line."
+        echo "  These will be displayed after creating a new clone."
         exit 0
         ;;
     esac
@@ -246,6 +266,7 @@ main() {
     fi
 
     copy_gitignored_files "$clone_path"
+    show_setup_reminders "$src_root"
     code "$clone_path"
 }
 
