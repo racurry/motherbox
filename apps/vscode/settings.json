@@ -9,7 +9,7 @@
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "claudeCode.preferredLocation": "sidebar",
-  "editor.accessibilitySupport": "on",
+  "editor.accessibilitySupport": "off",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
