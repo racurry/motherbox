@@ -64,6 +64,9 @@ export LESS="-FRXK"
 # Hug the face
 export HF_HOME="$HOME/.cache/huggingface"
 
+# OpenSCAD custom library path (avoids cluttering ~/Documents)
+export OPENSCADPATH="$HOME/OpenSCAD/Libraries"
+
 # Anything local that doesn't go in git goes in here.  
 # Eg, global secrets, etc
 [[ -f ~/.local.zshrc ]] && source ~/.local.zshrc

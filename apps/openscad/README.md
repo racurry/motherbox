@@ -23,6 +23,16 @@ openscad -o output.stl input.scad
 openscad -o output.stl -D 'param=value' input.scad
 ```
 
+## Libraries
+
+Libraries are stored in `~/OpenSCAD/Libraries` (set via `$OPENSCADPATH` in zshrc).
+
+**Included libraries:**
+
+- [BOSL2](https://github.com/BelfrySCAD/BOSL2) - Belfry OpenSCAD Library v2 (auto-installed by setup)
+
+To update BOSL2: `git -C ~/OpenSCAD/Libraries/BOSL2 pull`
+
 ## Resources
 
 - [Cheatsheet](https://openscad.org/cheatsheet/)

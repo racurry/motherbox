@@ -9,6 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/bash/common.sh"
 
 VSCODE_SETTINGS="$HOME/Library/Application Support/Code/User/settings.json"
+OPENSCAD_LIBRARIES="$HOME/OpenSCAD/Libraries"
 RECOMMENDED_EXTENSIONS=(
     "antyos.openscad"                    # Syntax highlighting, preview in external OpenSCAD
     "Leathong.openscad-language-support" # Language server with inline preview
@@ -86,6 +87,38 @@ install_openscad() {
         log_success "OpenSCAD installed successfully"
     else
         log_error "Failed to install OpenSCAD"
+        return 1
+    fi
+}
+
+install_bosl2() {
+    log_info "Installing BOSL2 library..."
+
+    local bosl2_dir="${OPENSCAD_LIBRARIES}/BOSL2"
+
+    # Create libraries directory if needed
+    if [[ ! -d "${OPENSCAD_LIBRARIES}" ]]; then
+        log_info "Creating OpenSCAD libraries directory: ${OPENSCAD_LIBRARIES}"
+        mkdir -p "${OPENSCAD_LIBRARIES}"
+    fi
+
+    # Check if BOSL2 is already installed
+    if [[ -d "${bosl2_dir}" ]]; then
+        log_info "BOSL2 already installed, updating..."
+        if git -C "${bosl2_dir}" pull --quiet; then
+            log_success "BOSL2 updated successfully"
+        else
+            log_warn "Failed to update BOSL2, continuing with existing version"
+        fi
+        return 0
+    fi
+
+    # Clone BOSL2
+    log_info "Cloning BOSL2 from GitHub..."
+    if git clone --quiet https://github.com/BelfrySCAD/BOSL2.git "${bosl2_dir}"; then
+        log_success "BOSL2 installed to ${bosl2_dir}"
+    else
+        log_error "Failed to clone BOSL2"
         return 1
     fi
 }
@@ -258,6 +291,9 @@ do_setup() {
     # Verify installation
     verify_openscad "${openscad_app}" "${openscad_binary}"
     verify_rosetta || true
+
+    # Install BOSL2 library (always runs, updates if already installed)
+    install_bosl2
 
     # Install extensions if requested
     if [[ "${install_exts}" == true ]]; then

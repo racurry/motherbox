@@ -3,9 +3,7 @@ cask "daisydisk"
 cask "macwhisper"
 
 # Mac App Store apps
-mas "Duplicate Photos Finder", id: 984929789
 mas "Goodnotes", id: 1444383602
-mas "Home Inventory", id: 413564952
 mas "Paprika Recipe Manager 3", id: 1303222628
 mas "Parachute", id: 6748614170
 mas "PhotoSweeper", id: 463362050
