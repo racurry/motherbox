@@ -11,7 +11,7 @@ from datetime import datetime
 
 def check_dependencies():
     """Check that required commands are available."""
-    required_commands = ["brew", "mas", "code"]
+    required_commands = ["brew", "mas"]
     for cmd in required_commands:
         if not shutil.which(cmd):
             print(f"{cmd} command is required", file=sys.stderr)
@@ -24,16 +24,14 @@ def get_repo_root():
 
 
 def parse_brewfile(path: pathlib.Path):
-    """Parse a Brewfile and extract formulas, casks, mas entries, and vscode extensions."""
+    """Parse a Brewfile and extract formulas, casks, and mas entries."""
     formulas = []
     casks = []
     mas_entries = {}
-    vscode_extensions = []
 
     brew_pattern = re.compile(r'^brew\s+"([^"]+)"')
     cask_pattern = re.compile(r'^cask\s+"([^"]+)"')
     mas_pattern = re.compile(r'^mas\s+"([^"]+)",\s*id:\s*(\d+)')
-    vscode_pattern = re.compile(r'^vscode\s+"([^"]+)"')
 
     for line in path.read_text().splitlines():
         line = line.strip()
@@ -56,12 +54,7 @@ def parse_brewfile(path: pathlib.Path):
             mas_entries[name] = app_id
             continue
 
-        m = vscode_pattern.match(line)
-        if m:
-            vscode_extensions.append(m.group(1))
-            continue
-
-    return formulas, casks, mas_entries, vscode_extensions
+    return formulas, casks, mas_entries
 
 
 def run_command(cmd):
@@ -69,19 +62,17 @@ def run_command(cmd):
     return subprocess.check_output(cmd, text=True)
 
 
-def register_optional(path: pathlib.Path, optional_entries, optional_formulas, optional_casks, optional_mas, optional_vscode):
+def register_optional(path: pathlib.Path, optional_entries, optional_formulas, optional_casks, optional_mas):
     """Register optional Brewfile entries."""
-    formulas, casks, mas_entries, vscode_extensions = parse_brewfile(path)
+    formulas, casks, mas_entries = parse_brewfile(path)
     optional_entries[path.name] = {
         "formulas": formulas,
         "casks": casks,
         "mas": mas_entries,
-        "vscode": vscode_extensions,
     }
     optional_formulas.update(formulas)
     optional_casks.update(casks)
     optional_mas.update(mas_entries.keys())
-    optional_vscode.update(vscode_extensions)
 
 
 def format_items(items, formatter):
@@ -123,19 +114,18 @@ Required commands: brew, mas
         raise SystemExit(f"Missing Brewfile at {brewfile}")
 
     # Parse main Brewfile
-    brew_formulas_declared, brew_casks_declared, mas_declared, vscode_declared = parse_brewfile(brewfile)
+    brew_formulas_declared, brew_casks_declared, mas_declared = parse_brewfile(brewfile)
 
     # Handle optional Brewfiles
     optional_entries = {}
     optional_formulas = set()
     optional_casks = set()
     optional_mas = set()
-    optional_vscode = set()
 
     if optional_personal.exists():
-        register_optional(optional_personal, optional_entries, optional_formulas, optional_casks, optional_mas, optional_vscode)
+        register_optional(optional_personal, optional_entries, optional_formulas, optional_casks, optional_mas)
     if optional_work.exists():
-        register_optional(optional_work, optional_entries, optional_formulas, optional_casks, optional_mas, optional_vscode)
+        register_optional(optional_work, optional_entries, optional_formulas, optional_casks, optional_mas)
 
     # Get installed packages
     brew_formulas_installed = run_command(["brew", "list", "--formula"]).split()
@@ -156,14 +146,6 @@ Required commands: brew, mas
         name = rest.rsplit("(", 1)[0].rstrip()
         mas_installed[name] = app_id
 
-    # Get installed VSCode extensions
-    vscode_installed = set()
-    try:
-        vscode_raw = run_command(["code", "--list-extensions"]).splitlines()
-        vscode_installed = set(ext.strip() for ext in vscode_raw if ext.strip())
-    except subprocess.CalledProcessError:
-        print("Warning: Failed to get VSCode extensions", file=sys.stderr)
-
     # Convert to sets for comparison
     formulas_declared_set = set(brew_formulas_declared)
     formulas_leaves_set = set(brew_leaves)
@@ -175,8 +157,6 @@ Required commands: brew, mas
     mas_declared_set = set(mas_declared.keys())
     mas_installed_set = set(mas_installed.keys())
 
-    vscode_declared_set = set(vscode_declared)
-
     # Calculate differences
     formulas_not_tracked = sorted(formulas_leaves_set - formulas_declared_set - optional_formulas)
     formulas_missing = sorted(formulas_declared_set - formulas_installed_set)
@@ -186,10 +166,6 @@ Required commands: brew, mas
 
     mas_not_tracked = sorted(mas_installed_set - mas_declared_set - optional_mas)
     mas_missing = sorted(mas_declared_set - mas_installed_set)
-
-    # VSCode extensions
-    vscode_not_tracked = sorted(vscode_installed - vscode_declared_set - optional_vscode)
-    vscode_missing = sorted(vscode_declared_set - vscode_installed)
 
     # Generate report
     lines = []
@@ -226,16 +202,6 @@ Required commands: brew, mas
     lines.append("_Note: Use `sudo mas uninstall <app_id>` to remove Mac App Store apps._")
     lines.append("")
 
-    # VSCode Extensions section
-    lines.append("## VSCode Extensions")
-    lines.append("")
-    lines.append("### Installed extensions not tracked (add to Brewfile or uninstall)")
-    lines.extend(format_items(vscode_not_tracked, lambda name: name))
-    lines.append("")
-    lines.append("### Extensions declared but not installed")
-    lines.extend(format_items(vscode_missing, lambda name: name))
-    lines.append("")
-
     # Optional Brewfiles section
     if optional_entries:
         lines.append("## Optional Brewfiles")
@@ -254,10 +220,6 @@ Required commands: brew, mas
             for name, app_id in payload["mas"].items():
                 status = "installed" if name in mas_installed else "missing"
                 lines.append(f"- mas {name} (id: {app_id}) — {status}")
-                found = True
-            for name in payload.get("vscode", []):
-                status = "installed" if name in vscode_installed else "missing"
-                lines.append(f"- vscode {name} — {status}")
                 found = True
             if not found:
                 lines.append("- No entries defined")
