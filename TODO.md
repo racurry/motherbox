@@ -23,7 +23,9 @@ bullets asking the clarifying questions.
 
 
 ## Apps to test:
-- [ ] 
+- [ ] https://github.com/ajeetdsouza/zoxide
+- [ ] https://github.com/Aloxaf/fzf-tab
+- [ ] https://ohmyposh.dev/
 
 ## Icebox
 
