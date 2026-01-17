@@ -13,7 +13,7 @@ config.font_size = 17
 
 ----- WINDOW -----
 
-config.window_background_opacity = 0.85
+config.window_background_opacity = 0.95
 config.window_decorations = 'RESIZE' -- hides title bar
 config.window_padding = { left = 4, right = 4, top = 4, bottom = 4 }
 
