@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # OpenSCAD setup and configuration script
-# Sets up OpenSCAD with VS Code integration for 3D modeling
+# Sets up OpenSCAD CLI and BOSL2 library for 3D modeling
 
 set -euo pipefail
 
@@ -8,12 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../../lib/bash/common.sh
 source "${SCRIPT_DIR}/../../lib/bash/common.sh"
 
-VSCODE_SETTINGS="$HOME/Library/Application Support/Code/User/settings.json"
 OPENSCAD_LIBRARIES="$HOME/OpenSCAD/Libraries"
-RECOMMENDED_EXTENSIONS=(
-    "antyos.openscad"                    # Syntax highlighting, preview in external OpenSCAD
-    "Leathong.openscad-language-support" # Language server with inline preview
-)
 
 # Discover OpenSCAD installation
 discover_openscad_app() {
@@ -25,6 +20,30 @@ discover_openscad_app() {
     echo "${app}"
 }
 
+# Find the binary inside an OpenSCAD app bundle
+discover_openscad_binary() {
+    local app="$1"
+    local macos_dir="${app}/Contents/MacOS"
+    local binary
+
+    # Try common binary names
+    for name in "OpenSCAD" "openscad" "openscad-studio"; do
+        if [[ -x "${macos_dir}/${name}" ]]; then
+            echo "${macos_dir}/${name}"
+            return 0
+        fi
+    done
+
+    # Fall back to first executable in MacOS dir
+    binary=$(find "${macos_dir}" -maxdepth 1 -type f -perm +111 -print -quit 2>/dev/null)
+    if [[ -n "${binary}" ]]; then
+        echo "${binary}"
+        return 0
+    fi
+
+    return 1
+}
+
 show_help() {
     cat <<EOF
 Usage: $0 [COMMAND] [OPTIONS]
@@ -33,13 +52,12 @@ Set up OpenSCAD with VS Code integration for 3D modeling.
 
 Commands:
     setup       Run full setup (primary entry point)
+    maintain    Update OpenSCAD and BOSL2 to latest versions
     help        Show this help message (also: -h, --help)
 
 Options for setup:
-    --install               Install OpenSCAD and Rosetta 2 if not present
-    --install-extensions    Install recommended VS Code extensions
-    --test                  Run a test render after setup
-    --skip-config           Skip VS Code configuration
+    --install    Install OpenSCAD and Rosetta 2 if not present
+    --test       Run a test render after setup
 EOF
 }
 
@@ -144,68 +162,24 @@ verify_openscad() {
     log_success "OpenSCAD found: ${version}"
 }
 
-check_vscode_extension() {
-    local ext_id="$1"
-    code --list-extensions | grep -q "^${ext_id}$"
-}
-
-install_extensions() {
-    log_info "Installing recommended VS Code extensions..."
-
-    for ext in "${RECOMMENDED_EXTENSIONS[@]}"; do
-        if check_vscode_extension "${ext}"; then
-            log_success "Extension already installed: ${ext}"
-        else
-            log_info "Installing extension: ${ext}"
-            if code --install-extension "${ext}" &>/dev/null; then
-                log_success "Installed: ${ext}"
-            else
-                log_warn "Failed to install: ${ext}"
-            fi
-        fi
-    done
-}
-
-configure_vscode() {
-    local openscad_binary="$1"
-
-    log_info "Configuring VS Code settings for OpenSCAD..."
-
-    # Backup existing settings before modification
-    backup_file "${VSCODE_SETTINGS}" "openscad"
-
-    local update_script="${SCRIPT_DIR}/update_vscode_settings.py"
-
-    if "${update_script}" "${VSCODE_SETTINGS}" "${openscad_binary}"; then
-        log_success "VS Code settings configured"
-    else
-        log_error "Failed to update VS Code settings"
-        return 1
-    fi
-
-    log_info "Configuration added:"
-    log_info "  - openscad.launchPath: ${openscad_binary}"
-    log_info "  - scad-lsp.launchPath: ${openscad_binary}"
-    log_info "  - scad-lsp.inlinePreview: true"
-}
-
 test_setup() {
     log_info "Testing OpenSCAD setup..."
 
     local example_file="${REPO_ROOT}/apps/openscad/example.scad"
+    local bosl2_example="${REPO_ROOT}/apps/openscad/example_bosl2.scad"
     local test_dir
     test_dir=$(mktemp -d)
     local output_file="${test_dir}/test.stl"
+    local bosl2_output="${test_dir}/test_bosl2.stl"
 
     # Verify example file exists
     require_file "${example_file}"
 
-    # Test command-line rendering
-    log_info "Testing command-line rendering with example file..."
+    # Test basic command-line rendering
+    log_info "Testing basic OpenSCAD rendering..."
     if openscad -o "${output_file}" "${example_file}" 2>&1; then
         if [[ -f "${output_file}" ]]; then
-            log_success "Command-line rendering works!"
-            log_info "Rendered: ${output_file}"
+            log_success "Basic rendering works!"
             ls -lh "${output_file}"
         else
             log_error "Rendering completed but output file not created"
@@ -213,39 +187,50 @@ test_setup() {
             return 1
         fi
     else
-        log_error "Command-line rendering failed"
+        log_error "Basic rendering failed"
         rm -rf "${test_dir}"
         return 1
     fi
 
-    # Optionally open in VS Code
-    log_info "To test VS Code integration:"
-    log_info "  1. Open: code ${example_file}"
-    log_info "  2. Click 'Preview in OpenSCAD' button (top right)"
-    log_info "  3. Edit parameters and save - preview auto-reloads"
+    # Test BOSL2 rendering
+    if [[ -d "${OPENSCAD_LIBRARIES}/BOSL2" ]]; then
+        log_info "Testing BOSL2 library rendering..."
+        require_file "${bosl2_example}"
 
-    echo ""
-    read -p "Open example file in VS Code now? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        code "${example_file}"
+        if openscad -o "${bosl2_output}" "${bosl2_example}" 2>&1; then
+            if [[ -f "${bosl2_output}" ]]; then
+                log_success "BOSL2 rendering works!"
+                ls -lh "${bosl2_output}"
+            else
+                log_error "BOSL2 rendering completed but output file not created"
+                rm -rf "${test_dir}"
+                return 1
+            fi
+        else
+            log_error "BOSL2 rendering failed - library may not be installed correctly"
+            rm -rf "${test_dir}"
+            return 1
+        fi
+    else
+        log_warn "BOSL2 not installed, skipping BOSL2 test"
     fi
 
     # Clean up
     rm -rf "${test_dir}"
+    log_success "All tests passed!"
 }
 
 print_summary() {
-    log_success "OpenSCAD Setup Complete!"
     log_info "OpenSCAD: $(openscad --version 2>&1 | head -1)"
-    log_info "Command-line tool: $(which openscad)"
+    log_info "CLI: $(which openscad)"
+    if [[ -d "${OPENSCAD_LIBRARIES}/BOSL2" ]]; then
+        log_info "BOSL2: ${OPENSCAD_LIBRARIES}/BOSL2"
+    fi
 }
 
 do_setup() {
     local do_install=false
-    local install_exts=false
     local run_test=false
-    local skip_config=false
 
     # Parse options
     while [[ $# -gt 0 ]]; do
@@ -254,16 +239,8 @@ do_setup() {
             do_install=true
             shift
             ;;
-        --install-extensions)
-            install_exts=true
-            shift
-            ;;
         --test)
             run_test=true
-            shift
-            ;;
-        --skip-config)
-            skip_config=true
             shift
             ;;
         *)
@@ -278,14 +255,14 @@ do_setup() {
     # Discover app paths
     local openscad_app openscad_binary
     openscad_app=$(discover_openscad_app) || true
-    openscad_binary="${openscad_app}/Contents/MacOS/OpenSCAD"
+    openscad_binary=$(discover_openscad_binary "${openscad_app}") || true
 
     # Install if requested
     if [[ "${do_install}" == true ]]; then
         install_rosetta
         install_openscad
         openscad_app=$(discover_openscad_app)
-        openscad_binary="${openscad_app}/Contents/MacOS/OpenSCAD"
+        openscad_binary=$(discover_openscad_binary "${openscad_app}")
     fi
 
     # Verify installation
@@ -295,23 +272,67 @@ do_setup() {
     # Install BOSL2 library (always runs, updates if already installed)
     install_bosl2
 
-    # Install extensions if requested
-    if [[ "${install_exts}" == true ]]; then
-        install_extensions
-    fi
-
-    # Configure VS Code
-    if [[ "${skip_config}" == false ]]; then
-        configure_vscode "${openscad_binary}"
-    fi
-
     # Run test if requested
     if [[ "${run_test}" == true ]]; then
         test_setup
     fi
 
-    print_summary "${openscad_binary}"
+    print_summary
     log_success "OpenSCAD setup complete!"
+}
+
+do_maintain() {
+    print_heading "OpenSCAD Maintenance"
+
+    local updated=false
+
+    # Update OpenSCAD via Homebrew
+    log_info "Checking for OpenSCAD updates..."
+    if brew list --cask openscad &>/dev/null; then
+        if brew upgrade --cask openscad 2>&1 | grep -q "already installed"; then
+            log_success "OpenSCAD is already up to date"
+        else
+            log_success "OpenSCAD updated"
+            updated=true
+        fi
+    elif brew list --cask openscad-studio &>/dev/null; then
+        if brew upgrade --cask openscad-studio 2>&1 | grep -q "already installed"; then
+            log_success "OpenSCAD Studio is already up to date"
+        else
+            log_success "OpenSCAD Studio updated"
+            updated=true
+        fi
+    else
+        log_warn "OpenSCAD not installed via Homebrew, skipping update"
+    fi
+
+    # Update BOSL2
+    local bosl2_dir="${OPENSCAD_LIBRARIES}/BOSL2"
+    if [[ -d "${bosl2_dir}/.git" ]]; then
+        log_info "Updating BOSL2..."
+        local before after
+        before=$(git -C "${bosl2_dir}" rev-parse HEAD)
+        if git -C "${bosl2_dir}" pull --quiet; then
+            after=$(git -C "${bosl2_dir}" rev-parse HEAD)
+            if [[ "${before}" == "${after}" ]]; then
+                log_success "BOSL2 is already up to date"
+            else
+                log_success "BOSL2 updated ($(git -C "${bosl2_dir}" log --oneline "${before}..${after}" | wc -l | tr -d ' ') new commits)"
+                updated=true
+            fi
+        else
+            log_error "Failed to update BOSL2"
+            return 1
+        fi
+    else
+        log_warn "BOSL2 not installed, run 'setup' first"
+    fi
+
+    if [[ "${updated}" == true ]]; then
+        log_success "Maintenance complete - updates applied"
+    else
+        log_success "Maintenance complete - everything up to date"
+    fi
 }
 
 main() {
@@ -328,6 +349,11 @@ main() {
             shift
             break # Remaining args go to do_setup
             ;;
+        maintain)
+            command="maintain"
+            shift
+            break
+            ;;
         *)
             # Check if it's a global flag from run/setup.sh
             if shift_count=$(check_global_flag "$@"); then
@@ -343,6 +369,9 @@ main() {
     case "${command}" in
     setup)
         do_setup "$@"
+        ;;
+    maintain)
+        do_maintain
         ;;
     "")
         show_help
