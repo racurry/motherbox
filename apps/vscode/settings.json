@@ -1,15 +1,15 @@
 {
   "[markdown]": {
-    "editor.defaultFormatter": "bittorala.mdformat"
+    "editor.defaultFormatter": "bittorala.mdformat",
   },
   "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff"
+    "editor.defaultFormatter": "charliermarsh.ruff",
   },
   "[shellscript]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
+    "editor.defaultFormatter": "foxundermoon.shell-format",
   },
   "claudeCode.preferredLocation": "sidebar",
-  "editor.accessibilitySupport": "off",
+  "editor.accessibilitySupport": "on",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
@@ -23,7 +23,7 @@
     "*": true,
     "markdown": true,
     "plaintext": false,
-    "scminput": false
+    "scminput": false,
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
   "prettier.configPath": "~/.prettierrc.json5",
@@ -38,7 +38,7 @@
   "github.copilot.nextEditSuggestions.enabled": true,
   "redhat.telemetry.enabled": false,
   "accessibility.signals.terminalBell": {
-    "sound": "off"
+    "sound": "off",
   },
-  "terminal.integrated.enableVisualBell": false
+  "terminal.integrated.enableVisualBell": false,
 }

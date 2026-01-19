@@ -1,6 +1,6 @@
 #!/bin/bash
-# WezTerm terminal configuration
-# Links configuration files to ~/.config/wezterm/
+# WezTerm terminal emulator
+# Installs WezTerm and links configuration files to ~/.config/wezterm/
 
 set -euo pipefail
 
@@ -22,6 +22,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 What this script does:
+    - Installs WezTerm via Homebrew cask if not present
     - Links wezterm.lua from this repo to ~/.config/wezterm/
     - Creates config directory if it doesn't exist
 
@@ -31,7 +32,10 @@ EOF
 }
 
 do_setup() {
-    print_heading "Configuring WezTerm"
+    print_heading "Setting up WezTerm"
+
+    # Install via Homebrew (cask)
+    ensure_brew_package wezterm wezterm cask
 
     # Create config directory if needed
     if [[ ! -d "${WEZTERM_CONFIG_DIR}" ]]; then
