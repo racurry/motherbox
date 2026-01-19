@@ -9,7 +9,6 @@
     "editor.defaultFormatter": "foxundermoon.shell-format",
   },
   "claudeCode.preferredLocation": "sidebar",
-  "editor.accessibilitySupport": "on",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
@@ -37,8 +36,58 @@
   "window.newWindowProfile": "Default",
   "github.copilot.nextEditSuggestions.enabled": true,
   "redhat.telemetry.enabled": false,
-  "accessibility.signals.terminalBell": {
-    "sound": "off",
-  },
+  // Disable screen reader detection and accessibility support entirely
+  "editor.accessibilitySupport": "on",
+  "workbench.settings.applyToAllProfiles": ["editor.accessibilitySupport"],
+
+  // Disable terminal bell completely
+  "terminal.integrated.enableBell": false,
   "terminal.integrated.enableVisualBell": false,
+
+  // Disable ALL accessibility signals (sounds and announcements)
+  "accessibility.signals.terminalBell": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.lineHasBreakpoint": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.lineHasError": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.lineHasFoldedArea": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.lineHasInlineSuggestion": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.lineHasWarning": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.noInlayHints": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.notebookCellCompleted": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.notebookCellFailed": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.onDebugBreak": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.taskCompleted": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.taskFailed": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.terminalCommandFailed": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.terminalCommandSucceeded": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.terminalQuickFix": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.diffLineDeleted": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.diffLineInserted": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.diffLineModified": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.chatRequestSent": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.chatResponseReceived": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.clear": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.save": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.format": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.voiceRecordingStarted": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.voiceRecordingStopped": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.progress": { "sound": "off", "announcement": "off" },
+
+  // Set all sound volumes to 0
+  "accessibility.signalOptions.volume": 0,
+
+  // Disable other accessibility features
+  "accessibility.dimUnfocused.enabled": false,
+  "accessibility.hideAccessibleView": true,
+  "accessibility.verbosity.diffEditor": false,
+  "accessibility.verbosity.diffEditorActive": false,
+  "accessibility.verbosity.editor": false,
+  "accessibility.verbosity.hover": false,
+  "accessibility.verbosity.inlineChat": false,
+  "accessibility.verbosity.inlineCompletions": false,
+  "accessibility.verbosity.notification": false,
+  "accessibility.verbosity.panelChat": false,
+  "accessibility.verbosity.terminal": false,
+
+  // Disable audio cues (legacy settings, some may be deprecated but won't hurt)
+  "audioCues.volume": 0,
 }
