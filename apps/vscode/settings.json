@@ -37,15 +37,15 @@
   "github.copilot.nextEditSuggestions.enabled": true,
   "redhat.telemetry.enabled": false,
   // Disable screen reader detection and accessibility support entirely
-  "editor.accessibilitySupport": "on",
+  "editor.accessibilitySupport": "off",
   "workbench.settings.applyToAllProfiles": ["editor.accessibilitySupport"],
-
-  // Disable terminal bell completely
-  "terminal.integrated.enableBell": false,
   "terminal.integrated.enableVisualBell": false,
 
   // Disable ALL accessibility signals (sounds and announcements)
-  "accessibility.signals.terminalBell": { "sound": "off", "announcement": "off" },
+  "accessibility.signals.terminalBell": {
+    "sound": "off",
+    "announcement": "off",
+  },
   "accessibility.signals.lineHasBreakpoint": { "sound": "off", "announcement": "off" },
   "accessibility.signals.lineHasError": { "sound": "off", "announcement": "off" },
   "accessibility.signals.lineHasFoldedArea": { "sound": "off", "announcement": "off" },
@@ -87,7 +87,4 @@
   "accessibility.verbosity.notification": false,
   "accessibility.verbosity.panelChat": false,
   "accessibility.verbosity.terminal": false,
-
-  // Disable audio cues (legacy settings, some may be deprecated but won't hurt)
-  "audioCues.volume": 0,
 }
