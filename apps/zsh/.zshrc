@@ -84,6 +84,9 @@ setopt sharehistory # Share history across terminals
 setopt incappendhistory # Immediately append to the history file, not just when a term is killed
 unsetopt nomatch # Don't throw an error if there are no matches, just do the right thing
 
+# Bind up arrow to FZF history search (uses typed prefix as initial filter)
+bindkey '^[[A' fzf-history-widget
+
 # ============================================================================
 # APPLICATION-SPECIFIC SETUP
 # ============================================================================
