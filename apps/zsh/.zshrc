@@ -176,7 +176,7 @@ alias please='sudo $(fc -ln -1)'
 
 # Claude helpers
 alias cld='claude'
-alias cldup='npm update -g @anthropic-ai/claude-code'
+alias cldup='curl -fsSL https://claude.ai/install.sh | bash'
 alias clddanger='claude --allow-dangerously-skip-permissions'
 alias cldc='claude --continue'
 alias cldr='claude --resume'

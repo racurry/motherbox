@@ -2,27 +2,27 @@
   // === Editor splitting ===
   {
     "key": "shift+cmd+\\",
-    "command": "workbench.action.splitEditorRight"
+    "command": "workbench.action.splitEditorRight",
   },
   {
     "key": "shift+cmd+-",
-    "command": "workbench.action.splitEditorDown"
+    "command": "workbench.action.splitEditorDown",
   },
 
   // === Terminal ===
   {
     "key": "cmd+j",
-    "command": "workbench.action.terminal.toggleTerminal"
+    "command": "workbench.action.terminal.toggleTerminal",
   },
 
   // === Editor management ===
   {
     "key": "cmd+alt+w",
-    "command": "workbench.action.closeOtherEditors"
+    "command": "workbench.action.closeOtherEditors",
   },
   {
     "key": "cmd+alt+r",
-    "command": "revealFileInOS"
+    "command": "revealFileInOS",
   },
 
   // === Terminal line continuation ===
@@ -30,28 +30,41 @@
     "key": "cmd+enter",
     "command": "workbench.action.terminal.sendSequence",
     "args": { "text": "\\\r\n" },
-    "when": "terminalFocus"
+    "when": "terminalFocus",
   },
   {
     "key": "shift+enter",
     "command": "workbench.action.terminal.sendSequence",
     "args": { "text": "\\\r\n" },
-    "when": "terminalFocus"
+    "when": "terminalFocus",
   },
 
   // === Disable Copilot chat hijacking cmd+enter in terminal ===
   {
     "key": "cmd+enter",
     "command": "-workbench.action.terminal.chat.runCommand",
-    "when": "chatIsEnabled && terminalChatResponseContainsCodeBlock && terminalHasBeenCreated && !terminalChatActiveRequest && !terminalChatResponseContainsMultipleCodeBlocks || chatIsEnabled && terminalChatResponseContainsCodeBlock && terminalProcessSupported && !terminalChatActiveRequest && !terminalChatResponseContainsMultipleCodeBlocks"
+    "when": "chatIsEnabled && terminalChatResponseContainsCodeBlock && terminalHasBeenCreated && !terminalChatActiveRequest && !terminalChatResponseContainsMultipleCodeBlocks || chatIsEnabled && terminalChatResponseContainsCodeBlock && terminalProcessSupported && !terminalChatActiveRequest && !terminalChatResponseContainsMultipleCodeBlocks",
   },
   {
     "key": "cmd+enter",
     "command": "-workbench.action.terminal.chat.runFirstCommand",
-    "when": "chatIsEnabled && terminalChatResponseContainsMultipleCodeBlocks && terminalHasBeenCreated && !terminalChatActiveRequest || chatIsEnabled && terminalChatResponseContainsMultipleCodeBlocks && terminalProcessSupported && !terminalChatActiveRequest"
+    "when": "chatIsEnabled && terminalChatResponseContainsMultipleCodeBlocks && terminalHasBeenCreated && !terminalChatActiveRequest || chatIsEnabled && terminalChatResponseContainsMultipleCodeBlocks && terminalProcessSupported && !terminalChatActiveRequest",
   },
   {
     "key": "ctrl+`",
-    "command": "workbench.action.terminal.toggleTerminal"
-  }
+    "command": "workbench.action.terminal.toggleTerminal",
+  },
+  {
+    "key": "alt+cmd+t",
+    "command": "-workbench.action.closeOtherEditors",
+  },
+  {
+    "key": "shift+cmd+j",
+    "command": "-workbench.action.search.toggleQueryDetails",
+    "when": "inSearchEditor || searchViewletFocus",
+  },
+  {
+    "key": "shift+cmd+j",
+    "command": "workbench.action.terminal.newInActiveWorkspace",
+  },
 ]

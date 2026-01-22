@@ -128,9 +128,8 @@ do_settings() {
 }
 
 do_setup() {
-    # Install via npm (not brew) for immediate updates
-    # Also added to apps/asdf/.default-npm-packages for new node versions
-    npm install -g @anthropic-ai/claude-code
+    # Install via native installer for immediate updates
+    curl -fsSL https://claude.ai/install.sh | bash
 
     do_rules
     do_commands

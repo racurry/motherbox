@@ -17,6 +17,9 @@ config.window_background_opacity = 0.95
 config.window_decorations = 'RESIZE' -- hides title bar
 config.window_padding = { left = 4, right = 4, top = 4, bottom = 4 }
 config.window_close_confirmation = 'NeverPrompt'
+config.skip_close_confirmation_for_processes_named = {
+  'bash', 'sh', 'zsh', 'fish', 'tmux', 'nu', 'cmd.exe', 'pwsh.exe', 'powershell.exe',
+}
 config.default_cwd = wezterm.home_dir .. '/workspace'
 
 
@@ -30,6 +33,15 @@ config.send_composed_key_when_right_alt_is_pressed = true
 ----- TABS -----
 
 config.hide_tab_bar_if_only_one_tab = false
+
+
+----- KEY BINDINGS -----
+
+local act = wezterm.action
+config.keys = {
+  { key = 'w', mods = 'CMD', action = act.CloseCurrentTab { confirm = false } },
+  { key = 'w', mods = 'CMD|SHIFT', action = act.CloseCurrentPane { confirm = false } },
+}
 
 
 ----- SCROLLBACK -----
