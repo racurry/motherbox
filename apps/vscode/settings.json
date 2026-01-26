@@ -89,4 +89,5 @@
   "accessibility.verbosity.terminal": false,
   "geminicodeassist.project": "watchful-destination-4ss4b",
   "settingsSync.ignoredSettings": ["geminicodeassist.project"],
+  "application.shellEnvironmentResolutionTimeout": 100,
 }
