@@ -1,0 +1,15 @@
+{
+  "alwaysThinkingEnabled": true,
+  "enableAllProjectMcpServers": true,
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statuslines/statusline.py"
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}

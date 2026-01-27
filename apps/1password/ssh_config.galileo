@@ -1,0 +1,20 @@
+# SSH Configuration for Galileo (work) mode
+# Managed by motherbox - do not edit directly
+
+# 1Password SSH Agent
+Host *
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+# GitHub: Default to personal key (for personal repos)
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/personal_github.pub
+    IdentitiesOnly yes
+
+# GitHub alias for work repos (auto-rewritten by git for ~/workspace/galileo/)
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/galileo_github.pub
+    IdentitiesOnly yes

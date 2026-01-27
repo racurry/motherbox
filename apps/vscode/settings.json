@@ -37,7 +37,7 @@
   "github.copilot.nextEditSuggestions.enabled": true,
   "redhat.telemetry.enabled": false,
   // Disable screen reader detection and accessibility support entirely
-  "editor.accessibilitySupport": "off",
+  "editor.accessibilitySupport": "on",
   "workbench.settings.applyToAllProfiles": ["editor.accessibilitySupport"],
   "terminal.integrated.enableVisualBell": false,
 

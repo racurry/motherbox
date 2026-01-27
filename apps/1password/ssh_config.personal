@@ -1,0 +1,13 @@
+# SSH Configuration for Personal mode
+# Managed by motherbox - do not edit directly
+
+# 1Password SSH Agent
+Host *
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+# GitHub: Use personal key
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/personal_github.pub
+    IdentitiesOnly yes

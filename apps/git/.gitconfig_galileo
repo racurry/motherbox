@@ -2,3 +2,7 @@
   email = acurry@galileo.io
   name = Aaron Curry
   signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOknMGcpYxYOmkpwzhXStPli/xVhU/GhBHNV7oKZiV8H
+
+# Rewrite GitHub URLs to use work SSH key (via github-work alias)
+[url "git@github-work:"]
+  insteadOf = git@github.com:

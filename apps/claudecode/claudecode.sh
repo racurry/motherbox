@@ -99,31 +99,30 @@ do_statuslines() {
 do_settings() {
     print_heading "Configure Claude Code settings"
 
-    mkdir -p "${HOME}/.claude"
-    local settings_file="${HOME}/.claude/settings.json"
+    require_command jq
 
-    # Ensure settings file exists
-    if [[ ! -f "${settings_file}" ]]; then
+    mkdir -p "${HOME}/.claude"
+    local machine_settings="${HOME}/.claude/settings.json"
+    local universal_settings="${SCRIPT_DIR}/settings.json"
+
+    require_file "${universal_settings}"
+
+    # Ensure machine settings file exists
+    if [[ ! -f "${machine_settings}" ]]; then
         log_info "Creating new settings.json file"
-        echo '{}' >"${settings_file}"
+        echo '{}' >"${machine_settings}"
     fi
 
     # Backup before modification
-    backup_file "${settings_file}" "claudecode"
+    backup_file "${machine_settings}" "claudecode"
 
-    # Use jq to set alwaysThinkingEnabled and enableAllProjectMcpServers to true
-    require_command jq
-
+    # Merge universal settings into machine settings (universal values take precedence)
     local tmp_file
     tmp_file=$(mktemp)
-    jq '.alwaysThinkingEnabled = true | .enableAllProjectMcpServers = true | .statusLine = {"type": "command", "command": "~/.claude/statuslines/statusline.py"} | .permissions.defaultMode = "acceptEdits"' "${settings_file}" >"${tmp_file}"
-    mv "${tmp_file}" "${settings_file}"
+    jq -s '.[0] * .[1]' "${machine_settings}" "${universal_settings}" >"${tmp_file}"
+    mv "${tmp_file}" "${machine_settings}"
 
-    log_info "Set alwaysThinkingEnabled = true"
-    log_info "Set enableAllProjectMcpServers = true"
-    log_info "Set statusLine to use ~/.claude/statuslines/statusline.py"
-    log_info "Set permissions.defaultMode = acceptEdits"
-
+    log_info "Merged settings from ${universal_settings}"
     log_success "Claude Code settings configured"
 }
 
