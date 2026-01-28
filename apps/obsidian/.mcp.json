@@ -1,0 +1,11 @@
+{
+  "mcp-obsidian": {
+    "command": "uvx",
+    "args": ["mcp-obsidian"],
+    "env": {
+      "OBSIDIAN_API_KEY": "${OBSIDIAN_API_KEY}",
+      "OBSIDIAN_HOST": "${OBSIDIAN_HOST}",
+      "OBSIDIAN_PORT": "${OBSIDIAN_PORT}"
+    }
+  }
+}
