@@ -1,0 +1,177 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+require 'shellwords'
+require 'optparse'
+
+IGNORED_FILES = %w{.DS_Store .. .}
+VALID_EXTENSIONS = %w{.mov .mp4 .webm .avi .mkv}
+
+HELP_TEXT = <<~HELP
+  Usage: movtogif [OPTIONS] FILE_OR_DIRECTORY
+
+  Convert video files to high-quality animated GIFs using ffmpeg.
+
+  ARGUMENTS:
+    FILE_OR_DIRECTORY   Path to a video file or directory containing video files
+
+  OPTIONS:
+    -f, --fps FPS       Frame rate for output GIF (default: 10)
+    -w, --width WIDTH   Output width in pixels, height scales proportionally (default: original)
+    -s, --scale FACTOR  Scale factor, e.g., 0.5 for half size (default: 1.0)
+    -o, --output FILE   Output filename (default: input name with .gif extension)
+    -O, --optimize      Run gifsicle optimization after conversion
+    -h, --help          Show this help message
+
+  DESCRIPTION:
+    Converts video files to animated GIFs using a two-pass palette generation
+    technique for optimal color quality. Supports .mov, .mp4, .webm, .avi, and .mkv files.
+
+  EXAMPLES:
+    movtogif video.mov                    # Convert at original size, 10fps
+    movtogif -f 15 -w 480 video.mov       # 15fps, 480px wide
+    movtogif -s 0.5 -O video.mov          # Half size, with gifsicle optimization
+    movtogif -o demo.gif video.mov        # Custom output filename
+    movtogif ./videos/                    # Convert all videos in directory
+HELP
+
+options = {
+  fps: 10,
+  width: nil,
+  scale: 1.0,
+  output: nil,
+  optimize: false
+}
+
+parser = OptionParser.new do |opts|
+  opts.on("-f", "--fps FPS", Integer, "Frame rate") { |v| options[:fps] = v }
+  opts.on("-w", "--width WIDTH", Integer, "Output width") { |v| options[:width] = v }
+  opts.on("-s", "--scale FACTOR", Float, "Scale factor") { |v| options[:scale] = v }
+  opts.on("-o", "--output FILE", String, "Output filename") { |v| options[:output] = v }
+  opts.on("-O", "--optimize", "Run gifsicle optimization") { options[:optimize] = true }
+  opts.on("-h", "--help", "Show help") do
+    puts HELP_TEXT
+    exit 0
+  end
+end
+
+begin
+  parser.parse!
+rescue OptionParser::InvalidOption, OptionParser::MissingArgument => e
+  puts "Error: #{e.message}"
+  puts "Use -h for help"
+  exit 1
+end
+
+def check_dependencies(optimize)
+  unless system("which ffmpeg > /dev/null 2>&1")
+    puts "Error: ffmpeg is not installed. Install with: brew install ffmpeg"
+    exit 1
+  end
+
+  if optimize && !system("which gifsicle > /dev/null 2>&1")
+    puts "Error: gifsicle is not installed. Install with: brew install gifsicle"
+    exit 1
+  end
+end
+
+def build_scale_filter(options)
+  if options[:width]
+    "scale=#{options[:width]}:-1:flags=lanczos"
+  elsif options[:scale] != 1.0
+    "scale=iw*#{options[:scale]}:ih*#{options[:scale]}:flags=lanczos"
+  else
+    nil
+  end
+end
+
+def convert_file(file, options)
+  extension = File.extname(file).downcase
+
+  unless VALID_EXTENSIONS.include?(extension)
+    puts "Skipping #{file} (not a supported video format)"
+    return
+  end
+
+  unless File.exist?(file)
+    puts "Error: File not found: #{file}"
+    return
+  end
+
+  file_name_with_no_extension = file.chomp(File.extname(file))
+  output_file = options[:output] || "#{file_name_with_no_extension}.gif"
+  output_file = "#{output_file}.gif" unless output_file.end_with?('.gif')
+  palette_file = "/tmp/palette_#{Process.pid}.png"
+
+  escaped_input = Shellwords.escape(file)
+  escaped_output = Shellwords.escape(output_file)
+
+  # Build filter chain
+  filters = ["fps=#{options[:fps]}"]
+  scale_filter = build_scale_filter(options)
+  filters << scale_filter if scale_filter
+  filter_string = filters.join(',')
+
+  puts "Converting #{file} -> #{output_file}"
+
+  # Pass 1: Generate optimal palette
+  palette_cmd = "ffmpeg -y -i #{escaped_input} -vf \"#{filter_string},palettegen=stats_mode=diff\" -update 1 #{palette_file} 2>/dev/null"
+  unless system(palette_cmd)
+    puts "Error: Failed to generate palette for #{file}"
+    return
+  end
+
+  # Pass 2: Create GIF using the palette
+  gif_cmd = "ffmpeg -y -i #{escaped_input} -i #{palette_file} -lavfi \"#{filter_string} [x]; [x][1:v] paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle\" #{escaped_output} 2>/dev/null"
+  unless system(gif_cmd)
+    puts "Error: Failed to convert #{file}"
+    FileUtils.rm_f(palette_file)
+    return
+  end
+
+  FileUtils.rm_f(palette_file)
+
+  # Optional: Optimize with gifsicle
+  if options[:optimize]
+    puts "Optimizing with gifsicle..."
+    system("gifsicle -O3 #{escaped_output} -o #{escaped_output}")
+  end
+
+  # Report file size
+  if File.exist?(output_file)
+    size_mb = File.size(output_file) / 1024.0 / 1024.0
+    puts "Created #{output_file} (#{format('%.2f', size_mb)} MB)"
+  end
+end
+
+def convert_file_or_folder(path, options)
+  unless File.exist?(path)
+    puts "Error: No such file or directory: #{path}"
+    return
+  end
+
+  if File.directory?(path) && options[:output]
+    puts "Error: Cannot use -o/--output with a directory"
+    return
+  end
+
+  files_to_convert = if File.directory?(path)
+    Dir.entries(path)
+       .reject { |f| IGNORED_FILES.include?(f) }
+       .map { |f| File.join(path, f) }
+       .select { |f| File.file?(f) }
+  else
+    [path]
+  end
+
+  files_to_convert.each do |file|
+    convert_file(File.realpath(file), options)
+  end
+end
+
+if ARGV.empty?
+  puts HELP_TEXT
+  exit 0
+end
+
+check_dependencies(options[:optimize])
+convert_file_or_folder(ARGV.first, options)
