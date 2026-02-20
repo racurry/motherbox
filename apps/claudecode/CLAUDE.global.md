@@ -5,11 +5,15 @@
 - **Running code**: Use relative paths from the current working directory (e.g., `./script.sh` not `cd dir && ./script.sh` or `/full/path/script.sh`); only change directories when tools explicitly require it
 - **Never use `open`**: Do not use `open` to view files (PDFs, images, URLs, etc.) — you can't see them. Ask the user to look instead.
 
-**Git attribution**
+**Git**
 
 - NEVER add claude attribution when opening a pull request
 - NEVER add claude co author attribution in commits
 
-Apply all rules from @~/AGENTS.md.
+**Github**
 
 - Use `git pub` to push to remote
+
+**Important**
+
+- Follow all rules from ~/AGENTS.md (loaded automatically via hook).

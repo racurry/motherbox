@@ -16,7 +16,7 @@ Commands:
     rules       Link CLAUDE.md and AGENTS.md files
     commands    Sync commands to ~/.claude/commands
     statuslines Sync statuslines to ~/.claude/statuslines
-    settings    Configure settings.json
+    settings    Configure settings.json (includes hooks)
     help        Show this help message (also: -h, --help)
 
 Description:

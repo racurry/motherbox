@@ -11,5 +11,18 @@
   "attribution": {
     "commit": "",
     "pr": ""
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat $HOME/AGENTS.md"
+          }
+        ]
+      }
+    ]
   }
 }

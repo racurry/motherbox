@@ -18,8 +18,9 @@ bullets asking the clarifying questions.
 - [ ] https://github.com/dandavison/delta
 - [ ] I added a markdown config to .editorconfig - how do we make sure it isn't only part of shfmt?
 - [ ] Figure out if there is a way to set download & setup ultimate 2 bluetooth software: https://app.8bitdo.com/
-- [ ] Can I create a controller setting and store the config here in this repo?
+- [ ] Can I create a video game controller setting and store the config here in this repo?
 - [ ] Add app: dropover
+- [ ] Make a new claude plugin or set of hooks - never use /tmp, never use git -C. 
 
 
 ## Apps to test:
