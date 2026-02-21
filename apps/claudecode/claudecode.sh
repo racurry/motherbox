@@ -12,10 +12,12 @@ Usage: $0 [COMMAND] [OPTIONS]
 Link Claude Code global configuration to ~/.claude.
 
 Commands:
-    setup       Run full setup (rules + commands + statuslines + settings)
+    setup       Run full setup (install + rules + commands + statuslines + hooks + settings)
+    install     Install Claude Code via native installer
     rules       Link CLAUDE.md and AGENTS.md files
     commands    Sync commands to ~/.claude/commands
     statuslines Sync statuslines to ~/.claude/statuslines
+    hooks       Sync hooks to ~/.claude/hooks
     settings    Configure settings.json (includes hooks)
     help        Show this help message (also: -h, --help)
 
@@ -25,6 +27,7 @@ Description:
     - apps/_shared/AGENTS.global.md -> ~/AGENTS.md
     - apps/claudecode/commands/* -> ~/.claude/commands/* (each file separately)
     - apps/claudecode/statuslines/* -> ~/.claude/statuslines/* (each file separately)
+    - apps/claudecode/hooks/* -> ~/.claude/hooks/* (each file separately)
 EOF
 }
 
@@ -96,6 +99,30 @@ do_statuslines() {
     log_success "Claude Code statuslines synced"
 }
 
+do_hooks() {
+    print_heading "Sync Claude Code hooks"
+
+    local hooks_src_dir="${REPO_ROOT}/apps/claudecode/hooks"
+    local hooks_dest_dir="${HOME}/.claude/hooks"
+
+    if [[ ! -d "${hooks_src_dir}" ]]; then
+        log_info "No hooks directory found, skipping"
+        return 0
+    fi
+
+    mkdir -p "${hooks_dest_dir}"
+
+    for hook_file in "${hooks_src_dir}"/*; do
+        if [[ -f "${hook_file}" ]]; then
+            local filename
+            filename=$(basename "${hook_file}")
+            link_file "${hook_file}" "${hooks_dest_dir}/${filename}" "claudecode"
+        fi
+    done
+
+    log_success "Claude Code hooks synced"
+}
+
 do_settings() {
     print_heading "Configure Claude Code settings"
 
@@ -126,13 +153,18 @@ do_settings() {
     log_success "Claude Code settings configured"
 }
 
-do_setup() {
-    # Install via native installer for immediate updates
+do_install() {
+    print_heading "Install Claude Code"
     curl -fsSL https://claude.ai/install.sh | bash
+    log_success "Claude Code installed"
+}
 
+do_setup() {
+    do_install
     do_rules
     do_commands
     do_statuslines
+    do_hooks
     do_settings
 }
 
@@ -145,7 +177,7 @@ main() {
             show_help
             exit 0
             ;;
-        setup | rules | commands | statuslines | settings)
+        setup | install | rules | commands | statuslines | hooks | settings)
             command="$1"
             shift
             ;;
@@ -165,6 +197,9 @@ main() {
     setup)
         do_setup
         ;;
+    install)
+        do_install
+        ;;
     rules)
         do_rules
         ;;
@@ -173,6 +208,9 @@ main() {
         ;;
     statuslines)
         do_statuslines
+        ;;
+    hooks)
+        do_hooks
         ;;
     settings)
         do_settings
