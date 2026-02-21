@@ -17,8 +17,8 @@ if echo "$command" | grep -qE '^(docker|docker-compose|podman)\b'; then
     exit 0
 fi
 
-# Check if the command contains a fully qualified path under the current directory
-if echo "$command" | grep -qF "$cwd/"; then
+# Check if the command contains a fully qualified path under or at the current directory
+if echo "$command" | grep -qE "(${cwd}/|${cwd}( |\$))"; then
     echo "Do not use fully qualified paths for files in the current directory. Use relative paths instead (e.g., ./script.py not $cwd/script.py)." >&2
     exit 2
 fi
