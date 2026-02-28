@@ -20,7 +20,6 @@ bullets asking the clarifying questions.
 - [ ] Figure out if there is a way to set download & setup ultimate 2 bluetooth software: https://app.8bitdo.com/
 - [ ] Can I create a video game controller setting and store the config here in this repo?
 - [ ] Add app: dropover
-- [ ] Make a new claude plugin or set of hooks - never use /tmp, never use git -C. 
 
 
 ## Apps to test:

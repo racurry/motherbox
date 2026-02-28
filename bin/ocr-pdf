@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+#
+# ocr-pdf — OCR a PDF, falling back to page-by-page if the whole file OOMs.
+#
+# Usage: ocr-pdf input.pdf output.pdf
+#
+# Tries ocrmypdf on the full file first. If that fails (OOM, crash, etc.),
+# splits into individual pages, OCRs each one, and reassembles.
+#
+# Requires: ocrmypdf, pdfseparate (poppler-utils), python3 with pypdf
+
+set -euo pipefail
+
+if [ $# -ne 2 ]; then
+    echo "Usage: ocr-pdf input.pdf output.pdf" >&2
+    exit 1
+fi
+
+INPUT="$(realpath "$1")"
+OUTPUT="$(realpath "$2")"
+
+if [ ! -f "$INPUT" ]; then
+    echo "Error: $INPUT not found" >&2
+    exit 1
+fi
+
+OCR_ARGS=(--skip-text --deskew --output-type pdf)
+
+echo "Attempting full-file OCR..."
+if ocrmypdf "${OCR_ARGS[@]}" "$INPUT" "$OUTPUT" 2>&1; then
+    echo "Done. Output: $OUTPUT"
+    exit 0
+fi
+
+echo "Full-file OCR failed. Falling back to page-by-page..."
+
+TMPDIR="$(mktemp -d)"
+trap 'rm -rf "$TMPDIR"' EXIT
+
+# Split into individual pages
+pdfseparate "$INPUT" "$TMPDIR/page_%04d.pdf"
+PAGE_COUNT=$(ls "$TMPDIR"/page_*.pdf | wc -l)
+echo "Split into $PAGE_COUNT pages."
+
+# OCR each page
+FAILED=0
+for PAGE in "$TMPDIR"/page_*.pdf; do
+    BASE="$(basename "$PAGE")"
+    echo "  OCR: $BASE"
+    if ! ocrmypdf "${OCR_ARGS[@]}" "$PAGE" "$TMPDIR/ocr_$BASE" 2>&1; then
+        echo "  Warning: OCR failed on $BASE, using original page"
+        cp "$PAGE" "$TMPDIR/ocr_$BASE"
+        FAILED=$((FAILED + 1))
+    fi
+done
+
+if [ "$FAILED" -gt 0 ]; then
+    echo "Warning: $FAILED page(s) failed OCR and were included without text layer."
+fi
+
+# Reassemble
+python3 -c "
+from pypdf import PdfReader, PdfWriter
+import glob, os
+
+tmpdir = '$TMPDIR'
+pages = sorted(glob.glob(os.path.join(tmpdir, 'ocr_page_*.pdf')))
+writer = PdfWriter()
+for p in pages:
+    reader = PdfReader(p)
+    writer.add_page(reader.pages[0])
+with open('$OUTPUT', 'wb') as f:
+    writer.write(f)
+print(f'Reassembled {len(pages)} pages.')
+"
+
+echo "Done. Output: $OUTPUT"
