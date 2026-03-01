@@ -7,7 +7,7 @@
 - **Default license**: NEVER include license information in generated code unless explicitly requested by the user
 - **Author attribution**: NEVER include author attribution in generated code unless explicitly requested by the user
 - **Running bash scripts**: ALWAYS use local paths for execution (`./script.sh`); NEVER fully qualified paths (`/Users/user/path/to/script.sh`)
-- **Writing temporary files**: ALWAYS use a local `./tmp` directory for temporary files; NEVER use system temp directories like `/tmp` or `/var/tmp`
+- **Writing temporary files**: ALWAYS use a local `./.tmp` directory for temporary files; NEVER use system temp directories like `/tmp` or `/var/tmp`
 
 ## Secrets and environment variables
 
