@@ -20,6 +20,10 @@ bullets asking the clarifying questions.
 - [ ] Figure out if there is a way to set download & setup ultimate 2 bluetooth software: https://app.8bitdo.com/
 - [ ] Can I create a video game controller setting and store the config here in this repo?
 - [ ] Add app: dropover
+- [ ] Make a new claude plugin or set of hooks - never use /tmp, never use git -C.
+- [ ] Add setup scripts for README-only apps: hazel, iterm2, keyboard_maestro, mute_deck, raycast, shottr, stream_deck
+- [ ] Add setup scripts for config/MCP-only apps: eslint, airtable, n8n, obsidian, playwright
+- [ ] Add bambu-studio, chrome, scansnap, steam to personal.Brewfile (currently only installed by standalone scripts, not via brew setup)
 
 
 ## Apps to test:
