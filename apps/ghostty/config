@@ -10,21 +10,29 @@ font-size = 17
 
 ##### WINDOW #####
 
-background-opacity = 0.85
+background-opacity = 0.95
+confirm-close-surface = false
+working-directory = home
 window-padding-x = 4
 window-padding-y = 4
 
 
 ##### macOS SPECIFIC #####
 
-macos-option-as-alt = true
-macos-titlebar-style = hidden
+macos-option-as-alt = left
+macos-titlebar-style = tabs
 
 
 ##### SHELL INTEGRATION #####
 
 # Automatic shell integration (zsh, bash, fish, elvish)
 shell-integration = detect
+
+
+##### KEY BINDINGS #####
+
+keybind = cmd+shift+backslash=new_split:right
+keybind = cmd+shift+minus=new_split:down
 
 
 ##### THEME #####

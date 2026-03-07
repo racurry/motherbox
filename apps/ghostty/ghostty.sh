@@ -1,6 +1,6 @@
 #!/bin/bash
-# Ghostty terminal configuration
-# Links configuration files to ~/.config/ghostty/
+# Ghostty terminal emulator
+# Installs Ghostty and links configuration files to ~/.config/ghostty/
 
 set -euo pipefail
 
@@ -14,7 +14,7 @@ show_help() {
     cat <<EOF
 Usage: $0 [COMMAND]
 
-Configure Ghostty terminal settings.
+Install and configure Ghostty terminal.
 
 Commands:
     setup       Run full setup (primary entry point)
@@ -22,6 +22,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 What this script does:
+    - Installs Ghostty via Homebrew cask if not present
     - Links config from this repo to ~/.config/ghostty/
     - Creates config directory if it doesn't exist
 
@@ -31,7 +32,10 @@ EOF
 }
 
 do_setup() {
-    print_heading "Configuring Ghostty"
+    print_heading "Setting up Ghostty"
+
+    # Install via Homebrew (cask)
+    ensure_brew_package ghostty ghostty cask
 
     # Create config directory if needed
     if [[ ! -d "${GHOSTTY_CONFIG_DIR}" ]]; then
