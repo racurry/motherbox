@@ -146,8 +146,6 @@ run_app_setup ruff
 run_app_setup uv
 
 print_heading "Application Settings"
-run_app_setup ghostty
-run_app_setup vscode
 run_app_setup claudecode
 run_app_setup gemini-cli
 run_app_setup codex-cli
