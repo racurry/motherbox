@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Browse Nerd Font glyphs by section. Prints codepoint + glyph for each range.
+# Usage:
+#   nerdglyphs              # print all sections
+#   nerdglyphs dev          # print only sections matching "dev"
+#   nerdglyphs | grep git   # search for git-related glyphs (by section name)
+
+filter="${1:-}"
+
+# Nerd Font ranges: name, start, end (hex)
+# https://github.com/ryanoasis/nerd-fonts/wiki/Glyph-Sets-and-Code-Points
+sections=(
+  "Seti/Custom:e5fa:e6b8"
+  "Devicons:e700:e8ef"
+  "Font Awesome:f000:f2ff"
+  "Font Awesome Extension:e200:e2a9"
+  "Material Design:f0001:f1af0"
+  "Weather:e300:e3e3"
+  "Octicons:f400:f533"
+  "Powerline:e0a0:e0a3"
+  "Powerline Extra:e0b0:e0d7"
+  "IEC Power:23fb:23fe"
+  "Font Logos:f300:f381"
+  "Pomicons:e000:e00a"
+  "Codicons:ea60:ec1e"
+  "Heavy Angle Brackets:276c:2771"
+  "Box Drawing:2500:259f"
+  "Progress:ee00:ee0b"
+)
+
+cols=8
+
+for section in "${sections[@]}"; do
+  IFS=: read -r name start_hex end_hex <<< "$section"
+
+  # Apply filter if provided
+  if [ -n "$filter" ] && ! echo "$name" | grep -qi "$filter"; then
+    continue
+  fi
+
+  start=$((16#$start_hex))
+  end=$((16#$end_hex))
+  count=$(( end - start + 1 ))
+
+  printf "\n── %s (%s–%s, %d glyphs) ──\n\n" "$name" "$start_hex" "$end_hex" "$count"
+
+  col=0
+  for (( i=start; i<=end; i++ )); do
+    hex=$(printf "%04X" "$i")
+    # printf the unicode char via the escape
+    if [ "$i" -le 65535 ]; then
+      char=$(printf "\u${hex}")
+    else
+      char=$(printf "\U${hex}")
+    fi
+    printf "%-6s %s  " "$hex" "$char"
+    col=$(( col + 1 ))
+    if [ "$col" -ge "$cols" ]; then
+      printf "\n"
+      col=0
+    fi
+  done
+  [ "$col" -ne 0 ] && printf "\n"
+done
+
+printf "\n"
