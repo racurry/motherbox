@@ -3,7 +3,8 @@
   "enableAllProjectMcpServers": true,
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/statuslines/statusline.py"
+    "command": "~/.claude/statuslines/statusline.py",
+    "padding": 1
   },
   "permissions": {
     "defaultMode": "acceptEdits"
