@@ -3,31 +3,14 @@
 # requires-python = ">=3.11"
 # dependencies = []
 # ///
-"""Claude Code two-line status line.
+"""Claude Code powerline statusline.
 
-Line 1: Work context — git branch (clickable), worktree, agent name
-Line 2: Session stats — context bar, cost, duration, lines changed
+Reads JSON from stdin (status hook data), outputs a single-line powerline
+statusline with directory, git, and claude session segments.
+
+Schema docs: https://docs.anthropic.com/en/docs/claude-code/status-bar
 """
 
-# =============================================================================
-# STATUS HOOK INPUT SCHEMA (updated for v2.1+)
-# =============================================================================
-# Claude Code passes JSON via stdin. Key fields:
-#
-#   model.id, model.display_name
-#   workspace.current_dir, workspace.project_dir, workspace.added_dirs
-#   cost.total_cost_usd, total_duration_ms, total_api_duration_ms
-#   cost.total_lines_added, total_lines_removed
-#   context_window.used_percentage, remaining_percentage
-#   context_window.current_usage.input_tokens (+ cache variants)
-#   context_window.context_window_size
-#   vim.mode (NORMAL/INSERT, only when enabled)
-#   agent.name (only with --agent)
-#   worktree.name, worktree.path, worktree.branch
-#   exceeds_200k_tokens (bool)
-# =============================================================================
-
-import argparse
 import json
 import os
 import subprocess
@@ -116,32 +99,6 @@ def osc8_link(url: str, text: str) -> str:
 
 
 # =============================================================================
-# SCHEMA DISCOVERY LOGGING
-# =============================================================================
-LOG_PATH = ".tmp/claude_status_samples.jsonl"
-LOG_SAMPLES = 10
-
-
-def log_stdin_sample(raw_input: str) -> None:
-    import datetime
-
-    try:
-        sample_count = 0
-        if os.path.exists(LOG_PATH):
-            with open(LOG_PATH) as f:
-                sample_count = sum(1 for _ in f)
-        if sample_count < LOG_SAMPLES:
-            with open(LOG_PATH, "a") as f:
-                entry = {
-                    "timestamp": datetime.datetime.now().isoformat(),
-                    "data": json.loads(raw_input),
-                }
-                f.write(json.dumps(entry) + "\n")
-    except Exception:
-        pass
-
-
-# =============================================================================
 # DATA
 # =============================================================================
 @dataclass
@@ -170,7 +127,7 @@ class SessionStats:
 # DATA COLLECTION
 # =============================================================================
 def get_git_info(cwd: str) -> GitInfo | None:
-    """Get git state and remote URL in parallel subprocess calls."""
+    """Get git state and remote URL."""
     try:
         status_result = subprocess.run(
             ["git", "-C", cwd, "status", "--porcelain=v2", "--branch"],
@@ -205,7 +162,6 @@ def get_git_info(cwd: str) -> GitInfo | None:
                 if xy[1] != ".":
                     info.has_unstaged = True
 
-    # Get remote URL for clickable links
     try:
         remote_result = subprocess.run(
             ["git", "-C", cwd, "remote", "get-url", "origin"],
@@ -218,7 +174,6 @@ def get_git_info(cwd: str) -> GitInfo | None:
     except subprocess.TimeoutExpired:
         pass
 
-    # Check for open PR (cached to avoid API calls on every update)
     info.pr_url = _get_cached_pr_url(cwd, info.branch)
 
     return info
@@ -240,7 +195,6 @@ def _get_cached_pr_url(cwd: str, branch: str) -> str:
     except Exception:
         pass
 
-    # Cache miss or stale — query gh CLI
     pr_url = ""
     try:
         result = subprocess.run(
@@ -255,7 +209,6 @@ def _get_cached_pr_url(cwd: str, branch: str) -> str:
     except (subprocess.TimeoutExpired, FileNotFoundError):
         pass
 
-    # Write cache (even empty — avoids re-querying branches with no PR)
     try:
         os.makedirs(PR_CACHE_DIR, exist_ok=True)
         with open(cache_file, "w") as f:
@@ -267,7 +220,7 @@ def _get_cached_pr_url(cwd: str, branch: str) -> str:
 
 
 def get_session_stats(data: dict) -> SessionStats:
-    """Extract all session stats from the status hook JSON."""
+    """Extract session stats from the status hook JSON."""
     stats = SessionStats()
 
     cost = data.get("cost", {})
@@ -279,7 +232,6 @@ def get_session_stats(data: dict) -> SessionStats:
     stats.context_pct = ctx.get("used_percentage", 0.0) or 0.0
     stats.context_max = ctx.get("context_window_size", 200_000) or 200_000
 
-    # Get token count from current_usage
     current_usage = ctx.get("current_usage")
     if current_usage:
         stats.context_tokens = (
@@ -322,16 +274,6 @@ def context_color(pct: float) -> int:
     return MUTE_COLOR
 
 
-def progress_bar(pct: float, width: int = 10) -> str:
-    """Render a visual progress bar: ▓▓▓▓░░░░░░"""
-    filled = round(pct / 100 * width)
-    filled = max(0, min(width, filled))
-    empty = width - filled
-    if pct >= 70:
-        return styled("▓" * filled, fg=context_color(pct)) + styled("░" * empty, fg=MUTE_COLOR)
-    return styled("▓" * filled, fg=MUTE_COLOR) + styled("░" * empty, fg=MUTE_COLOR)
-
-
 def github_url_from_remote(remote_url: str) -> str | None:
     """Convert a git remote URL to a GitHub HTTPS base URL."""
     url = remote_url
@@ -347,19 +289,19 @@ def github_url_from_remote(remote_url: str) -> str | None:
 # =============================================================================
 # THEME
 # =============================================================================
-# 256-color theme: monochrome purple with color shifts for severity.
-#   Calm (base):      140 — soft lavender, default for everything
-#   Attention:         213 — warm bright pink-purple, "you should know"
-#   Alert:             167 — dim red leaning purple, "something is wrong"
-# Preview: for c in 140 213 167; do printf "\033[38;5;${c}m%-4s sample\033[0m\n" "$c"; done
+# 256-color theme: light gray text, color only for alerts.
+#   Base:       250 — light gray, default for all text
+#   Attention:  255 — bright white, "you should know" (context 70-85%)
+#   Alert:      167 — muted red, "something is wrong" (context 85%+)
+# Preview: for c in 250 255 167; do printf "\033[38;5;${c}m%-4s sample\033[0m\n" "$c"; done
 MUTE_COLOR = 250
 ATTENTION_COLOR = 255
 ALERT_COLOR = 167
 PILL_BG = 236  # neutral dark gray for content segments
+DIR_ICON_BG = 26  # directory icon background (blue)
 GIT_ICON_BG = 28  # GitHub logo background (dark green)
 GIT_STATUS_BG = 34  # git status indicators background (brighter green)
 CLAUDE_ICON_BG = 173  # Claude logo background
-SEP = styled(" │ ", fg=MUTE_COLOR)
 ARROW = "\ue0b0"  # powerline right-pointing triangle
 
 
@@ -377,19 +319,15 @@ def powerline_segments(segments: list[tuple[int, str]]) -> str:
     out = ""
     for i, (bg, content) in enumerate(segments):
         bg_code = _color_code(bg, bg=True)
-        # Patch inner resets so bg persists through pre-styled content
         inner = content.replace(_RESET, _RESET + bg_code)
 
         if i == 0:
-            # First segment: square left edge
             out += f"{bg_code}{inner} "
         else:
-            # Arrow from previous bg into this bg
             prev_bg = segments[i - 1][0]
             out += styled(ARROW, fg=prev_bg, bg=bg)
             out += f"{bg_code}{inner} "
 
-        # Last segment: arrow into terminal default
         if i == len(segments) - 1:
             out += f"{_RESET}{styled(ARROW, fg=bg)}"
 
@@ -397,7 +335,7 @@ def powerline_segments(segments: list[tuple[int, str]]) -> str:
 
 
 # =============================================================================
-# FORMATTING
+# STATUSLINE
 # =============================================================================
 def format_statusline(
     git: GitInfo | None,
@@ -407,8 +345,23 @@ def format_statusline(
 ) -> str:
     """Build the full powerline statusline."""
     segments: list[tuple[int, str]] = []
+    dot = muted("◦")
 
-    # --- Segment 1: GitHub icon (dark green bg) ---
+    # --- Directory icon (blue bg) ---
+    segments.append((DIR_ICON_BG, " \033[97m\uf07b"))
+
+    # --- Directory name (dark bg) ---
+    cwd = data.get("workspace", {}).get("current_dir", "")
+    project_dir = data.get("workspace", {}).get("project_dir", "")
+    if cwd == project_dir:
+        display_dir = os.path.basename(cwd) or cwd
+    elif cwd.startswith(project_dir):
+        display_dir = os.path.basename(project_dir) + cwd[len(project_dir) :]
+    else:
+        display_dir = cwd.replace(os.path.expanduser("~"), "~")
+    segments.append((PILL_BG, f" {muted(display_dir)}"))
+
+    # --- GitHub icon (dark green bg) ---
     if git:
         gh_url = github_url_from_remote(git.remote_url) if git.remote_url else None
         gh_icon = "\uf09b"
@@ -418,26 +371,21 @@ def format_statusline(
             gh_icon = styled(gh_icon, fg="white")
         segments.append((GIT_ICON_BG, f" {gh_icon}"))
 
-    # --- Segment 2: Git status indicators (brighter green bg) ---
+    # --- Git status indicators (brighter green bg) ---
     if git:
         status_parts: list[str] = []
-        # PR
         if git.pr_url:
             status_parts.append(osc8_link(git.pr_url, styled("\U000f062c", fg="white")))
-        # Sync
         if git.ahead:
             status_parts.append(styled(f"↑{git.ahead}", fg="white"))
         if git.behind:
             status_parts.append(styled(f"↓{git.behind}", fg="white"))
-        # Dirty state
         if git.has_staged:
             status_parts.append(styled("●", fg="white"))
         if git.has_unstaged:
             status_parts.append(styled("○", fg="white"))
-        # No upstream
         if git.branch != "detached" and not git.has_upstream:
             status_parts.append(styled("⚠", fg="white"))
-        # Worktree
         worktree = data.get("worktree")
         if worktree and worktree.get("name"):
             status_parts.append(styled("\uf1bb", fg="white"))
@@ -445,7 +393,7 @@ def format_statusline(
         if status_parts:
             segments.append((GIT_STATUS_BG, f" {' '.join(status_parts)}"))
 
-    # --- Segment 3: Git info (dark bg) ---
+    # --- Git branch info (dark bg) ---
     if git:
         gh_url = github_url_from_remote(git.remote_url) if git.remote_url else None
         if gh_url and git.branch != "detached":
@@ -455,49 +403,44 @@ def format_statusline(
             branch = muted(git.branch)
 
         git_parts = [f" {branch}"]
-
-        # Lines changed
         if stats.lines_added or stats.lines_removed:
             changes = []
             if stats.lines_added:
                 changes.append(f"+{stats.lines_added}")
             if stats.lines_removed:
                 changes.append(f"-{stats.lines_removed}")
-            git_parts.append(muted("◦"))
+            git_parts.append(dot)
             git_parts.append(muted("/".join(changes)))
 
         segments.append((PILL_BG, " ".join(git_parts)))
 
-    # --- Segment 3: Claude icon (orange bg) ---
+    # --- Claude icon ---
     segments.append((CLAUDE_ICON_BG, " \033[97m❋"))
 
-    # --- Segment 4: Claude info (dark bg) ---
-    dot = muted("◦")
+    # --- Claude info (dark bg) ---
     claude_info = [muted(model)]
 
-    # Agent
     agent = data.get("agent")
     if agent:
         agent_name = agent.get("name", "")
         if agent_name:
             claude_info.append(muted(agent_name))
 
-    # Context usage
-    pct_str = f"{stats.context_pct:.0f}%"
-    tokens_str = format_tokens(stats.context_tokens)
-    if stats.context_pct >= 70:
-        ctx_col = context_color(stats.context_pct)
-        claude_info.append(f"{styled(tokens_str, fg=ctx_col)} {styled(pct_str, fg=ctx_col)}")
-    else:
-        claude_info.append(f"{muted(tokens_str)} {muted(pct_str)}")
+    # Context usage (suppress when zero)
+    if stats.context_tokens > 0:
+        pct_str = f"{stats.context_pct:.0f}%"
+        tokens_str = format_tokens(stats.context_tokens)
+        if stats.context_pct >= 70:
+            ctx_col = context_color(stats.context_pct)
+            claude_info.append(f"{styled(tokens_str, fg=ctx_col)} {styled(pct_str, fg=ctx_col)}")
+        else:
+            claude_info.append(f"{muted(tokens_str)} {muted(pct_str)}")
 
-    # Duration
+    # Duration (suppress when zero)
     if stats.duration_ms > 0:
         claude_info.append(muted(format_duration(stats.duration_ms)))
 
-    claude_parts = [f" {f' {dot} '.join(claude_info)}"]
-
-    segments.append((PILL_BG, " ".join(claude_parts)))
+    segments.append((PILL_BG, f" {f' {dot} '.join(claude_info)}"))
 
     return powerline_segments(segments)
 
@@ -506,18 +449,7 @@ def format_statusline(
 # MAIN
 # =============================================================================
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Claude Code status line")
-    parser.add_argument(
-        "--log",
-        action="store_true",
-        help=f"Log stdin samples to {LOG_PATH} for schema discovery",
-    )
-    args = parser.parse_args()
-
-    raw_input = sys.stdin.read()
-    if args.log:
-        log_stdin_sample(raw_input)
-    data = json.loads(raw_input)
+    data = json.loads(sys.stdin.read())
 
     cwd = data.get("workspace", {}).get("current_dir", os.getcwd())
     model = data.get("model", {}).get("display_name", "unknown")
