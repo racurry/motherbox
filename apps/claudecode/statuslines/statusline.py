@@ -352,13 +352,13 @@ def github_url_from_remote(remote_url: str) -> str | None:
 #   Attention:         213 — warm bright pink-purple, "you should know"
 #   Alert:             167 — dim red leaning purple, "something is wrong"
 # Preview: for c in 140 213 167; do printf "\033[38;5;${c}m%-4s sample\033[0m\n" "$c"; done
-MUTE_COLOR = 140
-ATTENTION_COLOR = 213
+MUTE_COLOR = 250
+ATTENTION_COLOR = 255
 ALERT_COLOR = 167
 PILL_BG = 236  # neutral dark gray for content segments
 GIT_ICON_BG = 28  # GitHub logo background (dark green)
 GIT_STATUS_BG = 34  # git status indicators background (brighter green)
-CLAUDE_ICON_BG = 208  # Claude logo background (orange)
+CLAUDE_ICON_BG = 173  # Claude logo background
 SEP = styled(" │ ", fg=MUTE_COLOR)
 ARROW = "\ue0b0"  # powerline right-pointing triangle
 
@@ -437,6 +437,10 @@ def format_statusline(
         # No upstream
         if git.branch != "detached" and not git.has_upstream:
             status_parts.append(styled("⚠", fg="white"))
+        # Worktree
+        worktree = data.get("worktree")
+        if worktree and worktree.get("name"):
+            status_parts.append(styled("\uf1bb", fg="white"))
 
         if status_parts:
             segments.append((GIT_STATUS_BG, f" {' '.join(status_parts)}"))
@@ -452,54 +456,46 @@ def format_statusline(
 
         git_parts = [f" {branch}"]
 
-        # Lines changed (in parens after branch name)
+        # Lines changed
         if stats.lines_added or stats.lines_removed:
             changes = []
             if stats.lines_added:
                 changes.append(f"+{stats.lines_added}")
             if stats.lines_removed:
                 changes.append(f"-{stats.lines_removed}")
-            git_parts.append(muted(f"({'/'.join(changes)})"))
-
-        # Worktree
-        worktree = data.get("worktree")
-        if worktree:
-            wt_name = worktree.get("name", "")
-            if wt_name:
-                git_parts.append(SEP)
-                git_parts.append(muted(wt_name))
+            git_parts.append(muted("◦"))
+            git_parts.append(muted("/".join(changes)))
 
         segments.append((PILL_BG, " ".join(git_parts)))
 
     # --- Segment 3: Claude icon (orange bg) ---
-    segments.append((CLAUDE_ICON_BG, f" {styled('❋', fg='white')}"))
+    segments.append((CLAUDE_ICON_BG, " \033[97m❋"))
 
     # --- Segment 4: Claude info (dark bg) ---
-    claude_parts = [f" {muted(model)}"]
+    dot = muted("◦")
+    claude_info = [muted(model)]
 
     # Agent
     agent = data.get("agent")
     if agent:
         agent_name = agent.get("name", "")
         if agent_name:
-            claude_parts.append(SEP)
-            claude_parts.append(muted(agent_name))
+            claude_info.append(muted(agent_name))
 
-    # Context bar
-    bar = progress_bar(stats.context_pct, width=12)
+    # Context usage
     pct_str = f"{stats.context_pct:.0f}%"
     tokens_str = format_tokens(stats.context_tokens)
-    claude_parts.append(SEP)
     if stats.context_pct >= 70:
         ctx_col = context_color(stats.context_pct)
-        claude_parts.append(f"{bar} {styled(pct_str, fg=ctx_col)} {muted(tokens_str)}")
+        claude_info.append(f"{styled(tokens_str, fg=ctx_col)} {styled(pct_str, fg=ctx_col)}")
     else:
-        claude_parts.append(f"{bar} {muted(pct_str)} {muted(tokens_str)}")
+        claude_info.append(f"{muted(tokens_str)} {muted(pct_str)}")
 
     # Duration
     if stats.duration_ms > 0:
-        claude_parts.append(SEP)
-        claude_parts.append(muted(format_duration(stats.duration_ms)))
+        claude_info.append(muted(format_duration(stats.duration_ms)))
+
+    claude_parts = [f" {f' {dot} '.join(claude_info)}"]
 
     segments.append((PILL_BG, " ".join(claude_parts)))
 
