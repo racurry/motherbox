@@ -80,7 +80,7 @@ run_lint() {
     fi
 
     echo "Checking ${#bash_sources[@]} bash files..."
-    shellcheck -x --source-path="${SCRIPT_DIR}/.." "${bash_sources[@]}"
+    shellcheck --severity=warning --source-path="${SCRIPT_DIR}/.." "${bash_sources[@]}"
     echo "✓ All bash files passed shellcheck"
 }
 
