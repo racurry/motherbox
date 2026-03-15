@@ -35,10 +35,10 @@ setup() {
     [[ "$output" =~ "Usage:" ]]
 }
 
-@test "invalid command shows error" {
+@test "invalid command warns and shows help" {
     run "$SCRIPT_PATH" invalid_command
-    [ "$status" -eq 1 ]
-    [[ "$output" =~ "Unknown argument" ]]
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Ignoring unknown argument" ]]
 }
 
 @test "help output contains examples section" {

@@ -68,7 +68,7 @@ do_setup() {
         open -a Ollama
         # Wait for server to be ready
         log_info "Waiting for Ollama server to start..."
-        for i in {1..10}; do
+        for _i in {1..10}; do
             if curl -s http://localhost:11434/api/version &>/dev/null; then
                 break
             fi

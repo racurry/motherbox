@@ -17,40 +17,24 @@ teardown() {
   fi
 }
 
-@test "create_documents_tree creates expected folders in default location" {
-  run env HOME="${HOME}" "${SCRIPT_PATH}"
+@test "create_documents_tree creates expected folders" {
+  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --mode personal --unattended
   [ "$status" -eq 0 ]
-  for folder in "@auto" 000_Inbox 100_Life 150_Projects 200_People 400_Topics 700_Libraries 800_Posterity 999_Meta; do
+  for folder in "@auto" 000_Inbox 100_Life 150_Projects 200_People 400_Topics 700_Libraries 800_Posterity 900_Sharing 999_Meta; do
     [ -d "${HOME}/Documents/${folder}" ]
   done
 }
 
-@test "create_documents_tree creates expected folders in custom location" {
-  mkdir -p "${TEST_TMPDIR}/custom_dir"
-  run env HOME="${HOME}" "${SCRIPT_PATH}" "${TEST_TMPDIR}/custom_dir"
+@test "create_documents_tree creates workspace folders" {
+  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --mode personal --unattended
   [ "$status" -eq 0 ]
-  for folder in "@auto" 000_Inbox 100_Life 150_Projects 200_People 400_Topics 700_Libraries 800_Posterity 999_Meta; do
-    [ -d "${TEST_TMPDIR}/custom_dir/${folder}" ]
-  done
-}
-
-@test "create_documents_tree expands tilde in path" {
-  run env HOME="${HOME}" "${SCRIPT_PATH}" "~/Documents"
-  [ "$status" -eq 0 ]
-  for folder in "@auto" 000_Inbox 100_Life 150_Projects 200_People 400_Topics 700_Libraries 800_Posterity 999_Meta; do
-    [ -d "${HOME}/Documents/${folder}" ]
-  done
-}
-
-@test "create_documents_tree fails if parent directory doesn't exist" {
-  run env HOME="${HOME}" "${SCRIPT_PATH}" "${TEST_TMPDIR}/nonexistent"
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"Parent directory does not exist"* ]]
+  [ -d "${HOME}/workspace/infra" ]
+  [ -d "${HOME}/workspace/sandbox" ]
 }
 
 @test "create_documents_tree is idempotent" {
-  env HOME="${HOME}" "${SCRIPT_PATH}"
-  run env HOME="${HOME}" "${SCRIPT_PATH}"
+  env HOME="${HOME}" "${SCRIPT_PATH}" setup --mode personal --unattended
+  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --mode personal --unattended
   [ "$status" -eq 0 ]
 }
 
@@ -70,9 +54,8 @@ teardown() {
   [[ "$output" == *"-h, --help"* ]]
 }
 
-@test "folders.sh with unknown option shows error and help" {
+@test "folders.sh with unknown option warns and shows help" {
   run "${SCRIPT_PATH}" --invalid-option
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"Unknown option: --invalid-option"* ]]
-  [[ "$output" == *"Usage:"* ]]
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Ignoring unknown argument"* ]]
 }

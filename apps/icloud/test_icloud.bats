@@ -79,8 +79,8 @@ teardown() {
   [[ "$output" == *"Usage:"* ]]
 }
 
-@test "icloud.sh with unknown command shows error" {
+@test "icloud.sh with unknown command warns and shows help" {
   run "${SCRIPT_PATH}" --invalid-option
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"Unknown command"* ]]
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Ignoring unknown argument"* ]]
 }

@@ -5,8 +5,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/bash/common.sh
 source "${SCRIPT_DIR}/../../lib/bash/common.sh"
 
-APP_NAME="elixir"
-
 show_help() {
     cat <<EOF
 Usage: $0 [COMMAND]
