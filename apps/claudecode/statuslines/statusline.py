@@ -355,98 +355,155 @@ def github_url_from_remote(remote_url: str) -> str | None:
 MUTE_COLOR = 140
 ATTENTION_COLOR = 213
 ALERT_COLOR = 167
+PILL_BG = 236  # neutral dark gray for content segments
+GIT_ICON_BG = 28  # GitHub logo background (dark green)
+GIT_STATUS_BG = 34  # git status indicators background (brighter green)
+CLAUDE_ICON_BG = 208  # Claude logo background (orange)
 SEP = styled(" │ ", fg=MUTE_COLOR)
+ARROW = "\ue0b0"  # powerline right-pointing triangle
 
 
 def muted(text: str) -> str:
     return styled(text, fg=MUTE_COLOR)
 
 
-# =============================================================================
-# LINE 1: GIT INFO
-# =============================================================================
-def format_git_line(git: GitInfo | None, data: dict, stats: SessionStats) -> str:
-    parts: list[str] = []
+def powerline_segments(segments: list[tuple[int, str]]) -> str:
+    """Render a list of (bg_color, content) as classic powerline segments.
 
+    Each segment flows into the next with an angled arrow separator.
+    Content can contain its own fg ANSI codes; inner resets are patched
+    so the segment bg persists.
+    """
+    out = ""
+    for i, (bg, content) in enumerate(segments):
+        bg_code = _color_code(bg, bg=True)
+        # Patch inner resets so bg persists through pre-styled content
+        inner = content.replace(_RESET, _RESET + bg_code)
+
+        if i == 0:
+            # First segment: square left edge
+            out += f"{bg_code}{inner} "
+        else:
+            # Arrow from previous bg into this bg
+            prev_bg = segments[i - 1][0]
+            out += styled(ARROW, fg=prev_bg, bg=bg)
+            out += f"{bg_code}{inner} "
+
+        # Last segment: arrow into terminal default
+        if i == len(segments) - 1:
+            out += f"{_RESET}{styled(ARROW, fg=bg)}"
+
+    return out
+
+
+# =============================================================================
+# FORMATTING
+# =============================================================================
+def format_statusline(
+    git: GitInfo | None,
+    model: str,
+    stats: SessionStats,
+    data: dict,
+) -> str:
+    """Build the full powerline statusline."""
+    segments: list[tuple[int, str]] = []
+
+    # --- Segment 1: GitHub icon (dark green bg) ---
     if git:
-        # Branch name — clickable if we have a GitHub remote
+        gh_url = github_url_from_remote(git.remote_url) if git.remote_url else None
+        gh_icon = "\uf09b"
+        if gh_url:
+            gh_icon = osc8_link(gh_url, styled(gh_icon, fg="white"))
+        else:
+            gh_icon = styled(gh_icon, fg="white")
+        segments.append((GIT_ICON_BG, f" {gh_icon}"))
+
+    # --- Segment 2: Git status indicators (brighter green bg) ---
+    if git:
+        status_parts: list[str] = []
+        # PR
+        if git.pr_url:
+            status_parts.append(osc8_link(git.pr_url, styled("\U000f062c", fg="white")))
+        # Sync
+        if git.ahead:
+            status_parts.append(styled(f"↑{git.ahead}", fg="white"))
+        if git.behind:
+            status_parts.append(styled(f"↓{git.behind}", fg="white"))
+        # Dirty state
+        if git.has_staged:
+            status_parts.append(styled("●", fg="white"))
+        if git.has_unstaged:
+            status_parts.append(styled("○", fg="white"))
+        # No upstream
+        if git.branch != "detached" and not git.has_upstream:
+            status_parts.append(styled("⚠", fg="white"))
+
+        if status_parts:
+            segments.append((GIT_STATUS_BG, f" {' '.join(status_parts)}"))
+
+    # --- Segment 3: Git info (dark bg) ---
+    if git:
         gh_url = github_url_from_remote(git.remote_url) if git.remote_url else None
         if gh_url and git.branch != "detached":
             branch_url = f"{gh_url}/tree/{git.branch}"
-            branch_display = osc8_link(branch_url, muted(git.branch))
+            branch = osc8_link(branch_url, muted(git.branch))
         else:
-            branch_display = muted(git.branch)
+            branch = muted(git.branch)
 
-        gh_icon = osc8_link(gh_url, muted("\uf09b")) if gh_url else muted("\uf09b")
-        git_parts = [gh_icon, branch_display]
-        # PR indicator — clickable link to the PR
-        if git.pr_url:
-            git_parts.append(osc8_link(git.pr_url, muted("\ue625")))
-        # Calm: ahead/staged — things are fine
-        if git.ahead:
-            git_parts.append(muted(f"↑{git.ahead}"))
-        if git.has_staged:
-            git_parts.append(muted("●"))
-        # Attention: unstaged — you should know
-        if git.has_unstaged:
-            git_parts.append(styled("○", fg=ATTENTION_COLOR))
-        # Alert: behind/no upstream — something is wrong
-        if git.behind:
-            git_parts.append(styled(f"↓{git.behind}", fg=ALERT_COLOR))
-        if git.branch != "detached" and not git.has_upstream:
-            git_parts.append(styled("⚠", fg=ALERT_COLOR))
-        parts.append(" ".join(git_parts))
+        git_parts = [f" {branch}"]
 
-    # Worktree
-    worktree = data.get("worktree")
-    if worktree:
-        wt_name = worktree.get("name", "")
-        if wt_name:
-            parts.append(muted(wt_name))
+        # Lines changed (in parens after branch name)
+        if stats.lines_added or stats.lines_removed:
+            changes = []
+            if stats.lines_added:
+                changes.append(f"+{stats.lines_added}")
+            if stats.lines_removed:
+                changes.append(f"-{stats.lines_removed}")
+            git_parts.append(muted(f"({'/'.join(changes)})"))
 
-    # Lines changed — muted when small, alert when large
-    if stats.lines_added or stats.lines_removed:
-        changes = []
-        if stats.lines_added:
-            changes.append(muted(f"+{stats.lines_added}"))
-        if stats.lines_removed:
-            changes.append(muted(f"-{stats.lines_removed}"))
-        parts.append("/".join(changes))
+        # Worktree
+        worktree = data.get("worktree")
+        if worktree:
+            wt_name = worktree.get("name", "")
+            if wt_name:
+                git_parts.append(SEP)
+                git_parts.append(muted(wt_name))
 
-    return SEP.join(parts)
+        segments.append((PILL_BG, " ".join(git_parts)))
 
+    # --- Segment 3: Claude icon (orange bg) ---
+    segments.append((CLAUDE_ICON_BG, f" {styled('❋', fg='white')}"))
 
-# =============================================================================
-# LINE 2: CLAUDE INFO
-# =============================================================================
-def format_claude_line(model: str, stats: SessionStats, data: dict) -> str:
-    parts: list[str] = []
-
-    # Model
-    parts.append(muted(model))
+    # --- Segment 4: Claude info (dark bg) ---
+    claude_parts = [f" {muted(model)}"]
 
     # Agent
     agent = data.get("agent")
     if agent:
         agent_name = agent.get("name", "")
         if agent_name:
-            parts.append(muted(agent_name))
+            claude_parts.append(SEP)
+            claude_parts.append(muted(agent_name))
 
-    # Context — muted when healthy, colored when warning
+    # Context bar
     bar = progress_bar(stats.context_pct, width=12)
     pct_str = f"{stats.context_pct:.0f}%"
     tokens_str = format_tokens(stats.context_tokens)
+    claude_parts.append(SEP)
     if stats.context_pct >= 70:
         ctx_col = context_color(stats.context_pct)
-        parts.append(f"{bar} {styled(pct_str, fg=ctx_col)} {muted(tokens_str)}")
+        claude_parts.append(f"{bar} {styled(pct_str, fg=ctx_col)} {muted(tokens_str)}")
     else:
-        parts.append(f"{bar} {muted(pct_str)} {muted(tokens_str)}")
+        claude_parts.append(f"{bar} {muted(pct_str)} {muted(tokens_str)}")
 
     # Duration
     if stats.duration_ms > 0:
-        parts.append(muted(format_duration(stats.duration_ms)))
+        claude_parts.append(SEP)
+        claude_parts.append(muted(format_duration(stats.duration_ms)))
 
-    return SEP.join(parts)
+    segments.append((PILL_BG, " ".join(claude_parts)))
+
+    return powerline_segments(segments)
 
 
 # =============================================================================
@@ -472,9 +529,7 @@ def main() -> None:
     git = get_git_info(cwd)
     stats = get_session_stats(data)
 
-    git_line = format_git_line(git, data, stats)
-    claude_line = format_claude_line(model, stats, data)
-    print(f"{git_line}{SEP}{claude_line}")
+    print(format_statusline(git, model, stats, data))
 
 
 if __name__ == "__main__":
