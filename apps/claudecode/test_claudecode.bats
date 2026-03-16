@@ -107,14 +107,14 @@ teardown() {
   local hook="${BATS_TEST_DIRNAME}/hooks/enforce-relative-paths.sh"
   local testdir="${TEST_TMPDIR}/fakecwd"
   mkdir -p "$testdir"
-  run bash -c "cd '$testdir' && echo '{\"tool_input\":{\"command\":\"python ${testdir}/script.py\"}}' | '$hook'"
+  run bash -c "exec 3>&- ;cd '$testdir' && echo '{\"tool_input\":{\"command\":\"python ${testdir}/script.py\"}}' | '$hook'"
   [ "$status" -eq 2 ]
   [[ "$output" == *"relative paths"* ]]
 }
 
 @test "enforce-relative-paths.sh allows relative paths" {
   local hook="${BATS_TEST_DIRNAME}/hooks/enforce-relative-paths.sh"
-  run bash -c "echo '{\"tool_input\":{\"command\":\"python ./script.py\"}}' | '$hook'"
+  run bash -c "exec 3>&- ;echo '{\"tool_input\":{\"command\":\"python ./script.py\"}}' | '$hook'"
   [ "$status" -eq 0 ]
 }
 
@@ -122,7 +122,7 @@ teardown() {
   local hook="${BATS_TEST_DIRNAME}/hooks/enforce-relative-paths.sh"
   local testdir="${TEST_TMPDIR}/fakecwd"
   mkdir -p "$testdir"
-  run bash -c "cd '$testdir' && echo '{\"tool_input\":{\"command\":\"python /usr/local/bin/something\"}}' | '$hook'"
+  run bash -c "exec 3>&- ;cd '$testdir' && echo '{\"tool_input\":{\"command\":\"python /usr/local/bin/something\"}}' | '$hook'"
   [ "$status" -eq 0 ]
 }
 
@@ -130,7 +130,7 @@ teardown() {
   local hook="${BATS_TEST_DIRNAME}/hooks/enforce-relative-paths.sh"
   local testdir="${TEST_TMPDIR}/fakecwd"
   mkdir -p "$testdir"
-  run bash -c "cd '$testdir' && echo '{\"tool_input\":{\"command\":\"docker run -v ${testdir}/data:/data img\"}}' | '$hook'"
+  run bash -c "exec 3>&- ;cd '$testdir' && echo '{\"tool_input\":{\"command\":\"docker run -v ${testdir}/data:/data img\"}}' | '$hook'"
   [ "$status" -eq 0 ]
 }
 
@@ -138,7 +138,7 @@ teardown() {
   local hook="${BATS_TEST_DIRNAME}/hooks/enforce-relative-paths.sh"
   local testdir="${TEST_TMPDIR}/fakecwd"
   mkdir -p "$testdir"
-  run bash -c "cd '$testdir' && echo '{\"tool_input\":{\"command\":\"docker-compose -f ${testdir}/docker-compose.yml up\"}}' | '$hook'"
+  run bash -c "exec 3>&- ;cd '$testdir' && echo '{\"tool_input\":{\"command\":\"docker-compose -f ${testdir}/docker-compose.yml up\"}}' | '$hook'"
   [ "$status" -eq 0 ]
 }
 
@@ -146,6 +146,6 @@ teardown() {
   local hook="${BATS_TEST_DIRNAME}/hooks/enforce-relative-paths.sh"
   local testdir="${TEST_TMPDIR}/fakecwd"
   mkdir -p "$testdir"
-  run bash -c "cd '$testdir' && echo '{\"tool_input\":{\"command\":\"python ./script.py\",\"description\":\"Run script in ${testdir}\"}}' | '$hook'"
+  run bash -c "exec 3>&- ;cd '$testdir' && echo '{\"tool_input\":{\"command\":\"python ./script.py\",\"description\":\"Run script in ${testdir}\"}}' | '$hook'"
   [ "$status" -eq 0 ]
 }
