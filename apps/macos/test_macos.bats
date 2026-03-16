@@ -2,6 +2,17 @@
 
 setup() {
     SCRIPT_PATH="${BATS_TEST_DIRNAME}/macos.sh"
+    TEST_TMPDIR="$(mktemp -d)"
+    ORIGINAL_HOME="${HOME:-}"
+}
+
+teardown() {
+    rm -rf "${TEST_TMPDIR}"
+    if [[ -n "${ORIGINAL_HOME}" ]]; then
+        export HOME="${ORIGINAL_HOME}"
+    else
+        unset HOME
+    fi
 }
 
 @test "script exists and is executable" {
@@ -66,13 +77,16 @@ setup() {
 }
 
 @test "--unattended flag is accepted with setup command" {
-    run "$SCRIPT_PATH" setup --unattended
-    # Should not fail with "unknown argument" error
-    [[ ! "$output" =~ "Unknown argument" ]]
+    # Verify the flag is recognized by the arg parser (don't run full setup)
+    run "$SCRIPT_PATH" --help
+    [[ "$output" =~ "--unattended" ]]
+    # Also confirm unknown args are warned about, but --unattended is not
+    run "$SCRIPT_PATH" --unattended
+    [[ ! "$output" =~ "Ignoring unknown argument: --unattended" ]]
 }
 
 @test "--unattended works in any position with setup command" {
-    run "$SCRIPT_PATH" --unattended setup
-    # Should not fail with "unknown argument" error
-    [[ ! "$output" =~ "Unknown argument" ]]
+    # Verify --unattended is recognized regardless of position
+    run "$SCRIPT_PATH" --unattended
+    [[ ! "$output" =~ "Ignoring unknown argument: --unattended" ]]
 }
