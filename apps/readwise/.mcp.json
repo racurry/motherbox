@@ -1,0 +1,14 @@
+{
+  "readwise": {
+    "type": "http",
+    "url": "https://mcp2.readwise.io/mcp"
+  },
+  "readwise-enhanced": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["readwise-mcp-enhanced"],
+    "env": {
+      "READWISE_TOKEN": "${READWISE_TOKEN}"
+    }
+  }
+}
