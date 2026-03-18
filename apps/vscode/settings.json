@@ -1,12 +1,12 @@
 {
   "[markdown]": {
-    "editor.defaultFormatter": "bittorala.mdformat"
+    "editor.defaultFormatter": "bittorala.mdformat",
   },
   "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff"
+    "editor.defaultFormatter": "charliermarsh.ruff",
   },
   "[shellscript]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
+    "editor.defaultFormatter": "foxundermoon.shell-format",
   },
   "claudeCode.preferredLocation": "sidebar",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -22,13 +22,13 @@
     "*": true,
     "markdown": true,
     "plaintext": false,
-    "scminput": false
+    "scminput": false,
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
   "prettier.configPath": "~/.prettierrc.json5",
   "prettier.ignorePath": "~/.prettierignore",
-  "prettier.printWidth": 999,
-  "python.defaultInterpreterPath": "/opt/homebrew/bin/python3",
+"prettier.printWidth": 999,
+"python.defaultInterpreterPath": "/opt/homebrew/bin/python3",
   "security.workspace.trust.untrustedFiles": "open",
   "workbench.iconTheme": "catppuccin-latte",
   "workbench.secondarySideBar.defaultVisibility": "hidden",
@@ -45,7 +45,7 @@
   // Disable ALL accessibility signals (sounds and announcements)
   "accessibility.signals.terminalBell": {
     "sound": "off",
-    "announcement": "off"
+    "announcement": "off",
   },
   "accessibility.signals.lineHasBreakpoint": { "sound": "off", "announcement": "off" },
   "accessibility.signals.lineHasError": { "sound": "off", "announcement": "off" },
@@ -90,5 +90,6 @@
   "accessibility.verbosity.terminal": false,
   "geminicodeassist.project": "watchful-destination-4ss4b",
   "settingsSync.ignoredSettings": ["geminicodeassist.project"],
-  "application.shellEnvironmentResolutionTimeout": 100
+  "application.shellEnvironmentResolutionTimeout": 100,
+  "scad-lsp.launchPath": "/opt/homebrew/bin/openscad",
 }
