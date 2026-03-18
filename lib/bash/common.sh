@@ -32,7 +32,7 @@ PATH_MOTHERBOX_BACKUPS="${PATH_MOTHERBOX_CONFIG}/backups"
 #   print_heading <text>   - Cyan section heading
 #
 # Configuration:
-#   LOG_FILE         - Path for log file (default: ~/.config/motherbox/setup.log)
+#   LOG_FILE         - Path for log file (default: ~/.config/motherbox/logs/setup.log)
 #   LOG_FILE_ENABLED - Set to "true" to enable file logging
 #   LOG_DEBUG        - Set to "true" to enable debug output to console
 #   UNATTENDED       - Set to "true" to skip interactive operations
@@ -40,7 +40,7 @@ PATH_MOTHERBOX_BACKUPS="${PATH_MOTHERBOX_CONFIG}/backups"
 
 # Global configuration defaults (only set if not already defined)
 : "${LOG_TAG:=}"
-: "${LOG_FILE:=${HOME}/.config/motherbox/setup.log}"
+: "${LOG_FILE:=${HOME}/.config/motherbox/logs/setup.log}"
 : "${LOG_FILE_ENABLED:=false}"
 : "${LOG_DEBUG:=false}"
 : "${UNATTENDED:=false}"

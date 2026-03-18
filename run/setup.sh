@@ -20,7 +20,7 @@ OPTIONS:
   --reset-mode     Ignore saved mode and prompt for selection
   --mode MODE      Set mode directly (galileo or personal)
   --debug          Enable debug output
-  --logging        Enable logging to ~/.config/motherbox/setup.log
+  --logging        Enable logging to ~/.config/motherbox/logs/setup.log
   -h, --help       Show this help message and exit
 
 CONFIGURATION:
@@ -41,7 +41,7 @@ EOF
 
 # Override common.sh defaults and export for child scripts
 export LOG_TAG="setup"
-export LOG_FILE="${HOME}/.config/motherbox/setup.log"
+export LOG_FILE="${HOME}/.config/motherbox/logs/setup.log"
 
 # Parse command line arguments (may override defaults above)
 for arg in "$@"; do
@@ -61,6 +61,9 @@ for arg in "$@"; do
         ;;
     esac
 done
+
+# Ensure logs directory exists
+mkdir -p "${HOME}/.config/motherbox/logs"
 
 # Initialize log file if logging is enabled
 if [[ "${LOG_FILE_ENABLED}" == "true" ]]; then

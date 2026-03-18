@@ -14,8 +14,9 @@ Usage: $(basename "$0") <command> [subcommand]
 Management script for the Mac Mini.
 
 Commands:
-    setup                Install launchd plist for nightly maintenance
+    setup                Install launchd plist and run once to trigger TCC prompts
     uninstall            Remove launchd plist
+    kickstart            Manually trigger the nightly maintenance via launchd
     maintain nightly     Run nightly maintenance tasks
 
 EOF
@@ -23,6 +24,7 @@ EOF
 
 do_setup() {
     echo "==> Installing launchd plist..."
+    mkdir -p "$HOME/.config/motherbox/logs"
     cp "$PLIST_SRC" "$PLIST_DEST"
 
     # Unload first if already loaded (ignore errors)
@@ -31,7 +33,15 @@ do_setup() {
     launchctl bootstrap "gui/$(id -u)" "$PLIST_DEST"
     echo "==> Installed and loaded $PLIST_NAME"
     echo "    Nightly maintenance will run at 2:00 AM"
-    echo "    Logs: see plist for StandardOutPath"
+
+    echo "==> Running once to trigger TCC permission prompts..."
+    do_kickstart
+}
+
+do_kickstart() {
+    echo "==> Kickstarting $PLIST_NAME..."
+    launchctl kickstart "gui/$(id -u)/$PLIST_NAME"
+    echo "==> Kicked off. Check logs for output."
 }
 
 do_uninstall() {
@@ -56,6 +66,9 @@ subcmd="${2:-}"
 case "$cmd" in
 setup)
     do_setup
+    ;;
+kickstart)
+    do_kickstart
     ;;
 uninstall)
     do_uninstall

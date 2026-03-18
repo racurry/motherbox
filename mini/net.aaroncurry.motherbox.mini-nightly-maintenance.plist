@@ -12,6 +12,12 @@
 		<string>nightly</string>
 	</array>
 
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Users/aaron/.asdf/shims:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/aaron/.config/motherbox/bin:/Users/aaron/.local/bin</string>
+	</dict>
+
 	<key>StartCalendarInterval</key>
 	<dict>
 		<key>Hour</key>
@@ -21,8 +27,8 @@
 	</dict>
 
 	<key>StandardOutPath</key>
-	<string>/tmp/motherbox-maintain.log</string>
+	<string>/Users/aaron/.config/motherbox/logs/mini-nightly-maintenance.log</string>
 	<key>StandardErrorPath</key>
-	<string>/tmp/motherbox-maintain.log</string>
+	<string>/Users/aaron/.config/motherbox/logs/mini-nightly-maintenance.log</string>
 </dict>
 </plist>
