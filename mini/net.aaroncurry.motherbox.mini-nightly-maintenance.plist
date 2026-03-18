@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>net.aaroncurry.motherbox.mini-nightly-maintenance</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/aaron/workspace/infra/motherbox/mini/mini.sh</string>
+		<string>maintain</string>
+		<string>nightly</string>
+	</array>
+
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>2</integer>
+		<key>Minute</key>
+		<integer>0</integer>
+	</dict>
+
+	<key>StandardOutPath</key>
+	<string>/tmp/motherbox-maintain.log</string>
+	<key>StandardErrorPath</key>
+	<string>/tmp/motherbox-maintain.log</string>
+</dict>
+</plist>

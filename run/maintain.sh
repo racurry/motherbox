@@ -11,13 +11,16 @@ show_help() {
     retention_days="$(get_config BACKUP_RETENTION_DAYS)"
     retention_days="${retention_days:-60}"
 
-    cat << EOF
+    cat <<EOF
 Usage: $(basename "$0") <command> [args]
 
 Maintenance utilities for Mother Box.
 
 Commands:
     config [get|set]    View or modify configuration
+    all                 Run all maintenance tasks
+    brew                Update Homebrew and upgrade installed packages
+    uv-upgrade          Upgrade all UV tools
     prune               Remove backups older than ${retention_days} days
     help                Show this help message (also: -h, --help)
 
@@ -39,33 +42,33 @@ do_config() {
     shift || true
 
     case "${subcommand}" in
-        ""|list)
-            # Show all config values
-            ensure_config
-            print_heading "Configuration"
-            log_info "File: ${PATH_MOTHERBOX_CONFIG_FILE}"
-            echo ""
-            cat "${PATH_MOTHERBOX_CONFIG_FILE}"
-            ;;
-        get)
-            local key="${1:-}"
-            if [[ -z "${key}" ]]; then
-                fail "Usage: $(basename "$0") config get <key>"
-            fi
-            get_config "${key}"
-            ;;
-        set)
-            local key="${1:-}"
-            local value="${2:-}"
-            if [[ -z "${key}" ]]; then
-                fail "Usage: $(basename "$0") config set <key> <value>"
-            fi
-            set_config "${key}" "${value}"
-            log_success "Set ${key}=${value}"
-            ;;
-        *)
-            fail "Unknown config subcommand '${subcommand}'. Use 'get', 'set', or no argument to list."
-            ;;
+    "" | list)
+        # Show all config values
+        ensure_config
+        print_heading "Configuration"
+        log_info "File: ${PATH_MOTHERBOX_CONFIG_FILE}"
+        echo ""
+        cat "${PATH_MOTHERBOX_CONFIG_FILE}"
+        ;;
+    get)
+        local key="${1:-}"
+        if [[ -z "${key}" ]]; then
+            fail "Usage: $(basename "$0") config get <key>"
+        fi
+        get_config "${key}"
+        ;;
+    set)
+        local key="${1:-}"
+        local value="${2:-}"
+        if [[ -z "${key}" ]]; then
+            fail "Usage: $(basename "$0") config set <key> <value>"
+        fi
+        set_config "${key}" "${value}"
+        log_success "Set ${key}=${value}"
+        ;;
+    *)
+        fail "Unknown config subcommand '${subcommand}'. Use 'get', 'set', or no argument to list."
+        ;;
     esac
 }
 
@@ -100,24 +103,53 @@ do_prune() {
     fi
 }
 
+do_all() {
+    print_heading "Running all maintenance tasks"
+    do_brew
+    do_uv_upgrade
+    do_prune
+}
+
+do_uv_upgrade() {
+    "${SCRIPT_DIR}/../apps/uv/uv.sh" upgrade
+}
+
+do_brew() {
+    print_heading "Updating Homebrew"
+    brew update
+    print_heading "Upgrading packages"
+    if ! brew upgrade; then
+        log_warn "Some packages failed to upgrade"
+    fi
+}
+
 main() {
     local cmd="${1:-}"
     shift || true
 
     case "${cmd}" in
-        config)
-            do_config "$@"
-            ;;
-        prune)
-            do_prune
-            ;;
-        help|--help|-h|"")
-            show_help
-            exit 0
-            ;;
-        *)
-            fail "Unknown command '${cmd}'. Run '$(basename "$0") help' for usage."
-            ;;
+    all)
+        do_all
+        ;;
+    config)
+        do_config "$@"
+        ;;
+    brew)
+        do_brew
+        ;;
+    uv-upgrade)
+        do_uv_upgrade
+        ;;
+    prune)
+        do_prune
+        ;;
+    help | --help | -h | "")
+        show_help
+        exit 0
+        ;;
+    *)
+        fail "Unknown command '${cmd}'. Run '$(basename "$0") help' for usage."
+        ;;
     esac
 }
 

@@ -2,3 +2,4 @@
 tmp/
 .tmp/
 .emdash.json
+.claude/settings.local.json
