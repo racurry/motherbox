@@ -44,12 +44,10 @@ cask "cursor"
 cask "docker"
 cask "docker-desktop"
 cask "elgato-stream-deck"
-cask "flux"
 cask "flux-app"
+cask "ghostty"
 cask "google-drive"
 cask "hazel"
-cask "iterm2"
-cask "kitty"
 
 # Fonts
 cask "font-fira-code-nerd-font"
@@ -76,7 +74,6 @@ cask "spotify"
 cask "superhuman"
 cask "textbuddy"
 cask "visual-studio-code"
-cask "wezterm"
 
 # Mac App Store apps
 mas "Amphetamine", id: 937984704
