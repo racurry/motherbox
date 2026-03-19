@@ -16,12 +16,13 @@ Automated macOS setup script that installs and configures development tools,
 applications, and system settings.
 
 OPTIONS:
-  --unattended     Skip operations requiring human interaction
-  --reset-profile     Ignore saved mode and prompt for selection
-  --profile MODE      Set mode directly (galileo or personal)
-  --debug          Enable debug output
-  --logging        Enable logging to ~/.config/motherbox/logs/setup.log
-  -h, --help       Show this help message and exit
+  --profile PROFILE   Set profile (galileo or personal)
+  --machine MACHINE   Set machine (e.g., mini) for machine-specific setup
+  --reset-profile     Ignore saved profile and prompt for selection
+  --unattended        Skip operations requiring human interaction
+  --debug             Enable debug output
+  --logging           Enable logging to ~/.config/motherbox/logs/setup.log
+  -h, --help          Show this help message and exit
 
 CONFIGURATION:
   Configuration is persisted to ~/.config/motherbox/config
@@ -30,8 +31,11 @@ EXAMPLES:
   # First run
   ./run/setup.sh
 
-  # Override saved mode, persist new mode
+  # Set profile, persist it
   ./run/setup.sh --profile galileo
+
+  # Set up the Mac Mini specifically
+  ./run/setup.sh --profile personal --machine mini
 
   # Non-interactive setup (skip operations that need you, eg sudo)
   ./run/setup.sh --unattended
@@ -71,8 +75,11 @@ if [[ "${LOG_FILE_ENABLED}" == "true" ]]; then
     echo "=== Setup started at $(date) ===" >"${LOG_FILE}"
 fi
 
-# Determine setup mode (precedence: flag > config > prompt)
+# Determine profile (precedence: flag > config > prompt)
 determine_profile ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"} || exit 1
+
+# Determine machine (optional, precedence: flag > config)
+determine_machine ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"}
 
 # Preflight checks
 preflight_checks() {
@@ -153,3 +160,14 @@ run_app_setup claudecode
 run_app_setup gemini-cli
 run_app_setup codex-cli
 run_app_setup karabiner
+
+# Run machine-specific setup if a machine is specified
+if [[ -n "${MACHINE:-}" ]]; then
+    machine_script="${REPO_ROOT}/machines/${MACHINE}/${MACHINE}.sh"
+    if [[ -x "${machine_script}" ]]; then
+        print_heading "Machine Setup: ${MACHINE}"
+        "${machine_script}" setup
+    else
+        log_warn "No machine script found at ${machine_script}"
+    fi
+fi

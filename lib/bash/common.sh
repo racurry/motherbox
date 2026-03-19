@@ -109,6 +109,7 @@ print_heading() {
 # Default values:
 #   BACKUP_RETENTION_DAYS=60
 #   PROFILE=           (empty, set by run/setup.sh)
+#   MACHINE=           (empty, set by run/setup.sh)
 #
 # Functions:
 #   ensure_config              - Create config file with defaults if missing
@@ -121,6 +122,7 @@ _config_defaults() {
     cat <<'EOF'
 BACKUP_RETENTION_DAYS=60
 PROFILE=
+MACHINE=
 EOF
 }
 
@@ -533,6 +535,39 @@ determine_profile() {
     return 0
 }
 
+# determine_machine resolves machine name from flags or config.
+# Sets MACHINE global variable and persists to config.
+# Unlike profile, machine is optional — not all setups target a specific machine.
+#
+# Usage: determine_machine "$@"
+#
+# Recognized flags: --machine MACHINE
+# Precedence: --machine flag > config file
+determine_machine() {
+    local machine_override=""
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+        --machine)
+            machine_override="${2:-}"
+            shift 2
+            ;;
+        *) shift ;;
+        esac
+    done
+
+    if [[ -n "${machine_override}" ]]; then
+        MACHINE="${machine_override}"
+    else
+        MACHINE="$(get_config MACHINE)"
+    fi
+
+    if [[ -n "${MACHINE}" ]]; then
+        set_config MACHINE "${MACHINE}"
+        log_info "Machine: ${MACHINE}"
+    fi
+}
+
 ################################################################################
 #                         ARGUMENT PARSING HELPERS
 ################################################################################
@@ -544,8 +579,9 @@ determine_profile() {
 #                           Returns 1 if not a global flag
 #
 # Global flags recognized by run/setup.sh and passed to all scripts:
-#   --profile MODE      Setup mode (galileo/personal)
-#   --reset-profile     Reset saved mode
+#   --profile MODE      Setup profile (galileo/personal)
+#   --machine MACHINE   Target machine (e.g., mini)
+#   --reset-profile     Reset saved profile
 #   --unattended     Skip interactive operations
 #   --debug          Enable debug output
 #   --logging        Enable file logging
@@ -561,7 +597,7 @@ determine_profile() {
 #   fi
 check_global_flag() {
     case $1 in
-    --profile)
+    --profile | --machine)
         # Flag takes a value, consume both
         if [[ $# -ge 2 ]]; then
             echo 2

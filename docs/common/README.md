@@ -47,6 +47,7 @@ set_config BACKUP_RETENTION_DAYS 90
 | ----------------------- | --------- | -------------------------------------- |
 | `BACKUP_RETENTION_DAYS` | `60`      | Days to keep backups before pruning    |
 | `PROFILE`               | *(empty)* | Set by `run/setup.sh` during execution |
+| `MACHINE`               | *(empty)* | Target machine (e.g., mini)            |
 
 ## CLI Access
 
