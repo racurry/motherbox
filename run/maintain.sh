@@ -21,6 +21,7 @@ Commands:
     all                 Run all maintenance tasks
     brew                Update Homebrew and upgrade installed packages
     uv-upgrade          Upgrade all UV tools
+    tcc-refresh         Re-sign all TCC-managed binaries
     prune               Remove backups older than ${retention_days} days
     help                Show this help message (also: -h, --help)
 
@@ -107,11 +108,16 @@ do_all() {
     print_heading "Running all maintenance tasks"
     do_brew
     do_uv_upgrade
+    do_tcc_refresh
     do_prune
 }
 
 do_uv_upgrade() {
     "${SCRIPT_DIR}/../apps/uv/uv.sh" upgrade
+}
+
+do_tcc_refresh() {
+    "${SCRIPT_DIR}/tcc-sign.sh" refresh
 }
 
 do_brew() {
@@ -139,6 +145,9 @@ main() {
         ;;
     uv-upgrade)
         do_uv_upgrade
+        ;;
+    tcc-refresh)
+        do_tcc_refresh
         ;;
     prune)
         do_prune

@@ -5,15 +5,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/bash/common.sh
 source "${SCRIPT_DIR}/../../lib/bash/common.sh"
 
+TCC_SIGN="${SCRIPT_DIR}/../../run/tcc-sign.sh"
+
 show_help() {
     cat <<EOF
 Usage: $(basename "$0") <command> [OPTIONS]
 
-Manage UV global tools from a declarative uv-tools manifest.
+Manage uv itself (standalone install) and global tools from a declarative
+uv-tools manifest.
 
 COMMANDS:
-    setup       Install all tools from uv-tools manifest(s)
-    upgrade     Upgrade all installed UV tools
+    setup       Install uv and all tools from uv-tools manifest(s)
+    upgrade     Upgrade uv itself and all installed UV tools
     list        Show tools from manifest vs installed
     help        Show this help message
 
@@ -120,9 +123,43 @@ install_from_manifest() {
     fi
 }
 
-do_setup() {
-    print_heading "Setup UV tools"
+install_uv() {
+    # In an ideal world, I would just install uv w/ brew. I am using locally running
+    # mcp servers with Claude Desktop, (eg things-mcp).  Brew + uv + claude desktop cache 
+    # results in ephemeral, unsigned binaries that macos just refuses to trust long term.
+    # I end up having to approve uv's TCC permission every time Claude Desktop opens.
+    #
+    # To avoid doing this we install a stable uv binary directly, sign it ourselves, and then
+    # I have to manually add it to Full Disk Access in macos system settings.
+    # Hopefully someday this gets less dumb.
 
+    if command -v uv >/dev/null 2>&1; then
+        local uv_path
+        uv_path="$(command -v uv)"
+        log_info "uv already installed at ${uv_path}"
+        return 0
+    fi
+
+    log_info "Installing uv via standalone installer..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    log_success "uv installed to ~/.local/bin/uv"
+
+    log_info "Signing uv and uvx for TCC/FDA persistence..."
+    "$TCC_SIGN" ~/.local/bin/uv
+    "$TCC_SIGN" ~/.local/bin/uvx
+
+    # Always show FDA instructions; only open System Settings interactively
+    local fda_flags=()
+    if [[ "${UNATTENDED:-false}" != "true" ]]; then
+        fda_flags+=(--open)
+    fi
+    "$TCC_SIGN" ensure-fda "${fda_flags[@]}" ~/.local/bin/uvx
+}
+
+do_setup() {
+    print_heading "Setup UV"
+
+    install_uv
     require_command uv
 
     # Install from main manifest
@@ -146,9 +183,15 @@ do_setup() {
 }
 
 do_upgrade() {
-    print_heading "Upgrade UV tools"
+    print_heading "Upgrade UV"
 
     require_command uv
+
+    log_info "Upgrading uv itself..."
+    uv self update
+    "$TCC_SIGN" ~/.local/bin/uv
+    "$TCC_SIGN" ~/.local/bin/uvx
+    log_success "uv updated and re-signed"
 
     log_info "Upgrading all UV tools..."
     if uv tool upgrade --all; then

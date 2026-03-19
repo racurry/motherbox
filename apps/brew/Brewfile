@@ -12,13 +12,16 @@ brew "ffmpeg"
 brew "fzf"
 brew "gh"
 brew "gifsicle"
-brew "git"
 brew "gnupg"
+brew "goreleaser"
 brew "hub"
 brew "imagemagick"
 brew "markdownlint-cli2"
 brew "mas"  # Required for Mac App Store apps
 brew "mkcert"
+brew "openai-whisper"
+brew "pandoc"
+brew "pnpm"
 brew "prettier"
 brew "pure"
 brew "qpdf"
@@ -27,7 +30,6 @@ brew "shellcheck"
 brew "shfmt"
 brew "thefuck"
 brew "tmux"
-brew "uv"
 brew "wget"
 brew "yamllint"
 brew "yarn"
@@ -38,15 +40,23 @@ brew "zlib"
 
 # Homebrew casks
 cask "1password-cli"
+cask "antigravity"
 cask "arc"
 cask "caffeine"
+cask "chatgpt"
+cask "chatgpt-atlas"
+cask "claude"
+cask "codex"
 cask "cursor"
 cask "docker"
 cask "docker-desktop"
 cask "elgato-stream-deck"
+cask "emdash"
 cask "flux-app"
 cask "ghostty"
+cask "google-chrome"
 cask "google-drive"
+cask "granola"
 cask "hazel"
 
 # Fonts
@@ -54,31 +64,43 @@ cask "font-fira-code-nerd-font"
 cask "font-fira-mono-nerd-font"
 cask "font-hack-nerd-font"
 cask "font-monoid"
-# cask "jordanbaird-ice"  # Disabled: using beta for Tahoe crash fix (see apps/ice/README.md)
+
+# Apps
 cask "karabiner-elements"
 cask "keycastr"
 cask "keyboard-maestro"
 cask "libreoffice"
 cask "lm-studio"
-cask "ollama-app"
-cask "mailmate"
 cask "mos"
 cask "mutedeck"
+cask "notunes"
 cask "obsidian"
+cask "ollama-app"
 cask "raycast"
 cask "renamer"
 cask "sf-symbols"
 cask "shortcutdetective"
 cask "shottr"
+cask "slack"
 cask "spotify"
 cask "superhuman"
 cask "textbuddy"
 cask "visual-studio-code"
+cask "zoom"
 
 # Mac App Store apps
+mas "Actions For Obsidian", id: 1659667937
 mas "Amphetamine", id: 937984704
+mas "Barbee", id: 1548711022
 mas "CARROTweather", id: 993487541
+mas "Contacts Sync", id: 451691288
+mas "Dropover", id: 1355679052
+mas "Ground News", id: 1324203419
+mas "Highlights", id: 1498912833
+mas "Keynote", id: 409183694
 mas "Meeter", id: 1510445899
+mas "Numbers", id: 409203825
+mas "Pages", id: 409201541
 mas "Rapidmg", id: 6451349778
 mas "The Unarchiver", id: 425424353
 mas "Things", id: 904280696

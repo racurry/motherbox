@@ -21,8 +21,12 @@ bullets asking the clarifying questions.
 - [ ] Can I create a video game controller setting and store the config here in this repo?
 - [ ] Add app: dropover
 
+## Apps to evaluate
 
-## Apps to test:
+- [ ] shortcutdetective - figure out if this is useful for anything (keyboard shortcut conflict detection)
+
+## Apps to test
+
 - [ ] https://github.com/ajeetdsouza/zoxide
 - [ ] https://github.com/Aloxaf/fzf-tab
 - [ ] https://ohmyposh.dev/

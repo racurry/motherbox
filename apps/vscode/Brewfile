@@ -11,15 +11,20 @@ vscode "openai.chatgpt"
 
 # Languages & frameworks
 vscode "batisteo.vscode-django"
+vscode "golang.go"
 vscode "idleberg.applescript"
+vscode "jakebecker.elixir-ls"
 vscode "jetmartin.bats"
+vscode "leathong.openscad-language-support"
 vscode "ms-python.python"
 vscode "redhat.vscode-yaml"
+vscode "swiftlang.swift-vscode"
 vscode "tamasfe.even-better-toml"
 
 # Linting & formatting
 vscode "bittorala.mdformat"
 vscode "charliermarsh.ruff"
+vscode "davidanson.vscode-markdownlint"
 vscode "dbaeumer.vscode-eslint"
 vscode "editorconfig.editorconfig"
 vscode "esbenp.prettier-vscode"
@@ -39,6 +44,10 @@ vscode "catppuccin.catppuccin-vsc-icons"
 
 # Utilities
 vscode "formulahendry.auto-rename-tag"
+vscode "george-alisson.html-preview-vscode"
 vscode "mechatroner.rainbow-csv"
+vscode "mikestead.dotenv"
+vscode "nrwl.angular-console"
 vscode "tomoki1207.pdf"
 vscode "usernamehw.errorlens"
+vscode "wmaurer.change-case"
