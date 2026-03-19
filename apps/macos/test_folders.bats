@@ -18,7 +18,7 @@ teardown() {
 }
 
 @test "create_documents_tree creates expected folders" {
-  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --mode personal --unattended
+  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --profile personal --unattended
   [ "$status" -eq 0 ]
   for folder in "@auto" 000_Inbox 100_Life 150_Projects 200_People 400_Topics 700_Libraries 800_Posterity 900_Sharing 999_Meta; do
     [ -d "${HOME}/Documents/${folder}" ]
@@ -26,15 +26,15 @@ teardown() {
 }
 
 @test "create_documents_tree creates workspace folders" {
-  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --mode personal --unattended
+  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --profile personal --unattended
   [ "$status" -eq 0 ]
   [ -d "${HOME}/workspace/infra" ]
   [ -d "${HOME}/workspace/sandbox" ]
 }
 
 @test "create_documents_tree is idempotent" {
-  env HOME="${HOME}" "${SCRIPT_PATH}" setup --mode personal --unattended
-  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --mode personal --unattended
+  env HOME="${HOME}" "${SCRIPT_PATH}" setup --profile personal --unattended
+  run env HOME="${HOME}" "${SCRIPT_PATH}" setup --profile personal --unattended
   [ "$status" -eq 0 ]
 }
 

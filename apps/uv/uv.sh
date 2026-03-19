@@ -21,7 +21,7 @@ COMMANDS:
     help        Show this help message
 
 OPTIONS:
-    --mode MODE   Set to 'galileo' or 'personal' to install mode-specific tools
+    --profile MODE   Set to 'galileo' or 'personal' to install mode-specific tools
                   from apps/uv/galileo.uv-tools or apps/uv/personal.uv-tools
                   in addition to the main apps/uv/uv-tools
 
@@ -125,7 +125,7 @@ install_from_manifest() {
 
 install_uv() {
     # In an ideal world, I would just install uv w/ brew. I am using locally running
-    # mcp servers with Claude Desktop, (eg things-mcp).  Brew + uv + claude desktop cache 
+    # mcp servers with Claude Desktop, (eg things-mcp).  Brew + uv + claude desktop cache
     # results in ephemeral, unsigned binaries that macos just refuses to trust long term.
     # I end up having to approve uv's TCC permission every time Claude Desktop opens.
     #
@@ -171,10 +171,10 @@ do_setup() {
     fi
 
     # Install mode-specific tools if mode is set
-    if [[ -n "${SETUP_MODE:-}" ]]; then
-        local mode_manifest="${SCRIPT_DIR}/${SETUP_MODE}.uv-tools"
+    if [[ -n "${PROFILE:-}" ]]; then
+        local mode_manifest="${SCRIPT_DIR}/${PROFILE}.uv-tools"
         if [[ -f "${mode_manifest}" ]]; then
-            log_info "Installing ${SETUP_MODE}-specific tools"
+            log_info "Installing ${PROFILE}-specific tools"
             install_from_manifest "${mode_manifest}"
         fi
     fi
@@ -222,12 +222,12 @@ do_list() {
         echo "(no uv-tools manifest found)"
     fi
 
-    # Show mode-specific if SETUP_MODE is set
-    if [[ -n "${SETUP_MODE:-}" ]]; then
-        local mode_manifest="${SCRIPT_DIR}/${SETUP_MODE}.uv-tools"
+    # Show mode-specific if PROFILE is set
+    if [[ -n "${PROFILE:-}" ]]; then
+        local mode_manifest="${SCRIPT_DIR}/${PROFILE}.uv-tools"
         if [[ -f "${mode_manifest}" ]]; then
             echo ""
-            echo "=== Tools in ${SETUP_MODE}.uv-tools ==="
+            echo "=== Tools in ${PROFILE}.uv-tools ==="
             parse_manifest "${mode_manifest}" | while read -r spec; do
                 local pkg="${spec%% *}"
                 echo "  ${pkg}"
@@ -242,7 +242,7 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-        --mode)
+        --profile)
             shift 2
             ;;
         --unattended)
@@ -270,14 +270,14 @@ main() {
 
     case "${command}" in
     setup)
-        determine_setup_mode "${args[@]}" || true
+        determine_profile "${args[@]}" || true
         do_setup
         ;;
     upgrade)
         do_upgrade
         ;;
     list)
-        determine_setup_mode "${args[@]}" || true
+        determine_profile "${args[@]}" || true
         do_list
         ;;
     "")

@@ -23,14 +23,14 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --mode MODE     Set mode to 'galileo' or 'personal'
+    --profile MODE     Set mode to 'galileo' or 'personal'
     --unattended    Skip prompts, fail if mode unknown
 EOF
 }
 
-# Set 1Password item/vault/account based on SETUP_MODE
+# Set 1Password item/vault/account based on PROFILE
 _configure_op_target() {
-    case "${SETUP_MODE}" in
+    case "${PROFILE}" in
     personal)
         OP_ITEM=".local.zshrc"
         OP_VAULT="Private"
@@ -42,7 +42,7 @@ _configure_op_target() {
         OP_ACCOUNT="galileo.1password.com"
         ;;
     *)
-        fail "Unknown setup mode: ${SETUP_MODE}"
+        fail "Unknown setup mode: ${PROFILE}"
         ;;
     esac
 }
@@ -51,7 +51,7 @@ do_pull() {
     require_command op
     _configure_op_target
 
-    print_heading "Pulling secrets from 1Password (${SETUP_MODE})"
+    print_heading "Pulling secrets from 1Password (${PROFILE})"
 
     log_info "Fetching '${OP_ITEM}' from vault '${OP_VAULT}'"
     local content
@@ -71,7 +71,7 @@ do_push() {
     _configure_op_target
     require_file "${LOCAL_ZSHRC}"
 
-    print_heading "Pushing secrets to 1Password (${SETUP_MODE})"
+    print_heading "Pushing secrets to 1Password (${PROFILE})"
 
     log_info "Updating '${OP_ITEM}' in vault '${OP_VAULT}'"
     local file_content
@@ -87,7 +87,7 @@ do_diff() {
     _configure_op_target
     require_file "${LOCAL_ZSHRC}"
 
-    print_heading "Diffing local vs 1Password (${SETUP_MODE})"
+    print_heading "Diffing local vs 1Password (${PROFILE})"
 
     mkdir -p "${TMP_DIR}"
     local tmp_file="${TMP_DIR}/local.zshrc.1password"
@@ -133,7 +133,7 @@ main() {
 
     case "${command}" in
     pull | push | diff)
-        determine_setup_mode "${args[@]}" || exit 1
+        determine_profile "${args[@]}" || exit 1
         "do_${command}"
         ;;
     "")

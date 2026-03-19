@@ -17,8 +17,8 @@ applications, and system settings.
 
 OPTIONS:
   --unattended     Skip operations requiring human interaction
-  --reset-mode     Ignore saved mode and prompt for selection
-  --mode MODE      Set mode directly (galileo or personal)
+  --reset-profile     Ignore saved mode and prompt for selection
+  --profile MODE      Set mode directly (galileo or personal)
   --debug          Enable debug output
   --logging        Enable logging to ~/.config/motherbox/logs/setup.log
   -h, --help       Show this help message and exit
@@ -31,7 +31,7 @@ EXAMPLES:
   ./run/setup.sh
 
   # Override saved mode, persist new mode
-  ./run/setup.sh --mode galileo
+  ./run/setup.sh --profile galileo
 
   # Non-interactive setup (skip operations that need you, eg sudo)
   ./run/setup.sh --unattended
@@ -72,7 +72,7 @@ if [[ "${LOG_FILE_ENABLED}" == "true" ]]; then
 fi
 
 # Determine setup mode (precedence: flag > config > prompt)
-determine_setup_mode ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"} || exit 1
+determine_profile ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"} || exit 1
 
 # Preflight checks
 preflight_checks() {
@@ -105,7 +105,7 @@ preflight_checks
 "${SCRIPT_DIR}/sync.sh"
 
 # Run an app setup script, handling exit codes
-# Passes ORIGINAL_ARGS to each script so they receive --mode, --unattended, etc.
+# Passes ORIGINAL_ARGS to each script so they receive --profile, --unattended, etc.
 run_app_setup() {
     local app="$1"
     local script="${REPO_ROOT}/apps/${app}/${app}.sh"

@@ -9,7 +9,7 @@ Password manager with built-in SSH agent. [Official docs](https://developer.1pas
 ## Setup
 
 ```bash
-./apps/1password/1password.sh setup --mode personal  # or --mode galileo
+./apps/1password/1password.sh setup --profile personal  # or --profile galileo
 ```
 
 This symlinks the appropriate SSH agent config (`agent.personal.toml` or `agent.galileo.toml`) to `~/.config/1password/ssh/agent.toml`.
@@ -19,8 +19,11 @@ This symlinks the appropriate SSH agent config (`agent.personal.toml` or `agent.
 Complete these steps during initial installation (before cloning this repo):
 
 1. **Download and install** - [1password.com/downloads/mac](https://1password.com/downloads/mac)
+
 2. **Sign in** - Add your 1Password account(s)
+
 3. **Enable SSH agent** - Settings > Developer > SSH Agent
+
 4. **Configure SSH client** - Add to `~/.ssh/config`:
 
    ```text

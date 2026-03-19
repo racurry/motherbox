@@ -35,7 +35,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --mode MODE     Set mode to 'galileo' or 'personal'
+    --profile MODE     Set mode to 'galileo' or 'personal'
     --unattended    Skip prompts, fail if mode unknown
 EOF
 }
@@ -43,8 +43,8 @@ EOF
 do_setup() {
     print_heading "Configuring 1Password SSH agent"
 
-    local agent_source="${APPS_DIR}/agent.${SETUP_MODE}.toml"
-    local ssh_config_source="${APPS_DIR}/ssh_config.${SETUP_MODE}"
+    local agent_source="${APPS_DIR}/agent.${PROFILE}.toml"
+    local ssh_config_source="${APPS_DIR}/ssh_config.${PROFILE}"
 
     require_file "${agent_source}"
     require_file "${ssh_config_source}"
@@ -71,7 +71,7 @@ export_public_keys() {
         return 1
     fi
 
-    if [[ "${SETUP_MODE}" == "galileo" ]]; then
+    if [[ "${PROFILE}" == "galileo" ]]; then
         export_key "Galileo github ssh key" "Employee" "galileo.1password.com" "galileo_github.pub"
         export_key "Aaron's github ssh key" "Private" "my.1password.com" "personal_github.pub"
     else
@@ -148,7 +148,7 @@ main() {
 
     case "${command}" in
     setup)
-        determine_setup_mode "${args[@]}" || exit 1
+        determine_profile "${args[@]}" || exit 1
         do_setup
         ;;
     show)

@@ -87,7 +87,7 @@ Use path variables from `common.sh`:
 - `$PATH_MOTHERBOX_CONFIG_FILE` - Config file path
 - `$PATH_MOTHERBOX_BACKUPS` - Backup directory
 
-**Global flag handling:** Scripts receive flags like `--mode`, `--unattended`, `--debug`, and `--logging` from `run/setup.sh`. Always use `check_global_flag()` in the default case of argument parsing to consume these silently. This prevents warnings about known pass-through flags while still alerting on truly unknown arguments.
+**Global flag handling:** Scripts receive flags like `--profile`, `--unattended`, `--debug`, and `--logging` from `run/setup.sh`. Always use `check_global_flag()` in the default case of argument parsing to consume these silently. This prevents warnings about known pass-through flags while still alerting on truly unknown arguments.
 
 ### 6. Handle Configuration Settings
 

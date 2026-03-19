@@ -8,7 +8,7 @@ Hey, agents! This file contains important guidelines and rules for working with 
 
 **Mother Box config directory:** `~/.config/motherbox/`
 
-- `config` - Runtime configuration (e.g., `SETUP_MODE=personal`)
+- `config` - Runtime configuration (e.g., `PROFILE=personal`)
 - `backups/{appname}/` - Backups created by setup scripts
 
 ## TOP RULES

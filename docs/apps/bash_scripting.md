@@ -108,31 +108,31 @@ main "$@"
 | Accept `help`, `-h`, `--help`         | All three should work                      |
 | Use `fail` for errors                 | `fail "Missing config file"`               |
 | Use `$REPO_ROOT` for paths            | `${REPO_ROOT}/apps/myapp/config`           |
-| Use `--flag value` not `--flag=value` | `--mode work`                              |
+| Use `--flag value` not `--flag=value` | `--profile personal`                       |
 | Use `check_global_flag()` in default  | Silently consume global flags              |
 | Warn on unknown args, don't fail      | `log_warn "Ignoring unknown argument: $1"` |
 
 ## Available Functions (from `common.sh`)
 
-| Function                            | Purpose                             |
-| ----------------------------------- | ----------------------------------- |
-| `print_heading "text"`              | Section headers                     |
-| `log_info "text"`                   | Info messages                       |
-| `log_warn "text"`                   | Warnings                            |
-| `log_success "text"`                | Success messages                    |
-| `fail "text"`                       | Error and exit                      |
-| `require_command cmd`               | Guard: command exists               |
-| `require_file path`                 | Guard: file exists                  |
-| `require_directory path`            | Guard: directory exists             |
-| `link_file src dest app_name`       | Symlink config (backs up existing)  |
-| `copy_file src dest app_name`       | Copy config (backs up existing)     |
-| `check_global_flag "$@"`            | Check if arg is global flag, return shift count |
+| Function                      | Purpose                                         |
+| ----------------------------- | ----------------------------------------------- |
+| `print_heading "text"`        | Section headers                                 |
+| `log_info "text"`             | Info messages                                   |
+| `log_warn "text"`             | Warnings                                        |
+| `log_success "text"`          | Success messages                                |
+| `fail "text"`                 | Error and exit                                  |
+| `require_command cmd`         | Guard: command exists                           |
+| `require_file path`           | Guard: file exists                              |
+| `require_directory path`      | Guard: directory exists                         |
+| `link_file src dest app_name` | Symlink config (backs up existing)              |
+| `copy_file src dest app_name` | Copy config (backs up existing)                 |
+| `check_global_flag "$@"`      | Check if arg is global flag, return shift count |
 
 See [copying_configs.md](copying_configs.md) for details on `link_file` vs `copy_file`.
 
 ## Global Flag Handling
 
-Scripts are called by `run/setup.sh` with global flags like `--mode`, `--unattended`, `--debug`, and `--logging`. Use `check_global_flag()` in the default case to consume these silently:
+Scripts are called by `run/setup.sh` with global flags like `--profile`, `--unattended`, `--debug`, and `--logging`. Use `check_global_flag()` in the default case to consume these silently:
 
 ```bash
 *)
@@ -146,16 +146,16 @@ Scripts are called by `run/setup.sh` with global flags like `--mode`, `--unatten
     ;;
 ```
 
-This prevents noise from known pass-through flags while still warning about truly unknown arguments. The function handles both boolean flags (`--unattended`) and value flags (`--mode galileo`) correctly.
+This prevents noise from known pass-through flags while still warning about truly unknown arguments. The function handles both boolean flags (`--unattended`) and value flags (`--profile galileo`) correctly.
 
 ## Path Variables (from `common.sh`)
 
-| Variable                     | Value                         |
-| ---------------------------- | ----------------------------- |
-| `$REPO_ROOT`                 | Repository root path          |
-| `$PATH_MOTHERBOX_CONFIG`     | `~/.config/motherbox`         |
-| `$PATH_MOTHERBOX_CONFIG_FILE`| `~/.config/motherbox/config`  |
-| `$PATH_MOTHERBOX_BACKUPS`    | `~/.config/motherbox/backups` |
+| Variable                      | Value                         |
+| ----------------------------- | ----------------------------- |
+| `$REPO_ROOT`                  | Repository root path          |
+| `$PATH_MOTHERBOX_CONFIG`      | `~/.config/motherbox`         |
+| `$PATH_MOTHERBOX_CONFIG_FILE` | `~/.config/motherbox/config`  |
+| `$PATH_MOTHERBOX_BACKUPS`     | `~/.config/motherbox/backups` |
 
 ## Related Documentation
 

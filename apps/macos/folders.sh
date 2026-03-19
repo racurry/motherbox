@@ -20,7 +20,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --mode MODE     Set mode to 'galileo' or 'personal'
+    --profile MODE     Set mode to 'galileo' or 'personal'
     --unattended    Skip prompts, fail if mode unknown
 
 Folders created in ${PATH_WORKSPACE}:
@@ -71,7 +71,7 @@ do_setup() {
     done
 
     # Galileo-specific workspace folders
-    if [[ "${SETUP_MODE}" == "galileo" ]]; then
+    if [[ "${PROFILE}" == "galileo" ]]; then
         log_info "Creating galileo workspace folders"
         local galileo_folders=(
             "galileo"
@@ -109,7 +109,7 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-        --mode) shift 2 ;;
+        --profile) shift 2 ;;
         --unattended) shift ;;
         help | --help | -h)
             show_help
@@ -133,7 +133,7 @@ main() {
 
     case "${command}" in
     setup)
-        determine_setup_mode "${args[@]}" || exit 1
+        determine_profile "${args[@]}" || exit 1
         do_setup
         ;;
     "")

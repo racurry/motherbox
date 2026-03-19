@@ -20,7 +20,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --mode MODE   Set to 'galileo' or 'personal' to install mode-specific packages
+    --profile MODE   Set to 'galileo' or 'personal' to install mode-specific packages
                   from apps/brew/galileo.Brewfile or apps/brew/personal.Brewfile
                   in addition to the main apps/brew/Brewfile
     --unattended  Skip prompts and sudo-requiring Brewfiles (mas apps)
@@ -77,12 +77,12 @@ install_bundle() {
     install_brewfile "${main_manifest}"
 
     # Install mode-specific packages
-    mode_manifest="${REPO_ROOT}/apps/brew/${SETUP_MODE}.Brewfile"
+    mode_manifest="${REPO_ROOT}/apps/brew/${PROFILE}.Brewfile"
     if [[ -f "${mode_manifest}" ]]; then
-        log_info "Installing ${SETUP_MODE}-specific packages from ${mode_manifest}"
+        log_info "Installing ${PROFILE}-specific packages from ${mode_manifest}"
         install_brewfile "${mode_manifest}"
     else
-        log_warn "No ${SETUP_MODE}-specific Brewfile found at ${mode_manifest}"
+        log_warn "No ${PROFILE}-specific Brewfile found at ${mode_manifest}"
     fi
 
     # Handle sudo-requiring Brewfiles (Mac App Store apps)
@@ -91,7 +91,7 @@ install_bundle() {
 
 install_sudo_brewfiles() {
     local sudo_manifest="${REPO_ROOT}/apps/brew/sudo.Brewfile"
-    local sudo_mode_manifest="${REPO_ROOT}/apps/brew/sudo.${SETUP_MODE}.Brewfile"
+    local sudo_mode_manifest="${REPO_ROOT}/apps/brew/sudo.${PROFILE}.Brewfile"
     local has_sudo_files=false
 
     [[ -f "${sudo_manifest}" ]] && has_sudo_files=true
@@ -114,7 +114,7 @@ install_sudo_brewfiles() {
     fi
 
     if [[ -f "${sudo_mode_manifest}" ]]; then
-        log_info "Installing ${SETUP_MODE}-specific Mac App Store apps (may require password)"
+        log_info "Installing ${PROFILE}-specific Mac App Store apps (may require password)"
         install_brewfile "${sudo_mode_manifest}"
     fi
 }
@@ -195,7 +195,7 @@ main() {
 
     case "${command}" in
     setup)
-        determine_setup_mode "${args[@]}" || exit 1
+        determine_profile "${args[@]}" || exit 1
         install_homebrew
         install_bundle
         ;;
@@ -203,7 +203,7 @@ main() {
         install_homebrew
         ;;
     bundle)
-        determine_setup_mode "${args[@]}" || exit 1
+        determine_profile "${args[@]}" || exit 1
         install_bundle
         ;;
     audit)
