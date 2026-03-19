@@ -135,7 +135,7 @@ tldr () {
 # ============================================================================
 
 # PATH modifications
-export PATH="$PATH:$HOME/.config/motherbox/bin:$HOME/.local/bin"  # Personal scripts and tools
+export PATH="$PATH:$HOME/.config/motherbox/scripts:$HOME/.local/bin"  # Personal scripts and tools
 export PATH="$BREW_PREFIX/opt/bison/bin:$PATH"  # Modern bison for parser generation
 export PATH="$PATH:$HOME/.lmstudio/bin" # Local Llama Studio binaries
 export PATH="$PATH:$HOME/.antigravity/antigravity/bin" # Google's Antigravity - agry

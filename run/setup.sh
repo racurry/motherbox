@@ -101,8 +101,8 @@ preflight_checks() {
 # Run preflight checks before anything else
 preflight_checks
 
-# Create ~/.config/motherbox/bin symlink
-"${SCRIPT_DIR}/sync-bin.sh"
+# Create ~/.config/motherbox/scripts symlink
+"${SCRIPT_DIR}/sync.sh"
 
 # Run an app setup script, handling exit codes
 # Passes ORIGINAL_ARGS to each script so they receive --mode, --unattended, etc.

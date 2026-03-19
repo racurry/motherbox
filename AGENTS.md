@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Hey, agents!  This file contains important guidelines and rules for working with the code in this repository.  Please read it carefully and follow the instructions below.
+Hey, agents! This file contains important guidelines and rules for working with the code in this repository. Please read it carefully and follow the instructions below.
 
 ## Project Overview
 
-**Mother Box** is a collection of scripts and tools to enable the user to use consistent and standardized tooling across multiple macOS systems.  It includes a single automated setup script, as well as helper scripts, settings, and utilities.
+**Mother Box** is a collection of scripts and tools to enable the user to use consistent and standardized tooling across multiple macOS systems. It includes a single automated setup script, as well as helper scripts, settings, and utilities.
 
 **Mother Box config directory:** `~/.config/motherbox/`
 
@@ -103,13 +103,11 @@ When documenting apps that need API tokens or secrets:
   - Tests: `apps/{appname}/test_{appname}.bats`
   - Configs: co-located with the app
   - README: `apps/{appname}/README.md` (required, should include: description, contents list, setup instructions)
-- **bin/**: Standalone CLI utilities (on PATH)
+- **scripts/**: Standalone CLI utilities (on PATH)
+- **machines/**: Machine-specific automation (e.g., `machines/mini/` for Mac Mini launchd jobs)
 - **lib/**: Common libraries and test helpers
   - **lib/bash/**: Bash utilities (common.sh, paths.sh, common_test_helper.bash)
   - **lib/test_common.bats**: Tests for lib/bash/common.sh
-- **scripts/**: App-agnostic utility scripts
-  - Scripts that don't belong to a specific app
-  - Example: mvp_system_reqs_check.sh
 - **docs/**: Documentation and manual checklists
 - **run/**: Orchestration scripts
   - **run/setup.sh**: Root orchestrator that calls app scripts in order

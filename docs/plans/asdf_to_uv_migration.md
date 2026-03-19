@@ -2,7 +2,7 @@
 
 Replace asdf with uv for Python version and package management while keeping asdf for Ruby and Node.js.
 
----
+______________________________________________________________________
 
 ## Recommendation: Wait
 
@@ -12,16 +12,17 @@ Replace asdf with uv for Python version and package management while keeping asd
 
 ### Why wait?
 
-| Factor | Assessment |
-|--------|------------|
-| Speed of package installs | Already available via `uv pip` - no migration needed |
-| Speed of Python installs | Marginal; you install Python ~2-3x/year |
-| Unified tooling | Still need asdf for Ruby/Node.js anyway |
-| Risk | Real cost (time, breakage) for mostly philosophical benefit |
+| Factor                    | Assessment                                                  |
+| ------------------------- | ----------------------------------------------------------- |
+| Speed of package installs | Already available via `uv pip` - no migration needed        |
+| Speed of Python installs  | Marginal; you install Python ~2-3x/year                     |
+| Unified tooling           | Still need asdf for Ruby/Node.js anyway                     |
+| Risk                      | Real cost (time, breakage) for mostly philosophical benefit |
 
 ### Do this instead
 
 Add to `.zshrc`:
+
 ```bash
 alias pip='uv pip'
 alias pip3='uv pip'
@@ -40,33 +41,33 @@ This gives you fast package operations while keeping asdf for Python versions.
 
 The rest of this document provides a complete migration plan. The plan is solid; the question is whether the juice is worth the squeeze.
 
----
+______________________________________________________________________
 
 ## Executive Summary
 
-| Aspect | Current (asdf) | Target (uv) |
-|--------|---------------|-------------|
-| Python version file | `.tool-versions` | `.python-version` |
-| Version source | asdf-python plugin | python-build-standalone |
-| Package install | `pip install` | `uv pip install` / `uv add` |
-| Virtualenv | `python -m venv` | `uv venv` (automatic) |
-| Global tools | `pip install --user` | `uv tool install` / `uvx` |
-| Script deps | requirements.txt | PEP 723 inline metadata |
-| direnv hook | `use asdf` | `use uv` (custom) |
+| Aspect              | Current (asdf)       | Target (uv)                 |
+| ------------------- | -------------------- | --------------------------- |
+| Python version file | `.tool-versions`     | `.python-version`           |
+| Version source      | asdf-python plugin   | python-build-standalone     |
+| Package install     | `pip install`        | `uv pip install` / `uv add` |
+| Virtualenv          | `python -m venv`     | `uv venv` (automatic)       |
+| Global tools        | `pip install --user` | `uv tool install` / `uvx`   |
+| Script deps         | requirements.txt     | PEP 723 inline metadata     |
+| direnv hook         | `use asdf`           | `use uv` (custom)           |
 
 **Key advantage**: uv is 10-100x faster than pip and handles Python installation, venv creation, and package management as a single unified tool.
 
----
+______________________________________________________________________
 
 ## Key Concept: No Shims
 
 Unlike asdf, uv does **not** use shims. This has important implications:
 
-| Aspect | asdf | uv |
-|--------|------|-----|
+| Aspect             | asdf                                          | uv                             |
+| ------------------ | --------------------------------------------- | ------------------------------ |
 | How `python` works | Shim intercepts, redirects to correct version | Real executable (or not found) |
-| PATH requirement | asdf shims dir on PATH | `~/.local/bin` on PATH |
-| Version switching | Automatic per-directory via `.tool-versions` | Manual or via direnv |
+| PATH requirement   | asdf shims dir on PATH                        | `~/.local/bin` on PATH         |
+| Version switching  | Automatic per-directory via `.tool-versions`  | Manual or via direnv           |
 
 **After migration**, running `python` directly uses whatever is first on PATH. To make uv-managed Python the default:
 
@@ -80,7 +81,7 @@ uv python install 3.12 --default
 
 This installs `python`, `python3`, and `python3.12` executables to `~/.local/bin`.
 
----
+______________________________________________________________________
 
 ## Phase 1: Preparation
 
@@ -108,15 +109,15 @@ brew list | grep uv
 
 Before migrating, audit where Python is used:
 
-| Location | Purpose | Migration Impact |
-|----------|---------|------------------|
-| `apps/asdf/.tool-versions` | Global Python 3.12.5 | Move to `.python-version` |
-| `apps/asdf/.default-python-packages` | Auto-install packages | Replace with uv tools |
-| `bin/splitpdf` | Utility script | Already uses uv! |
-| `apps/openscad/update_vscode_settings.py` | Config updater | Add inline deps or keep minimal |
-| `apps/brew/audit_apps.py` | Brew audit | Stdlib only, no changes |
+| Location                                  | Purpose               | Migration Impact                |
+| ----------------------------------------- | --------------------- | ------------------------------- |
+| `apps/asdf/.tool-versions`                | Global Python 3.12.5  | Move to `.python-version`       |
+| `apps/asdf/.default-python-packages`      | Auto-install packages | Replace with uv tools           |
+| `scripts/splitpdf`                        | Utility script        | Already uses uv!                |
+| `apps/openscad/update_vscode_settings.py` | Config updater        | Add inline deps or keep minimal |
+| `apps/brew/audit_apps.py`                 | Brew audit            | Stdlib only, no changes         |
 
----
+______________________________________________________________________
 
 ## Phase 2: Create uv App
 
@@ -249,7 +250,7 @@ use_uv() {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Phase 3: Update asdf Configuration
 
@@ -284,7 +285,7 @@ Remove Python-specific environment variable handling:
   }
 ```
 
----
+______________________________________________________________________
 
 ## Phase 4: Update Shell Configuration
 
@@ -303,11 +304,11 @@ alias pip3='uv pip'
 
 **Why the aliases?** If you're used to typing `pip install`, this redirects to `uv pip install` automatically. Key differences:
 
-| Command | Behavior |
-|---------|----------|
-| `uv add foo` | Adds to `pyproject.toml` and installs (preferred for projects) |
-| `uv pip install foo` | Installs to venv only, doesn't update pyproject.toml |
-| `pip install foo` (with alias) | Same as `uv pip install foo` |
+| Command                        | Behavior                                                       |
+| ------------------------------ | -------------------------------------------------------------- |
+| `uv add foo`                   | Adds to `pyproject.toml` and installs (preferred for projects) |
+| `uv pip install foo`           | Installs to venv only, doesn't update pyproject.toml           |
+| `pip install foo` (with alias) | Same as `uv pip install foo`                                   |
 
 The alias prevents accidents but doesn't change project files. For tracked dependencies, use `uv add`.
 
@@ -330,7 +331,7 @@ setup_direnv_lib() {
 
 Alternatively, have `apps/uv/uv.sh` handle its own direnv setup (shown in Phase 2).
 
----
+______________________________________________________________________
 
 ## Phase 5: Update Agent Rules
 
@@ -350,11 +351,11 @@ Alternatively, have `apps/uv/uv.sh` handle its own direnv setup (shown in Phase 
 - - **Virtual environments**: Use `venv` for virtual environments. Configure `.envrc` with `layout python` to integrate with direnv.
 - - **Package management**: Use `uv` for package management, unless the project already uses other tools (poetry, pipenv, conda, etc.). Check for existing configuration files (pyproject.toml, Pipfile, environment.yml) before making assumptions.
 + - **Virtual environments**: Use `uv venv` for virtual environments. Configure `.envrc` with `use uv` to integrate with direnv.
-+ - **Package management**: Use `uv` for all Python package management. Prefer `pyproject.toml` for project dependencies. For standalone scripts, use PEP 723 inline metadata (see `bin/splitpdf` for example). Only fall back to other tools (poetry, pipenv, conda) if the project already uses them.
++ - **Package management**: Use `uv` for all Python package management. Prefer `pyproject.toml` for project dependencies. For standalone scripts, use PEP 723 inline metadata (see `scripts/splitpdf` for example). Only fall back to other tools (poetry, pipenv, conda) if the project already uses them.
 + - **Running tools**: Use `uvx` to run Python CLI tools without installing them globally.
 ```
 
----
+______________________________________________________________________
 
 ## Phase 6: Update Setup Orchestration
 
@@ -372,7 +373,7 @@ Add uv setup after brew, before asdf:
 
 **Order rationale**: uv comes before asdf because Python is more commonly needed immediately. asdf now only handles Ruby and Node.js.
 
----
+______________________________________________________________________
 
 ## Phase 7: Migration Execution
 
@@ -433,7 +434,7 @@ uv init  # Creates pyproject.toml
 uv add $(cat requirements.txt | grep -v '^#' | grep -v '^$')
 ```
 
----
+______________________________________________________________________
 
 ## Phase 8: Verification
 
@@ -468,7 +469,7 @@ python --version  # Should match .python-version
 uv pip list       # Should show project deps
 ```
 
----
+______________________________________________________________________
 
 ## Rollback Plan
 
@@ -484,7 +485,7 @@ asdf install python 3.12.5
 # Change "use uv" back to "use asdf"
 ```
 
----
+______________________________________________________________________
 
 ## Decision Points
 
@@ -493,6 +494,7 @@ asdf install python 3.12.5
 **Recommendation**: Yes, for Ruby and Node.js. uv only handles Python.
 
 If you eventually want to eliminate asdf entirely:
+
 - Node.js: Consider `fnm` or `volta`
 - Ruby: Consider `rbenv` or `mise`
 - Or wait for `mise` to mature as a unified replacement
@@ -514,7 +516,7 @@ uv tool install black
 
 **No change needed**. Ruff configuration is independent of Python version management.
 
----
+______________________________________________________________________
 
 ## Working with Legacy pip Projects
 
@@ -538,6 +540,7 @@ No project changes needed. The `uv pip` interface is 99% compatible with pip.
 ### Option 2: Shell aliases (covers muscle memory)
 
 With the aliases from Phase 4:
+
 ```bash
 alias pip='uv pip'
 ```
@@ -556,43 +559,44 @@ uv pip install pip-uv
 
 This installs a shim that intercepts `pip` commands in the venv:
 
-| Context | `pip install foo` becomes |
-|---------|---------------------------|
-| Has `uv.lock` | `uv add foo` |
-| No `uv.lock` | `uv pip install foo` |
+| Context       | `pip install foo` becomes |
+| ------------- | ------------------------- |
+| Has `uv.lock` | `uv add foo`              |
+| No `uv.lock`  | `uv pip install foo`      |
 
 **When to use**: Only if you can't/won't edit scripts that invoke `pip`. Otherwise, aliases or direct `uv pip` usage is simpler.
 
 ### Compatibility notes
 
 uv's pip interface differs from pip in some edge cases:
+
 - Resolution strategy may produce different (but valid) dependency versions
 - Pre-releases require explicit opt-in
 - Multiple indexes use first-match (security feature)
 
 For typical projects, these differences rarely matter.
 
----
+______________________________________________________________________
 
 ## Files Changed Summary
 
-| File | Action |
-|------|--------|
-| `apps/uv/` (new directory) | Create |
-| `apps/uv/uv.sh` | Create |
-| `apps/uv/.python-version` | Create |
-| `apps/uv/uv.toml` | Create (optional) |
-| `apps/uv/use_uv.sh` | Create |
-| `apps/uv/README.md` | Create |
-| `apps/asdf/.tool-versions` | Remove `python` line |
-| `apps/asdf/.default-python-packages` | Delete |
-| `apps/asdf/asdf.sh` | Remove Python env var handling |
-| `apps/zsh/.zshrc` | Add PATH and pip aliases |
-| `apps/claudecode/AGENTS.global.md` | Update rules |
-| `run/setup.sh` | Add `run_app_setup uv` |
-| `apps/direnv/README.md` | Add uv usage docs |
+| File                                 | Action                         |
+| ------------------------------------ | ------------------------------ |
+| `apps/uv/` (new directory)           | Create                         |
+| `apps/uv/uv.sh`                      | Create                         |
+| `apps/uv/.python-version`            | Create                         |
+| `apps/uv/uv.toml`                    | Create (optional)              |
+| `apps/uv/use_uv.sh`                  | Create                         |
+| `apps/uv/README.md`                  | Create                         |
+| `apps/asdf/.tool-versions`           | Remove `python` line           |
+| `apps/asdf/.default-python-packages` | Delete                         |
+| `apps/asdf/asdf.sh`                  | Remove Python env var handling |
+| `apps/zsh/.zshrc`                    | Add PATH and pip aliases       |
+| `apps/claudecode/AGENTS.global.md`   | Update rules                   |
+| `run/setup.sh`                       | Add `run_app_setup uv`         |
+| `apps/direnv/README.md`              | Add uv usage docs              |
 
----
+______________________________________________________________________
 
 ## References
 

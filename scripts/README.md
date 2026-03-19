@@ -1,6 +1,6 @@
 # Utility Scripts
 
-This directory contains a collection of utility scripts for common file and media operations on macOS. All scripts are located in the `bin/` directory and include `--help` flags for usage information.
+This directory contains a collection of utility scripts for common file and media operations on macOS. All scripts are located in the `scripts/` directory and include `--help` flags for usage information.
 
 ## Video Conversion
 

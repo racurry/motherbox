@@ -1,10 +1,10 @@
-# Bin Scripts
+# Scripts
 
-Scripts in `bin/` are standalone utilities added to PATH.
+Scripts in `scripts/` are standalone utilities added to PATH.
 
 ## When to Add Here
 
-Add a script to `bin/` when it:
+Add a script to `scripts/` when it:
 
 - Is a general-purpose utility (not app-specific)
 - Should be callable from anywhere on the system

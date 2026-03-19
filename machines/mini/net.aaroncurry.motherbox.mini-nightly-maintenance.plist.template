@@ -15,7 +15,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>__HOME__/.asdf/shims:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:__HOME__/.config/motherbox/bin:__HOME__/.local/bin</string>
+		<string>__HOME__/.asdf/shims:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:__HOME__/.config/motherbox/scripts:__HOME__/.local/bin</string>
 	</dict>
 
 	<key>StartCalendarInterval</key>

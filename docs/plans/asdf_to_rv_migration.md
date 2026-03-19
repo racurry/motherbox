@@ -2,7 +2,7 @@
 
 Replace asdf with rv for Ruby version and gem management while keeping asdf for Node.js (and Python, if not already migrated to uv).
 
----
+______________________________________________________________________
 
 ## Recommendation: Wait
 
@@ -12,26 +12,27 @@ Replace asdf with rv for Ruby version and gem management while keeping asdf for 
 
 ### Why wait?
 
-| Factor | Assessment |
-|--------|------------|
-| Maturity | v0.2.x (October 2025), described as "early release" |
-| Ruby support | Only Ruby 3.2+ with precompiled binaries; older versions unsupported |
-| Gem management | Planned but not fully implemented |
-| Bundler replacement | Not yet complete |
-| Platform support | macOS 14+, limited Linux (glibc 2.35+) |
-| Risk | High - core features still being built |
+| Factor              | Assessment                                                           |
+| ------------------- | -------------------------------------------------------------------- |
+| Maturity            | v0.2.x (October 2025), described as "early release"                  |
+| Ruby support        | Only Ruby 3.2+ with precompiled binaries; older versions unsupported |
+| Gem management      | Planned but not fully implemented                                    |
+| Bundler replacement | Not yet complete                                                     |
+| Platform support    | macOS 14+, limited Linux (glibc 2.35+)                               |
+| Risk                | High - core features still being built                               |
 
 ### Do this instead
 
 Keep asdf for Ruby. The compile time for Ruby (5-10 minutes) happens rarely (new Ruby releases, new machines). The real pain point - gem conflicts and bundler weirdness - isn't solved by rv yet.
 
 If you want faster Ruby installs today:
+
 - Use `ruby-build`'s binary builds when available
 - Accept the occasional compile as the cost of stability
 
-### What about bin/ scripts?
+### What about scripts/ scripts?
 
-The Ruby scripts in `bin/` (`ocrify`, `filename_fixer`, `backgroundify`, etc.) only use stdlib:
+The Ruby scripts in `scripts/` (`ocrify`, `filename_fixer`, `backgroundify`, etc.) only use stdlib:
 
 ```ruby
 require 'fileutils'
@@ -40,12 +41,12 @@ require 'shellwords'
 
 No external gem dependencies = **no benefit from rv**. These scripts run fine on any Ruby 2.0+.
 
-| rv Feature | Useful for bin/? | Why |
-|------------|------------------|-----|
-| Fast Ruby install | No | You install Ruby rarely |
-| Gem isolation | No | No gems to isolate |
-| `rv tool run` | No | Not using Ruby CLI tools |
-| Inline script deps | No | No deps needed |
+| rv Feature         | Useful for scripts/? | Why                      |
+| ------------------ | -------------------- | ------------------------ |
+| Fast Ruby install  | No                   | You install Ruby rarely  |
+| Gem isolation      | No                   | No gems to isolate       |
+| `rv tool run`      | No                   | Not using Ruby CLI tools |
+| Inline script deps | No                   | No deps needed           |
 
 Compare with `splitpdf`, which *does* benefit from uv because it has an external dependency:
 
@@ -70,52 +71,52 @@ Compare with `splitpdf`, which *does* benefit from uv because it has an external
 
 The rest of this document provides a migration plan. The tooling is promising but incomplete. Expect rough edges and missing features.
 
----
+______________________________________________________________________
 
 ## Executive Summary
 
-| Aspect | Current (asdf) | Target (rv) |
-|--------|---------------|-------------|
-| Ruby version file | `.tool-versions` | `.ruby-version` |
-| Version source | asdf-ruby plugin (compiles) | Precompiled binaries |
-| Gem install | `gem install` / `bundle install` | `rv add` / `rv install` |
-| Global tools | `gem install --user-install` | `rv tool install` |
-| Run one-off tools | N/A | `rv tool run` (like `uvx`) |
-| Script deps | Gemfile | Inline metadata (planned) |
-| direnv hook | `use asdf` | `use rv` (custom) |
+| Aspect            | Current (asdf)                   | Target (rv)                |
+| ----------------- | -------------------------------- | -------------------------- |
+| Ruby version file | `.tool-versions`                 | `.ruby-version`            |
+| Version source    | asdf-ruby plugin (compiles)      | Precompiled binaries       |
+| Gem install       | `gem install` / `bundle install` | `rv add` / `rv install`    |
+| Global tools      | `gem install --user-install`     | `rv tool install`          |
+| Run one-off tools | N/A                              | `rv tool run` (like `uvx`) |
+| Script deps       | Gemfile                          | Inline metadata (planned)  |
+| direnv hook       | `use asdf`                       | `use rv` (custom)          |
 
 **Key advantage**: rv installs Ruby 3.2+ in under 3 seconds using precompiled binaries, eliminating 5-40 minute compile times. It aims to unify Ruby version management, gem management, and tool execution like uv does for Python.
 
----
+______________________________________________________________________
 
 ## Key Concept: No Shims (Different Model)
 
 Unlike asdf, rv does **not** use shims. This has important implications:
 
-| Aspect | asdf | rv |
-|--------|------|-----|
-| How `ruby` works | Shim intercepts, redirects to correct version | Shell integration activates correct version |
-| PATH requirement | asdf shims dir on PATH | rv-managed Ruby bin dir on PATH |
-| Version switching | Automatic per-directory via `.tool-versions` | Shell hook + `.ruby-version` |
+| Aspect            | asdf                                          | rv                                          |
+| ----------------- | --------------------------------------------- | ------------------------------------------- |
+| How `ruby` works  | Shim intercepts, redirects to correct version | Shell integration activates correct version |
+| PATH requirement  | asdf shims dir on PATH                        | rv-managed Ruby bin dir on PATH             |
+| Version switching | Automatic per-directory via `.tool-versions`  | Shell hook + `.ruby-version`                |
 
 **After migration**, running `ruby` directly uses whatever rv's shell hook has activated. The shell integration reads `.ruby-version` files and adjusts the environment.
 
----
+______________________________________________________________________
 
 ## What rv Replaces
 
 rv is designed to replace multiple tools:
 
-| Current Tool | rv Equivalent | Status |
-|--------------|---------------|--------|
-| asdf (Ruby plugin) | `rv ruby install` | Working |
-| ruby-build | Built-in precompiled binaries | Working |
-| rbenv/chruby | `rv` shell integration | Working |
-| Bundler | `rv install`, `rv add`, `rv remove` | In development |
-| RubyGems | Built-in gem management | In development |
-| `gem install` (global tools) | `rv tool install` | Working |
+| Current Tool                 | rv Equivalent                       | Status         |
+| ---------------------------- | ----------------------------------- | -------------- |
+| asdf (Ruby plugin)           | `rv ruby install`                   | Working        |
+| ruby-build                   | Built-in precompiled binaries       | Working        |
+| rbenv/chruby                 | `rv` shell integration              | Working        |
+| Bundler                      | `rv install`, `rv add`, `rv remove` | In development |
+| RubyGems                     | Built-in gem management             | In development |
+| `gem install` (global tools) | `rv tool install`                   | Working        |
 
----
+______________________________________________________________________
 
 ## Phase 1: Preparation
 
@@ -138,6 +139,7 @@ brew "rv"  # Note: Verify this is available - may need tap or direct install
 ```
 
 **Fallback installation** (if not in Homebrew):
+
 ```bash
 # Direct from releases
 curl -fsSL https://github.com/spinel-coop/rv/releases/latest/download/rv-$(uname -s)-$(uname -m) -o /usr/local/bin/rv
@@ -148,13 +150,13 @@ chmod +x /usr/local/bin/rv
 
 Before migrating, audit where Ruby is used:
 
-| Location | Purpose | Migration Impact |
-|----------|---------|------------------|
+| Location                   | Purpose           | Migration Impact        |
+| -------------------------- | ----------------- | ----------------------- |
 | `apps/asdf/.tool-versions` | Global Ruby 3.4.4 | Move to `.ruby-version` |
-| `apps/asdf/.default-gems` | Auto-install gems | Use `rv tool install` |
-| Ruby projects | Development | Update `.envrc` files |
+| `apps/asdf/.default-gems`  | Auto-install gems | Use `rv tool install`   |
+| Ruby projects              | Development       | Update `.envrc` files   |
 
----
+______________________________________________________________________
 
 ## Phase 2: Create rv App
 
@@ -293,7 +295,7 @@ use_rv() {
 
 **Note**: The direnv integration above is speculative. rv's exact commands for querying Ruby paths may differ. Adjust based on actual rv behavior.
 
----
+______________________________________________________________________
 
 ## Phase 3: Update asdf Configuration
 
@@ -341,7 +343,7 @@ Also remove linking of `.default-gems`:
   }
 ```
 
----
+______________________________________________________________________
 
 ## Phase 4: Update Shell Configuration
 
@@ -369,6 +371,7 @@ fpath=(${ASDF_DIR}/completions $fpath)
 ```
 
 **Shell integration options** (rv supports multiple shells):
+
 - zsh: `eval "$(rv init zsh)"`
 - bash: `eval "$(rv init bash)"`
 - fish: `rv init fish | source`
@@ -380,7 +383,7 @@ fpath=(${ASDF_DIR}/completions $fpath)
 alias be="rv run bundle exec"  # When rv supports bundler
 ```
 
----
+______________________________________________________________________
 
 ## Phase 5: Update Agent Rules
 
@@ -403,7 +406,7 @@ alias be="rv run bundle exec"  # When rv supports bundler
 + - **direnv integration**: Configure `.envrc` with `use rv` to integrate with direnv.
 ```
 
----
+______________________________________________________________________
 
 ## Phase 6: Update Setup Orchestration
 
@@ -421,7 +424,7 @@ Add rv setup after brew, before asdf:
 
 **Order rationale**: rv comes before asdf to ensure Ruby is available early. asdf now only handles Node.js (and Python if not migrated to uv).
 
----
+______________________________________________________________________
 
 ## Phase 7: Migration Execution
 
@@ -494,7 +497,7 @@ direnv allow
 bundle install
 ```
 
----
+______________________________________________________________________
 
 ## Phase 8: Verification
 
@@ -529,7 +532,7 @@ ruby --version  # Should match .ruby-version
 bundle check    # Dependencies should be satisfied
 ```
 
----
+______________________________________________________________________
 
 ## Rollback Plan
 
@@ -549,20 +552,20 @@ asdf install ruby 3.4.4
 # Change "use rv" back to "use asdf"
 ```
 
----
+______________________________________________________________________
 
 ## Current Limitations (as of v0.2.x)
 
-| Feature | Status | Workaround |
-|---------|--------|------------|
-| Ruby 3.1 and earlier | Not supported | Use asdf for legacy projects |
-| Full Bundler replacement | In development | Continue using `bundle install` |
-| Gemfile.lock generation | In development | Continue using `bundle` |
-| Native extension compilation | Limited | May need dev tools installed |
-| musl libc (Alpine) | Not supported | Use glibc-based containers |
-| Windows | Not supported | N/A for this setup |
+| Feature                      | Status         | Workaround                      |
+| ---------------------------- | -------------- | ------------------------------- |
+| Ruby 3.1 and earlier         | Not supported  | Use asdf for legacy projects    |
+| Full Bundler replacement     | In development | Continue using `bundle install` |
+| Gemfile.lock generation      | In development | Continue using `bundle`         |
+| Native extension compilation | Limited        | May need dev tools installed    |
+| musl libc (Alpine)           | Not supported  | Use glibc-based containers      |
+| Windows                      | Not supported  | N/A for this setup              |
 
----
+______________________________________________________________________
 
 ## Decision Points
 
@@ -571,6 +574,7 @@ asdf install ruby 3.4.4
 **Recommendation**: Yes, for Node.js. rv only handles Ruby.
 
 If you eventually want to eliminate asdf entirely:
+
 - Node.js: Consider `fnm` or `volta`
 - Python: Already covered by `uv` (see companion migration doc)
 - Or wait for `mise` to mature as a unified replacement
@@ -580,6 +584,7 @@ If you eventually want to eliminate asdf entirely:
 **Current state**: Use Bundler alongside rv. rv manages Ruby versions; Bundler manages gems.
 
 **Future state**: When rv's gem management matures, you can:
+
 ```bash
 # Instead of:
 bundle install
@@ -603,42 +608,42 @@ rv tool install rubocop
 rv tool install solargraph
 ```
 
----
+______________________________________________________________________
 
 ## Files Changed Summary
 
-| File | Action |
-|------|--------|
-| `apps/rv/` (new directory) | Create |
-| `apps/rv/rv.sh` | Create |
-| `apps/rv/.ruby-version` | Create |
-| `apps/rv/use_rv.sh` | Create |
-| `apps/rv/README.md` | Create |
-| `apps/asdf/.tool-versions` | Remove `ruby` line |
-| `apps/asdf/.default-gems` | Delete |
-| `apps/asdf/asdf.sh` | Remove Ruby env var, `.default-gems` link |
-| `apps/zsh/.zshrc` | Add rv init, keep asdf for Node.js |
-| `apps/claudecode/AGENTS.global.md` | Update rules |
-| `run/setup.sh` | Add `run_app_setup rv` |
-| `apps/direnv/README.md` | Add rv usage docs |
-| `apps/brew/Brewfile` | Add `rv` (when available) |
+| File                               | Action                                    |
+| ---------------------------------- | ----------------------------------------- |
+| `apps/rv/` (new directory)         | Create                                    |
+| `apps/rv/rv.sh`                    | Create                                    |
+| `apps/rv/.ruby-version`            | Create                                    |
+| `apps/rv/use_rv.sh`                | Create                                    |
+| `apps/rv/README.md`                | Create                                    |
+| `apps/asdf/.tool-versions`         | Remove `ruby` line                        |
+| `apps/asdf/.default-gems`          | Delete                                    |
+| `apps/asdf/asdf.sh`                | Remove Ruby env var, `.default-gems` link |
+| `apps/zsh/.zshrc`                  | Add rv init, keep asdf for Node.js        |
+| `apps/claudecode/AGENTS.global.md` | Update rules                              |
+| `run/setup.sh`                     | Add `run_app_setup rv`                    |
+| `apps/direnv/README.md`            | Add rv usage docs                         |
+| `apps/brew/Brewfile`               | Add `rv` (when available)                 |
 
----
+______________________________________________________________________
 
 ## Comparison: rv vs Other Ruby Version Managers
 
-| Feature | asdf | rbenv | chruby | rv |
-|---------|------|-------|--------|-----|
-| Install speed | Minutes (compiles) | Minutes (compiles) | Minutes (compiles) | Seconds (precompiled) |
-| Ruby 3.2+ | Yes | Yes | Yes | Yes |
-| Ruby 3.1 and earlier | Yes | Yes | Yes | No |
-| Gem management | No (use Bundler) | No (use Bundler) | No (use Bundler) | Yes (in development) |
-| Tool isolation | No | No | No | Yes (`rv tool run`) |
-| Multi-language | Yes | No | No | No |
-| Shims | Yes | Yes | No | No |
-| Written in | Bash | Bash/Ruby | Shell | Rust |
+| Feature              | asdf               | rbenv              | chruby             | rv                    |
+| -------------------- | ------------------ | ------------------ | ------------------ | --------------------- |
+| Install speed        | Minutes (compiles) | Minutes (compiles) | Minutes (compiles) | Seconds (precompiled) |
+| Ruby 3.2+            | Yes                | Yes                | Yes                | Yes                   |
+| Ruby 3.1 and earlier | Yes                | Yes                | Yes                | No                    |
+| Gem management       | No (use Bundler)   | No (use Bundler)   | No (use Bundler)   | Yes (in development)  |
+| Tool isolation       | No                 | No                 | No                 | Yes (`rv tool run`)   |
+| Multi-language       | Yes                | No                 | No                 | No                    |
+| Shims                | Yes                | Yes                | No                 | No                    |
+| Written in           | Bash               | Bash/Ruby          | Shell              | Rust                  |
 
----
+______________________________________________________________________
 
 ## Appendix: Inline Script Metadata (Speculative)
 
@@ -677,11 +682,11 @@ rv run scrape_example.rb
 
 ### Comparison with current approaches
 
-| Approach | Files Needed | Pros | Cons |
-|----------|--------------|------|------|
-| **rv inline** (future) | 1 script | Self-contained, portable | Not yet implemented |
-| **Bundler inline** | 1 script | Works today | Slower, no Ruby version pinning |
-| **Traditional** | script + Gemfile + .ruby-version | Standard approach | 3 files for simple script |
+| Approach               | Files Needed                     | Pros                     | Cons                            |
+| ---------------------- | -------------------------------- | ------------------------ | ------------------------------- |
+| **rv inline** (future) | 1 script                         | Self-contained, portable | Not yet implemented             |
+| **Bundler inline**     | 1 script                         | Works today              | Slower, no Ruby version pinning |
+| **Traditional**        | script + Gemfile + .ruby-version | Standard approach        | 3 files for simple script       |
 
 ### Bundler inline (works today)
 
@@ -706,13 +711,14 @@ puts doc.title
 ```
 
 **Downsides of Bundler inline:**
+
 - Slower (resolves deps on every run unless cached)
 - No Ruby version specification
 - Verbose `gemfile do` block syntax
 
 When rv's inline metadata is implemented, it should combine the best of both: fast cached installs like uv + Ruby version pinning + clean metadata syntax.
 
----
+______________________________________________________________________
 
 ## References
 
