@@ -7,7 +7,7 @@
 
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/aaron/workspace/infra/motherbox/mini/mini.sh</string>
+		<string>__MINI_SH__</string>
 		<string>maintain</string>
 		<string>nightly</string>
 	</array>
@@ -15,7 +15,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/Users/aaron/.asdf/shims:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/aaron/.config/motherbox/bin:/Users/aaron/.local/bin</string>
+		<string>__HOME__/.asdf/shims:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:__HOME__/.config/motherbox/bin:__HOME__/.local/bin</string>
 	</dict>
 
 	<key>StartCalendarInterval</key>
@@ -27,8 +27,8 @@
 	</dict>
 
 	<key>StandardOutPath</key>
-	<string>/Users/aaron/.config/motherbox/logs/mini-nightly-maintenance.log</string>
+	<string>__HOME__/.config/motherbox/logs/mini-nightly-maintenance.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/aaron/.config/motherbox/logs/mini-nightly-maintenance.log</string>
+	<string>__HOME__/.config/motherbox/logs/mini-nightly-maintenance.log</string>
 </dict>
 </plist>

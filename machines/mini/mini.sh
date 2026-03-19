@@ -4,8 +4,9 @@ set -euo pipefail
 
 DIR="$(dirname "$0")"
 PLIST_NAME="net.aaroncurry.motherbox.mini-nightly-maintenance"
-PLIST_SRC="$DIR/$PLIST_NAME.plist"
+PLIST_TEMPLATE="$DIR/$PLIST_NAME.plist.template"
 PLIST_DEST="$HOME/Library/LaunchAgents/$PLIST_NAME.plist"
+MINI_SH="$(cd "$DIR" && pwd)/mini.sh"
 
 show_help() {
     cat <<EOF
@@ -25,7 +26,7 @@ EOF
 do_setup() {
     echo "==> Installing launchd plist..."
     mkdir -p "$HOME/.config/motherbox/logs"
-    cp "$PLIST_SRC" "$PLIST_DEST"
+    sed -e "s|__HOME__|$HOME|g" -e "s|__MINI_SH__|$MINI_SH|g" "$PLIST_TEMPLATE" >"$PLIST_DEST"
 
     # Unload first if already loaded (ignore errors)
     launchctl bootout "gui/$(id -u)/$PLIST_NAME" 2>/dev/null || true
