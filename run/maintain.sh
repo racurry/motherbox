@@ -23,6 +23,7 @@ Commands:
     uv-upgrade          Upgrade all UV tools
     tcc-refresh         Re-sign all TCC-managed binaries
     prune               Remove backups older than ${retention_days} days
+    machine [args]      Run machine-specific maintenance (uses MACHINE from config)
     help                Show this help message (also: -h, --help)
 
 Config subcommands:
@@ -129,6 +130,22 @@ do_brew() {
     fi
 }
 
+do_machine() {
+    local machine
+    machine="$(get_config MACHINE)"
+
+    if [[ -z "${machine}" ]]; then
+        fail "No machine configured. Set with: $(basename "$0") config set MACHINE mini"
+    fi
+
+    local machine_script="${REPO_ROOT}/machines/${machine}/${machine}.sh"
+    if [[ ! -x "${machine_script}" ]]; then
+        fail "No machine script found at ${machine_script}"
+    fi
+
+    "${machine_script}" maintain "$@"
+}
+
 main() {
     local cmd="${1:-}"
     shift || true
@@ -151,6 +168,9 @@ main() {
         ;;
     prune)
         do_prune
+        ;;
+    machine)
+        do_machine "$@"
         ;;
     help | --help | -h | "")
         show_help

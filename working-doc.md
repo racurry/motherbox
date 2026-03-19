@@ -60,26 +60,26 @@ Everywhere in the codebase, `SETUP_MODE` becomes `PROFILE`. No backwards compati
 
 ## Work chunks (in order)
 
-### 1. Create `machines/` and migrate `mini/`
+### 1. Create `machines/` and migrate `mini/` — DONE
 
-Move `mini/` → `machines/mini/`. Update the hardcoded paths in the launchd plist and any scripts that reference `mini/`. Pure file moves.
+Moved `mini/` → `machines/mini/`. Replaced static plist with `.plist.template` — `mini.sh setup` generates plist at install time via `sed` so paths aren't hardcoded to a specific user.
 
-### 2. Rename `bin/` → `scripts/`
+### 2. Rename `bin/` → `scripts/` — DONE
 
-Move the directory. Rename `run/sync-bin.sh` → `run/sync.sh`. Chase all references in docs, AGENTS.md, common.sh, README, etc.
+Moved directory, renamed `run/sync-bin.sh` → `run/sync.sh`, updated symlink path to `~/.config/motherbox/scripts`, chased all references across docs, AGENTS.md, zsh PATH, plist template, migration plans.
 
-### 3. Rename SETUP_MODE → PROFILE everywhere
+### 3. Rename SETUP_MODE → PROFILE everywhere — DONE
 
-Find every occurrence of `SETUP_MODE`, `setup_mode`, `--mode`, `--reset-mode`, `determine_setup_mode`, `prompt_setup_mode` and replace with the `PROFILE` equivalents. Update the config file key. Update docs and comments. No shims, no fallbacks.
+Replaced all occurrences: config key, CLI flags (`--mode` → `--profile`, `--reset-mode` → `--reset-profile`), function names (`determine_setup_mode` → `determine_profile`, `prompt_setup_mode` → `prompt_profile`), global var, docs, tests. No backwards compatibility.
 
-### 4. Teach `run/setup.sh` about machines
+### 4. Teach `run/setup.sh` about machines — DONE
 
-Add `--machine` flag. Store `MACHINE` in `~/.config/motherbox/config`. After running profile-aware app setup, run machine-specific setup from `machines/{name}/` if specified.
+Added `--machine` flag and `determine_machine()` in common.sh. Machine is optional (no prompt), sticky via config. After app setup, runs `machines/{name}/{name}.sh setup` if set.
 
-### 5. Teach `run/maintain.sh` about machines
+### 5. Teach `run/maintain.sh` about machines — DONE
 
-Machine-specific maintenance (mini's nightly job) becomes invocable through `maintain.sh` instead of a separate `mini.sh` entry point.
+Added `maintain.sh machine [args]` command. Reads `MACHINE` from config, delegates to `machines/{name}/{name}.sh maintain [args]`. Example: `maintain.sh machine nightly` runs mini's nightly maintenance.
 
-### 6. Update docs and AGENTS.md
+### 6. Update docs and AGENTS.md — DONE
 
-Reflect the new structure, new naming, new flags. Make sure future agents/contributors know the lay of the land.
+Updated AGENTS.md core structure (scripts/, machines/, run/ entries), README.md, run/README.md, docs/common config keys, docs/apps bash scripting guide, apps-bash-scripter agent. All incremental during steps 1-5.

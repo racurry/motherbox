@@ -110,6 +110,8 @@ When documenting apps that need API tokens or secrets:
   - **lib/test_common.bats**: Tests for lib/bash/common.sh
 - **docs/**: Documentation and manual checklists
 - **run/**: Orchestration scripts
-  - **run/setup.sh**: Root orchestrator that calls app scripts in order
+  - **run/setup.sh**: Root orchestrator that calls app scripts in order (supports `--profile`, `--machine`)
   - **run/test.sh**: Unified test runner (lint + unit tests, supports `--app {appname}`)
-  - **run/maintain.sh**: Maintenance utilities (backup pruning, config management)
+  - **run/maintain.sh**: Maintenance utilities (backup pruning, config management, machine maintenance)
+  - **run/sync.sh**: Symlinks `scripts/` to `~/.config/motherbox/scripts` for PATH
+  - **run/tcc-sign.sh**: Code-signing for TCC permission persistence
