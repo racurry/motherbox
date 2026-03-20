@@ -5,6 +5,3 @@
 #   tool "ruff"
 #   tool "black@24.0.0"
 #   tool "mdformat" --with mdformat-gfm --with mdformat-frontmatter
-
-# Markdown formatting with GFM and frontmatter support
-tool "mdformat" --with mdformat-gfm --with mdformat-frontmatter

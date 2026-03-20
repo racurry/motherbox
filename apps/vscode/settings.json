@@ -2,7 +2,6 @@
   "[markdown]": {
     "editor.defaultFormatter": "bittorala.mdformat"
   },
-  "mdformat.pythonPath": "~/.local/share/uv/tools/mdformat/bin/python",
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
@@ -29,7 +28,6 @@
   "prettier.configPath": "~/.prettierrc.json5",
   "prettier.ignorePath": "~/.prettierignore",
   "prettier.printWidth": 999,
-  "python.defaultInterpreterPath": "/opt/homebrew/bin/python3",
   "security.workspace.trust.untrustedFiles": "open",
   "workbench.iconTheme": "catppuccin-latte",
   "workbench.secondarySideBar.defaultVisibility": "hidden",
