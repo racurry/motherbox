@@ -7,7 +7,143 @@
     "padding": 1
   },
   "permissions": {
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "WebSearch",
+      "mcp__ide__getDiagnostics",
+
+      "Bash(git add:*)",
+      "Bash(git blame:*)",
+      "Bash(git branch:*)",
+      "Bash(git commit:*)",
+      "Bash(git diff:*)",
+      "Bash(git fetch:*)",
+      "Bash(git log:*)",
+      "Bash(git mv:*)",
+      "Bash(git pull:*)",
+      "Bash(git remote:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git show:*)",
+      "Bash(git status:*)",
+      "Bash(git symbolic-ref:*)",
+      "Bash(git tag:*)",
+      "Bash(git --version)",
+
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue status:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr status:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh release list:*)",
+      "Bash(gh release view:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh repo list:*)",
+      "Bash(gh repo clone:*)",
+      "Bash(gh search:*)",
+
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(printf:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(diff:*)",
+      "Bash(cut:*)",
+      "Bash(tr:*)",
+      "Bash(jq:*)",
+      "Bash(which:*)",
+      "Bash(type:*)",
+      "Bash(command -v:*)",
+      "Bash(whoami)",
+      "Bash(hostname)",
+      "Bash(date:*)",
+      "Bash(uname:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(readlink:*)",
+      "Bash(realpath:*)",
+      "Bash(du:*)",
+      "Bash(df:*)",
+      "Bash(tree:*)",
+      "Bash(node --version)",
+      "Bash(python3 --version)",
+      "Bash(ps:*)",
+      "Bash(tty:*)",
+      "Bash(sw_vers:*)",
+
+      "Bash(brew info:*)",
+      "Bash(brew search:*)",
+      "Bash(brew list:*)",
+      "Bash(brew help:*)",
+
+      "Bash(asdf current:*)",
+      "Bash(asdf list:*)",
+
+      "Bash(uv --version:*)",
+      "Bash(uv tool list:*)",
+      "Bash(uv tool run:*)",
+      "Bash(uv pip:*)",
+      "Bash(uv venv:*)",
+      "Bash(npm view:*)",
+      "Bash(npm list:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+
+      "Bash(shellcheck:*)",
+      "Bash(shfmt:*)",
+      "Bash(ruff:*)",
+      "Bash(ruff check:*)",
+      "Bash(yamllint:*)",
+      "Bash(mdformat:*)",
+      "Bash(markdownlint-cli2:*)",
+      "Bash(bats:*)",
+
+      "Bash(defaults read:*)",
+      "Bash(defaults domains)",
+      "Bash(mdls:*)",
+      "Bash(code:*)",
+      "Bash(pip show:*)",
+
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:docs.astral.sh)",
+      "WebFetch(domain:docs.brew.sh)",
+      "WebFetch(domain:asdf-vm.com)",
+      "WebFetch(domain:direnv.net)",
+      "WebFetch(domain:help.obsidian.md)",
+      "WebFetch(domain:deepwiki.com)",
+      "WebFetch(domain:developer.apple.com)",
+      "WebFetch(domain:stackoverflow.com)",
+
+      "Skill(dmv:commit-push)",
+      "Skill(dmv:git-workflow)",
+      "Skill(box-factory:uv-scripts)",
+      "Skill(box-factory:agent-design)",
+      "Skill(box-factory:status-line)",
+      "SlashCommand(/mr-sparkle:lint-md:*)",
+      "SlashCommand(/session)"
+    ],
+    "deny": [],
+    "ask": [
+      "Bash(git branch -d:*)",
+      "Bash(git branch -D:*)",
+      "Bash(npm install -g:*)",
+      "Bash(npm install --global:*)",
+      "Bash(npm uninstall -g:*)",
+      "Bash(npm uninstall --global:*)",
+      "Bash(uv tool install:*)",
+      "Bash(uv tool uninstall:*)"
+    ]
   },
   "attribution": {
     "commit": "",
@@ -41,6 +177,15 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/enforce-relative-paths.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/block-dangerous-commands.sh"
           }
         ]
       }

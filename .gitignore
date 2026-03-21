@@ -2,6 +2,7 @@
 .todone
 .meta
 .claude/settings.local.json
+.claude/*.local.md
 .out
 .ruff_cache/
 .tmp
