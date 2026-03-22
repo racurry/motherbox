@@ -93,4 +93,5 @@
   "scad-lsp.launchPath": "/opt/homebrew/bin/openscad",
   "markdownlint.config": {},
   "errorLens.excludePatterns": ["**/*.md"],
+  "python.defaultInterpreterPath": "${env:HOME}/.asdf/shims/python",
 }
