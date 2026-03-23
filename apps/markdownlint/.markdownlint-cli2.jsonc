@@ -11,15 +11,7 @@
 
     // MD033/no-inline-html - Inline HTML
     "MD033": {
-      "allowed_elements": [
-        "br",
-        "details",
-        "summary",
-        "img",
-        "kbd",
-        "sub",
-        "sup"
-      ]
+      "allowed_elements": ["br", "details", "summary", "img", "kbd", "sub", "sup"],
     },
 
     // MD041/first-line-heading - First line in file should be a top level heading
@@ -27,39 +19,46 @@
 
     // MD024/no-duplicate-heading - Multiple headings with the same content
     "MD024": {
-      "siblings_only": true
+      "siblings_only": true,
     },
+
+    // MD026/heading-punctuation - Trailing punctuation in header
+    "MD026": false,
 
     // MD046/code-block-style - Code block style
     "MD046": {
-      "style": "fenced"
+      "style": "fenced",
     },
 
     // MD034/no-bare-urls - Bare URLs without angle brackets (disabled)
     // Disabled because mdformat strips "redundant" angle brackets, causing conflicts
     "MD034": false,
 
+    // MD051/link-fragments - Rewrites #fragments using GitHub's anchor algorithm, not Obsidian's
+    "MD051": false,
+
+    // MD037/no-space-in-emphasis - False-positive prone, destructive auto-fix
+    "MD037": false,
+
+    // MD049/emphasis-style - Enforce asterisk style
+    "MD049": {
+      "style": "asterisk",
+    },
+
+    // MD050/strong-style - Enforce asterisk style
+    "MD050": {
+      "style": "asterisk",
+    },
+
     // MD060/table-column-style - Table column style (disabled)
-    "MD060": false
+    "MD060": false,
   },
 
   // Globs to ignore
-  "ignores": [
-    "node_modules/**",
-    "**/node_modules/**",
-    "vendor/**",
-    ".git/**",
-    "**/.git/**",
-    "dist/**",
-    "build/**",
-    ".next/**",
-    "coverage/**",
-    ".venv/**",
-    "venv/**"
-  ],
+  "ignores": ["node_modules/**", "**/node_modules/**", "vendor/**", ".git/**", "**/.git/**", "dist/**", "build/**", ".next/**", "coverage/**", ".venv/**", "venv/**"],
 
   // Enable glob matching for .gitignore files
   "gitignore": true,
 
-  "noProgress": true
+  "noProgress": true,
 }
