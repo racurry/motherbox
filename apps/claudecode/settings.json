@@ -151,6 +151,14 @@
     "commit": "",
     "pr": ""
   },
+  "spinnerTipsEnabled": true,
+  "spinnerTipsOverride": {
+    "tips": [
+      "Stop wasting time",
+      "🐊"
+    ],
+    "excludeDefault": true
+  },
   "hooks": {
     "SessionStart": [
       {
