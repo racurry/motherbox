@@ -204,4 +204,3 @@ alias grbp='git rebase-and-push'
 if [ -f ~/.galileorc ]; then
   source ~/.galileorc
 fi
-

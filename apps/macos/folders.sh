@@ -87,12 +87,14 @@ do_setup() {
     local documents_folders=(
         "@auto"
         "000_Inbox"
-        "100_Life"
+        "100_Areas"
         "150_Projects"
         "200_People"
+        "300_Time"
         "400_Topics"
-        "700_Libraries"
-        "800_Posterity"
+        "500_Output"
+        "600_Sharing"
+        "800_Libraries"
         "900_Sharing"
         "999_Meta"
     )
