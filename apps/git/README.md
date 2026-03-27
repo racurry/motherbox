@@ -39,7 +39,7 @@ Complete these steps after running the setup script:
 The config uses Git's `includeIf` to load different settings based on repository location:
 
 ```ini
-[includeIf "gitdir:~/workspace/galileo/"]
+[includeIf "gitdir:~/code/galileo/"]
   path = ~/.gitconfig_galileo
 ```
 

@@ -19,7 +19,7 @@ Host github-work
     IdentityFile ~/.ssh/galileo_github.pub
     IdentitiesOnly yes
 
-# GitHub alias for Firsthand repos (auto-rewritten by git for ~/workspace/firsthand/)
+# GitHub alias for Firsthand repos (auto-rewritten by git for ~/code/firsthand/)
 Host github-firsthand
     HostName github.com
     User git

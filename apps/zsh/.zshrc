@@ -75,13 +75,14 @@ export OPENSCADPATH="$HOME/OpenSCAD/Libraries"
 # HISTORY CONFIGURATION
 # ============================================================================
 
-HISTSIZE=10000
+HISTSIZE=50000
 HISTFILE=~/.zsh_history
 SAVEHIST=50000
 HISTDUP=erase # Erase duplicates in the history file
 setopt appendhistory # Append history to the history file (no overwriting)
 setopt sharehistory # Share history across terminals
 setopt incappendhistory # Immediately append to the history file, not just when a term is killed
+setopt extendedhistory # Save timestamps in history file
 unsetopt nomatch # Don't throw an error if there are no matches, just do the right thing
 
 # ============================================================================
@@ -97,6 +98,7 @@ fi
 # DIRECTORY SHORTCUTS
 # ============================================================================
 
+export code=~/code
 export workspace=~/workspace
 export infra=~/workspace/infra/
 export mbox=$MOTHERBOX_ROOT # comes from .local.zshrc

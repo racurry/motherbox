@@ -1,7 +1,7 @@
 alias galileocfg="code -nw ~/.galileorc"
 
 # Galileo auto-bootstraping
-DOTFILES_DIR=~/workspace/galileo/dotfiles
+DOTFILES_DIR=~/code/galileo/dotfiles
 if [ -d "$DOTFILES_DIR/.git" ]; then
   CURRENT_BRANCH=$(git -C "$DOTFILES_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null)
   if [ "$CURRENT_BRANCH" != "master" ]; then
@@ -28,24 +28,24 @@ if [[ -f ~/.config/pip/pip.conf ]]; then
 fi
 
 # Directories
-export gal=~/workspace/galileo/
-export galileo=~/workspace/galileo/
-export sandbox=~/workspace/galileo/sandbox/
-export projects=~/workspace/galileo/sandbox/
+export gal=~/code/galileo/
+export galileo=~/code/galileo/
+export sandbox=~/code/galileo/_scratch/
+export projects=~/code/galileo/_scratch/
 
 # Core projects
-export gdots=~/workspace/galileo/dotfiles/
+export gdots=~/code/galileo/dotfiles/
 
 # Services
-export core=~/workspace/galileo/core-api/
-export coreapi=~/workspace/galileo/core-api/
-export api=~/workspace/galileo/api/
+export core=~/code/galileo/core-api/
+export coreapi=~/code/galileo/core-api/
+export api=~/code/galileo/api/
 
 # Clients
-export ios=~/workspace/galileo/health-ios/
-export android=~/workspace/galileo/health-android/
-export zodiac=~/workspace/galileo/frontend-monorepo/
-export web=~/workspace/galileo/health-web/
+export ios=~/code/galileo/health-ios/
+export android=~/code/galileo/health-android/
+export zodiac=~/code/galileo/frontend-monorepo/
+export web=~/code/galileo/health-web/
 
 # dbt
 alias dbt="python3 -m dbt.cli.main"

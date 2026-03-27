@@ -4,10 +4,10 @@
   signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPFgJeR2xvRDGOb0/QZpdHU3B75y3KnHymp3sG5pGrzB
 
 # Work-specific settings; basically, user & signing key
-[includeIf "gitdir:~/workspace/galileo/"]
+[includeIf "gitdir:~/code/galileo/"]
   path = ~/.gitconfig_galileo
 
-[includeIf "gitdir:~/workspace/firsthand/"]
+[includeIf "gitdir:~/code/firsthand/"]
   path = ~/.gitconfig_firsthand
 
 [gpg]

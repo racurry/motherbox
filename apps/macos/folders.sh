@@ -7,7 +7,7 @@ source "${SCRIPT_DIR}/../../lib/bash/common.sh"
 
 # Paths used by this script
 PATH_DOCUMENTS="${HOME}/Documents"
-PATH_WORKSPACE="${HOME}/workspace"
+PATH_CODE="${HOME}/code"
 
 show_help() {
     cat <<EOF
@@ -23,19 +23,24 @@ Options:
     --profile MODE     Set mode to 'galileo' or 'personal'
     --unattended    Skip prompts, fail if mode unknown
 
-Folders created in ${PATH_WORKSPACE}:
-    infra           Infrastructure projects (including this repo)
-    sandbox         Experimental/throwaway projects
+Folders created in ${PATH_CODE}:
+    me/             Personal projects
+    me/_archive     Archived personal projects
+    me/_scratch     Personal experiments/throwaway
+    vendor/         Third-party/vendored repos
 
 Additional folders created in firsthand mode:
-    firsthand/        Firsthand work projects
-    firsthand/sandbox Firsthand experimental projects
-    galileo/          Galileo work projects (contracting)
-    galileo/sandbox   Galileo experimental projects
+    firsthand/          Firsthand work projects
+    firsthand/_archive  Archived Firsthand projects
+    firsthand/_scratch  Firsthand experiments
+    galileo/            Galileo work projects (contracting)
+    galileo/_archive    Archived Galileo projects
+    galileo/_scratch    Galileo experiments
 
 Additional folders created in galileo mode:
-    galileo/        Galileo work projects
-    galileo/sandbox Galileo experimental projects
+    galileo/            Galileo work projects
+    galileo/_archive    Archived Galileo projects
+    galileo/_scratch    Galileo experiments
 
 Folders created in ${PATH_DOCUMENTS}:
     @auto           Automated/scripted content
@@ -66,36 +71,41 @@ ensure_folder() {
 do_setup() {
     print_heading "Make folders how I like em"
 
-    # Workspace folders (always created)
-    log_info "Creating workspace folders in ${PATH_WORKSPACE}"
-    local workspace_folders=(
-        "infra"
-        "sandbox"
+    # Code folders (always created)
+    log_info "Creating code folders in ${PATH_CODE}"
+    local code_folders=(
+        "me"
+        "me/_archive"
+        "me/_scratch"
+        "vendor"
     )
-    for folder in "${workspace_folders[@]}"; do
-        ensure_folder "${PATH_WORKSPACE}/${folder}"
+    for folder in "${code_folders[@]}"; do
+        ensure_folder "${PATH_CODE}/${folder}"
     done
 
-    # Work-specific workspace folders
+    # Work-specific code folders
     if [[ "${PROFILE}" == "firsthand" ]]; then
-        log_info "Creating firsthand workspace folders"
+        log_info "Creating firsthand code folders"
         local firsthand_folders=(
             "firsthand"
-            "firsthand/sandbox"
+            "firsthand/_archive"
+            "firsthand/_scratch"
             "galileo"
-            "galileo/sandbox"
+            "galileo/_archive"
+            "galileo/_scratch"
         )
         for folder in "${firsthand_folders[@]}"; do
-            ensure_folder "${PATH_WORKSPACE}/${folder}"
+            ensure_folder "${PATH_CODE}/${folder}"
         done
     elif [[ "${PROFILE}" == "galileo" ]]; then
-        log_info "Creating galileo workspace folders"
+        log_info "Creating galileo code folders"
         local galileo_folders=(
             "galileo"
-            "galileo/sandbox"
+            "galileo/_archive"
+            "galileo/_scratch"
         )
         for folder in "${galileo_folders[@]}"; do
-            ensure_folder "${PATH_WORKSPACE}/${folder}"
+            ensure_folder "${PATH_CODE}/${folder}"
         done
     fi
 
