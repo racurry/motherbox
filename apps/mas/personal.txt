@@ -1,0 +1,19 @@
+# Mac App Store apps (personal profile)
+# Format: APP_ID # App Name
+1548544614  # Controlly
+1444383602  # Goodnotes
+1115567069  # Health Auto Export
+1099568401  # Home Assistant
+6758070650  # Itsyhome
+302584613   # Kindle
+1303222628  # Paprika Recipe Manager 3
+6748614170  # Parachute
+463362050   # PhotoSweeper
+1533703891  # PocketTube
+1289583905  # Pixelmator Pro
+1453293391  # Signals
+1594183810  # Shortery
+1508732804  # Soulver 3
+1592912837  # Toolkit for YNAB
+310633997   # WhatsApp
+562211012   # Yomu

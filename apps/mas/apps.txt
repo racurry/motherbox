@@ -1,0 +1,17 @@
+# Mac App Store apps (shared across profiles)
+# Format: APP_ID # App Name
+937984704   # Amphetamine
+1548711022  # Barbee
+993487541   # CARROTweather
+451691288   # Contacts Sync
+1355679052  # Dropover
+1324203419  # Ground News
+1498912833  # Highlights
+409183694   # Keynote
+1510445899  # Meeter
+409203825   # Numbers
+409201541   # Pages
+6451349778  # Rapidmg
+425424353   # The Unarchiver
+904280696   # Things
+1659667937  # Actions For Obsidian

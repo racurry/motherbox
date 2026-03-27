@@ -155,6 +155,9 @@ run_app_setup shfmt
 run_app_setup ruff
 run_app_setup uv
 
+print_heading "Mac App Store"
+run_app_setup mas
+
 print_heading "Application Settings"
 run_app_setup claudecode
 run_app_setup gemini-cli

@@ -105,6 +105,7 @@ export iCloud=~/iCloud
 export icloud=~/iCloud  # Both cases for convenience - prevents typos
 export nlp=~/workspace/infra/neat-little-package
 export memex=~/Notes/Memex
+export agents=~/Documents/700_Sharing/agent_workspace
 
 # ============================================================================
 # CUSTOM FUNCTIONS

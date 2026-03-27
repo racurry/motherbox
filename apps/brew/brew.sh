@@ -23,13 +23,9 @@ Options:
     --profile MODE   Set to 'galileo' or 'personal' to install mode-specific packages
                   from apps/brew/galileo.Brewfile or apps/brew/personal.Brewfile
                   in addition to the main apps/brew/Brewfile
-    --unattended  Skip prompts and sudo-requiring Brewfiles (mas apps)
-
 Brewfile Structure:
     Brewfile              Common packages (brew, cask, vscode)
     {mode}.Brewfile       Mode-specific packages
-    sudo.Brewfile         Mac App Store apps (may need password for upgrades)
-    sudo.{mode}.Brewfile  Mode-specific Mac App Store apps
 EOF
 }
 
@@ -85,38 +81,6 @@ install_bundle() {
         log_warn "No ${PROFILE}-specific Brewfile found at ${mode_manifest}"
     fi
 
-    # Handle sudo-requiring Brewfiles (Mac App Store apps)
-    install_sudo_brewfiles
-}
-
-install_sudo_brewfiles() {
-    local sudo_manifest="${REPO_ROOT}/apps/brew/sudo.Brewfile"
-    local sudo_mode_manifest="${REPO_ROOT}/apps/brew/sudo.${PROFILE}.Brewfile"
-    local has_sudo_files=false
-
-    [[ -f "${sudo_manifest}" ]] && has_sudo_files=true
-    [[ -f "${sudo_mode_manifest}" ]] && has_sudo_files=true
-
-    if [[ "${has_sudo_files}" != "true" ]]; then
-        return 0
-    fi
-
-    if [[ "${UNATTENDED:-false}" == "true" ]]; then
-        log_warn "Skipping sudo Brewfiles in unattended mode (mas apps may need password)"
-        log_warn "Run './apps/brew/brew.sh bundle' interactively to install Mac App Store apps"
-        return 0
-    fi
-
-    # Interactive mode - install sudo Brewfiles
-    if [[ -f "${sudo_manifest}" ]]; then
-        log_info "Installing Mac App Store apps from sudo.Brewfile (may require password)"
-        install_brewfile "${sudo_manifest}"
-    fi
-
-    if [[ -f "${sudo_mode_manifest}" ]]; then
-        log_info "Installing ${PROFILE}-specific Mac App Store apps (may require password)"
-        install_brewfile "${sudo_mode_manifest}"
-    fi
 }
 
 maintain_brew() {
@@ -175,10 +139,6 @@ main() {
             ;;
         setup | install | bundle | audit | maintain)
             command="$1"
-            shift
-            ;;
-        --unattended)
-            UNATTENDED=true
             shift
             ;;
         *)

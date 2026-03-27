@@ -38,15 +38,13 @@ def get_repo_root():
 
 
 def parse_brewfile(path: pathlib.Path):
-    """Parse a Brewfile and extract formulas, casks, mas, and vscode entries."""
+    """Parse a Brewfile and extract formulas, casks, and vscode entries."""
     formulas = []
     casks = []
-    mas_entries = {}
     vscode_extensions = []
 
     brew_pattern = re.compile(r'^brew\s+"([^"]+)"')
     cask_pattern = re.compile(r'^cask\s+"([^"]+)"')
-    mas_pattern = re.compile(r'^mas\s+"([^"]+)",\s*id:\s*(\d+)')
     vscode_pattern = re.compile(r'^vscode\s+"([^"]+)"')
 
     for line in path.read_text().splitlines():
@@ -64,18 +62,29 @@ def parse_brewfile(path: pathlib.Path):
             casks.append(m.group(1))
             continue
 
-        m = mas_pattern.match(line)
-        if m:
-            name, app_id = m.groups()
-            mas_entries[name] = app_id
-            continue
-
         m = vscode_pattern.match(line)
         if m:
             vscode_extensions.append(m.group(1).lower())
             continue
 
-    return formulas, casks, mas_entries, vscode_extensions
+    return formulas, casks, vscode_extensions
+
+
+def parse_mas_app_list(path: pathlib.Path):
+    """Parse a mas app list file (apps/mas/*.txt) and return {name: app_id}."""
+    entries = {}
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        # Format: APP_ID  # App Name
+        parts = line.split("#", 1)
+        if len(parts) == 2:
+            app_id = parts[0].strip()
+            name = parts[1].strip()
+            if app_id:
+                entries[name] = app_id
+    return entries
 
 
 def parse_tool_versions(path: pathlib.Path):
@@ -107,17 +116,15 @@ def run_command(cmd):
     return subprocess.check_output(cmd, text=True)
 
 
-def register_optional(path: pathlib.Path, optional_entries, optional_formulas, optional_casks, optional_mas):
+def register_optional(path: pathlib.Path, optional_entries, optional_formulas, optional_casks):
     """Register optional Brewfile entries."""
-    formulas, casks, mas_entries, _vscode = parse_brewfile(path)
+    formulas, casks, _vscode = parse_brewfile(path)
     optional_entries[path.name] = {
         "formulas": formulas,
         "casks": casks,
-        "mas": mas_entries,
     }
     optional_formulas.update(formulas)
     optional_casks.update(casks)
-    optional_mas.update(mas_entries.keys())
 
 
 def format_items(items, formatter):
@@ -135,7 +142,7 @@ def main():
 This script compares installed packages against declared manifests and generates a
 markdown report at .tmp/APP_AUDIT.md covering:
 
-  - Brew formulas, casks, and Mac App Store apps vs Brewfile
+  - Brew formulas and casks vs Brewfile, Mac App Store apps vs apps/mas/*.txt
   - NPM global packages vs .default-npm-packages
   - ASDF plugins and runtime versions vs .tool-versions
   - VSCode extensions vs apps/vscode/Brewfile
@@ -167,18 +174,23 @@ Optional commands: npm, asdf, code
     default_npm_file = repo_root / "apps" / "asdf" / ".default-npm-packages"
 
     # Parse main Brewfile
-    brew_formulas_declared, brew_casks_declared, mas_declared, _ = parse_brewfile(brewfile)
+    brew_formulas_declared, brew_casks_declared, _ = parse_brewfile(brewfile)
+
+    # Parse mas app lists from apps/mas/
+    mas_dir = repo_root / "apps" / "mas"
+    mas_declared = {}
+    for mas_file in sorted(mas_dir.glob("*.txt")):
+        mas_declared.update(parse_mas_app_list(mas_file))
 
     # Handle optional Brewfiles
     optional_entries = {}
     optional_formulas = set()
     optional_casks = set()
-    optional_mas = set()
 
     if optional_personal.exists():
-        register_optional(optional_personal, optional_entries, optional_formulas, optional_casks, optional_mas)
+        register_optional(optional_personal, optional_entries, optional_formulas, optional_casks)
     if optional_work.exists():
-        register_optional(optional_work, optional_entries, optional_formulas, optional_casks, optional_mas)
+        register_optional(optional_work, optional_entries, optional_formulas, optional_casks)
 
     # Get installed packages
     brew_formulas_installed = run_command(["brew", "list", "--formula"]).split()
@@ -217,7 +229,7 @@ Optional commands: npm, asdf, code
     casks_not_tracked = sorted(casks_installed_set - casks_declared_set - optional_casks)
     casks_missing = sorted(casks_declared_set - casks_installed_set)
 
-    mas_not_tracked = sorted(mas_installed_set - mas_declared_set - optional_mas)
+    mas_not_tracked = sorted(mas_installed_set - mas_declared_set)
     mas_missing = sorted(mas_declared_set - mas_installed_set)
 
     # --- NPM global packages ---
@@ -338,7 +350,7 @@ Optional commands: npm, asdf, code
     lines.append("")
     lines.append("## Mac App Store Apps")
     lines.append("")
-    lines.append("### Installed apps not tracked (add to Brewfile or uninstall manually)")
+    lines.append("### Installed apps not tracked (add to apps/mas/*.txt or uninstall manually)")
     lines.extend(format_items(mas_not_tracked, lambda name: f"{name} (id: {mas_installed[name]})"))
     lines.append("")
     lines.append("### Apps declared but not installed")
@@ -413,10 +425,6 @@ Optional commands: npm, asdf, code
             for name in payload["casks"]:
                 status = "installed" if name in casks_installed_set else "missing"
                 lines.append(f"- cask {name} — {status}")
-                found = True
-            for name, app_id in payload["mas"].items():
-                status = "installed" if name in mas_installed else "missing"
-                lines.append(f"- mas {name} (id: {app_id}) — {status}")
                 found = True
             if not found:
                 lines.append("- No entries defined")

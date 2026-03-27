@@ -88,20 +88,4 @@ cask "textbuddy"
 cask "visual-studio-code"
 cask "zoom"
 
-# Mac App Store apps
-mas "Actions For Obsidian", id: 1659667937
-mas "Amphetamine", id: 937984704
-mas "Barbee", id: 1548711022
-mas "CARROTweather", id: 993487541
-mas "Contacts Sync", id: 451691288
-mas "Dropover", id: 1355679052
-mas "Ground News", id: 1324203419
-mas "Highlights", id: 1498912833
-mas "Keynote", id: 409183694
-mas "Meeter", id: 1510445899
-mas "Numbers", id: 409203825
-mas "Pages", id: 409201541
-mas "Rapidmg", id: 6451349778
-mas "The Unarchiver", id: 425424353
-mas "Things", id: 904280696
 

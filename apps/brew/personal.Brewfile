@@ -24,7 +24,7 @@ cask "makemkv"
 cask "malwarebytes"
 cask "minecraft"
 cask "omnidisksweeper"
-cask "openscad"
+cask "openscad@snapshot"
 cask "parallels"
 cask "plex"
 cask "readwise-ibooks"
@@ -42,22 +42,3 @@ cask "vnc-viewer"
 cask "yacreader"
 cask "zen"
 cask "zotero"
-
-# Mac App Store apps
-mas "Controlly", id: 1548544614
-mas "Goodnotes", id: 1444383602
-mas "Health Auto Export", id: 1115567069
-mas "Home Assistant", id: 1099568401
-mas "Itsyhome", id: 6758070650
-mas "Kindle", id: 302584613
-mas "Paprika Recipe Manager 3", id: 1303222628
-mas "Parachute", id: 6748614170
-mas "PhotoSweeper", id: 463362050
-mas "PocketTube", id: 1533703891
-mas "Pixelmator Pro", id: 1289583905
-mas "Signals", id: 1453293391
-mas "Shortery", id: 1594183810
-mas "Soulver 3", id: 1508732804
-mas "Toolkit for YNAB", id: 1592912837
-mas "WhatsApp", id: 310633997
-mas "Yomu", id: 562211012
