@@ -1,0 +1,13 @@
+# 1Password SSH Agent Configuration
+# Firsthand machine: firsthand key preferred, galileo + personal available
+
+[[ssh-keys]]
+# TODO: Move to Firsthand company vault once account is set up
+item = "Firsthand github ssh key"
+vault = "Private"
+account = "my.1password.com"
+
+[[ssh-keys]]
+item = "Aaron's github ssh key"
+vault = "Private"
+account = "my.1password.com"

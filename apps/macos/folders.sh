@@ -27,6 +27,12 @@ Folders created in ${PATH_WORKSPACE}:
     infra           Infrastructure projects (including this repo)
     sandbox         Experimental/throwaway projects
 
+Additional folders created in firsthand mode:
+    firsthand/        Firsthand work projects
+    firsthand/sandbox Firsthand experimental projects
+    galileo/          Galileo work projects (contracting)
+    galileo/sandbox   Galileo experimental projects
+
 Additional folders created in galileo mode:
     galileo/        Galileo work projects
     galileo/sandbox Galileo experimental projects
@@ -70,8 +76,19 @@ do_setup() {
         ensure_folder "${PATH_WORKSPACE}/${folder}"
     done
 
-    # Galileo-specific workspace folders
-    if [[ "${PROFILE}" == "galileo" ]]; then
+    # Work-specific workspace folders
+    if [[ "${PROFILE}" == "firsthand" ]]; then
+        log_info "Creating firsthand workspace folders"
+        local firsthand_folders=(
+            "firsthand"
+            "firsthand/sandbox"
+            "galileo"
+            "galileo/sandbox"
+        )
+        for folder in "${firsthand_folders[@]}"; do
+            ensure_folder "${PATH_WORKSPACE}/${folder}"
+        done
+    elif [[ "${PROFILE}" == "galileo" ]]; then
         log_info "Creating galileo workspace folders"
         local galileo_folders=(
             "galileo"

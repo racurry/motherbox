@@ -1,0 +1,8 @@
+[user]
+  email = aaron.curry@firsthandcares.com
+  name = Aaron Curry
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIATyL+Bb4BJTkSdYsBeLiMnlZCepDtcHG6zwyq7YcNOq
+
+# Rewrite GitHub URLs to use work SSH key (via github-firsthand alias)
+[url "git@github-firsthand:"]
+  insteadOf = git@github.com:

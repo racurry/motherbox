@@ -7,6 +7,9 @@
 [includeIf "gitdir:~/workspace/galileo/"]
   path = ~/.gitconfig_galileo
 
+[includeIf "gitdir:~/workspace/firsthand/"]
+  path = ~/.gitconfig_firsthand
+
 [gpg]
   format = ssh
 [gpg "ssh"]

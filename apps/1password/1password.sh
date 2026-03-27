@@ -26,8 +26,9 @@ Manages:
 
 The SSH config forces specific keys per host to avoid SAML SSO issues
 with GitHub organizations. Requires public keys exported from 1Password:
-    ~/.ssh/galileo_github.pub   (galileo mode)
-    ~/.ssh/personal_github.pub  (both modes)
+    ~/.ssh/firsthand_github.pub (firsthand mode)
+    ~/.ssh/galileo_github.pub   (galileo/firsthand modes)
+    ~/.ssh/personal_github.pub  (all modes)
 
 Commands:
     setup       Run full setup (primary entry point)
@@ -35,7 +36,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --profile MODE     Set mode to 'galileo' or 'personal'
+    --profile MODE     Set mode to 'firsthand', 'galileo', or 'personal'
     --unattended    Skip prompts, fail if mode unknown
 EOF
 }
@@ -71,7 +72,12 @@ export_public_keys() {
         return 1
     fi
 
-    if [[ "${PROFILE}" == "galileo" ]]; then
+    if [[ "${PROFILE}" == "firsthand" ]]; then
+        # TODO: Move to Firsthand company vault once account is set up
+        export_key "Firsthand github ssh key" "Private" "my.1password.com" "firsthand_github.pub"
+        export_key "Galileo github ssh key" "Employee" "galileo.1password.com" "galileo_github.pub"
+        export_key "Aaron's github ssh key" "Private" "my.1password.com" "personal_github.pub"
+    elif [[ "${PROFILE}" == "galileo" ]]; then
         export_key "Galileo github ssh key" "Employee" "galileo.1password.com" "galileo_github.pub"
         export_key "Aaron's github ssh key" "Private" "my.1password.com" "personal_github.pub"
     else

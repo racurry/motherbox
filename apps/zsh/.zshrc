@@ -201,7 +201,11 @@ alias grbp='git rebase-and-push'
 # ============================================================================
 # Work laptop overrides
 # ============================================================================
-# Grab any galileo-specific aliases & configs
+# Grab any work-specific aliases & configs
 if [ -f ~/.galileorc ]; then
   source ~/.galileorc
+fi
+
+if [ -f ~/.firsthandrc ]; then
+  source ~/.firsthandrc
 fi

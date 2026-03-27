@@ -455,23 +455,28 @@ link_xdg_config() {
 prompt_profile() {
     print_heading "Setup Mode Selection"
     echo "Please select your setup mode:"
-    echo "  1) galileo  - Install Galileo work-specific tools & settings"
-    echo "  2) personal - Install personal-specific tools & settings"
+    echo "  1) firsthand - Install Firsthand work-specific tools & settings"
+    echo "  2) galileo   - Install Galileo work-specific tools & settings"
+    echo "  3) personal  - Install personal-specific tools & settings"
     echo ""
 
     while true; do
-        read -rp "Enter your choice (1 or 2): " choice
+        read -rp "Enter your choice (1, 2, or 3): " choice
         case $choice in
-        1 | galileo)
+        1 | firsthand)
+            PROFILE="firsthand"
+            break
+            ;;
+        2 | galileo)
             PROFILE="galileo"
             break
             ;;
-        2 | personal)
+        3 | personal)
             PROFILE="personal"
             break
             ;;
         *)
-            echo "Invalid choice. Please enter 1 (galileo) or 2 (personal)"
+            echo "Invalid choice. Please enter 1 (firsthand), 2 (galileo), or 3 (personal)"
             ;;
         esac
     done

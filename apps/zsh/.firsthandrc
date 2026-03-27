@@ -1,0 +1,5 @@
+alias firsthandcfg="code -nw ~/.firsthandrc"
+
+# Directories
+export firsthand=~/workspace/firsthand/
+export fh=~/workspace/firsthand/

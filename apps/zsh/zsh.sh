@@ -14,8 +14,9 @@ Usage: $0 [COMMAND]
 Symlink zsh configuration files to home directory.
 
 Files managed:
-    .zshrc       - Main zsh configuration
-    .galileorc   - Work-specific zsh config
+    .zshrc        - Main zsh configuration
+    .galileorc    - Galileo work-specific zsh config
+    .firsthandrc  - Firsthand work-specific zsh config
 
 Commands:
     setup       Run full setup (symlink configuration files)
@@ -28,6 +29,7 @@ do_setup() {
 
     link_home_dotfile "${SCRIPT_DIR}/.zshrc" "${APP_NAME}"
     link_home_dotfile "${SCRIPT_DIR}/.galileorc" "${APP_NAME}"
+    link_home_dotfile "${SCRIPT_DIR}/.firsthandrc" "${APP_NAME}"
 
     # Set MOTHERBOX_ROOT in ~/.local.zshrc for use in PATH and aliases
     local repo_root
