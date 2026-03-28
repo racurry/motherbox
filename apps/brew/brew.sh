@@ -108,7 +108,7 @@ install_brewfile() {
 
     log_info "Running brew bundle install for ${manifest}"
     set +e
-    brew bundle install --file="${manifest}"
+    brew bundle install --force --file="${manifest}"
     bundle_status=$?
     set -e
 
