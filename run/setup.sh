@@ -171,6 +171,7 @@ print_heading "Mac App Store"
 run_app_setup mas
 
 print_heading "Application Settings"
+run_app_setup vscode
 run_app_setup claudecode
 run_app_setup gemini-cli
 run_app_setup codex-cli

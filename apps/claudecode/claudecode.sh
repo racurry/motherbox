@@ -12,7 +12,7 @@ Usage: $0 [COMMAND] [OPTIONS]
 Link Claude Code global configuration to ~/.claude.
 
 Commands:
-    setup       Run full setup (install + rules + commands + statuslines + hooks + settings)
+    setup       Run full setup (install + rules + commands + statuslines + hooks + keybindings + settings)
     install     Install Claude Code via native installer
     rules       Link CLAUDE.md and AGENTS.md files
     commands    Sync commands to ~/.claude/commands
@@ -123,6 +123,20 @@ do_hooks() {
     log_success "Claude Code hooks synced"
 }
 
+do_keybindings() {
+    print_heading "Link Claude Code keybindings"
+
+    mkdir -p "${HOME}/.claude"
+
+    local keybindings_src="${SCRIPT_DIR}/keybindings.json"
+    local keybindings_dest="${HOME}/.claude/keybindings.json"
+
+    require_file "${keybindings_src}"
+    link_file "${keybindings_src}" "${keybindings_dest}" "claudecode"
+
+    log_success "Claude Code keybindings linked"
+}
+
 do_settings() {
     print_heading "Configure Claude Code settings"
 
@@ -165,6 +179,7 @@ do_setup() {
     do_commands
     do_statuslines
     do_hooks
+    do_keybindings
     do_settings
 }
 
@@ -177,7 +192,7 @@ main() {
             show_help
             exit 0
             ;;
-        setup | install | rules | commands | statuslines | hooks | settings)
+        setup | install | rules | commands | statuslines | hooks | keybindings | settings)
             command="$1"
             shift
             ;;
@@ -211,6 +226,9 @@ main() {
         ;;
     hooks)
         do_hooks
+        ;;
+    keybindings)
+        do_keybindings
         ;;
     settings)
         do_settings
