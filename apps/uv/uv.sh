@@ -142,6 +142,7 @@ install_uv() {
 
     log_info "Installing uv via standalone installer..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="${HOME}/.local/bin:${PATH}"
     log_success "uv installed to ~/.local/bin/uv"
 
     log_info "Signing uv and uvx for TCC/FDA persistence..."

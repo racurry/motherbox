@@ -166,6 +166,11 @@ run_app_setup shfmt
 run_app_setup ruff
 run_app_setup uv
 
+# Ensure ~/.local/bin is on PATH (uv installs there)
+if [[ -d "${HOME}/.local/bin" ]] && [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
+    export PATH="${HOME}/.local/bin:${PATH}"
+fi
+
 print_heading "Bootstrap complete"
 
 # ==========================================================================
