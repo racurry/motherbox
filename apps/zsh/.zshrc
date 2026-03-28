@@ -12,29 +12,10 @@ export BREW_PREFIX=$(brew --prefix)
 
 . $BREW_PREFIX/opt/asdf/libexec/asdf.sh
 
-# Add asdf completions
-fpath=(${ASDF_DIR}/completions $fpath)
-
-# Source Homebrew-installed zsh plugins
-source_brew_plugin() {
-  [ -f "$BREW_PREFIX/$1" ] && source "$BREW_PREFIX/$1"
-}
-
-source_brew_plugin "opt/fzf/shell/completion.zsh"
-source_brew_plugin "opt/fzf/shell/key-bindings.zsh"
-source_brew_plugin "share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-source_brew_plugin "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"  # Must be last
-
-unset -f source_brew_plugin
-
 # Only auto-update Homebrew once per day (86400 seconds)
 export HOMEBREW_AUTO_UPDATE_SECS=86400
 export HOMEBREW_NO_ENV_HINTS=1
 
-# Initialize direnv if available
-if command -v direnv >/dev/null 2>&1; then
-  eval "$(direnv hook zsh)"
-fi
 
 # ============================================================================
 # SHELL APPEARANCE & BEHAVIOR
@@ -44,9 +25,30 @@ fi
 autoload -U promptinit; promptinit
 prompt pure
 
+autoload -Uz compinit && compinit
+# Add asdf completions
+fpath=(${ASDF_DIR}/completions $fpath)
+
+# Source Homebrew-installed zsh plugins
+source_brew_plugin() {
+  [ -f "$BREW_PREFIX/$1" ] && source "$BREW_PREFIX/$1"
+}
+
+source_brew_plugin  "share/fzf-tab/fzf-tab.zsh"
+source_brew_plugin "opt/fzf/shell/key-bindings.zsh"
+source_brew_plugin "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"  
+
+unset -f source_brew_plugin
+
 # Set terminal title to current directory (using ~ for home)
 precmd() { print -Pn "\e]2;%~\a" }
 
+# ============================================================================
+# Initialize a few things
+
+if command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv hook zsh)"
+fi
 # The fuck
 eval $(thefuck --alias)
 
@@ -105,9 +107,9 @@ export mbox=$MOTHERBOX_ROOT # comes from .local.zshrc
 export inbox=~/Documents/"000_Inbox"
 export iCloud=~/iCloud
 export icloud=~/iCloud  # Both cases for convenience - prevents typos
-export nlp=~/workspace/infra/neat-little-package
+export nlp=~/code/me/neat-little-package
 export memex=~/Notes/Memex
-export agents=~/Documents/700_Sharing/agent_workspace
+export agents=~/ai_plaground
 
 # ============================================================================
 # CUSTOM FUNCTIONS
@@ -211,3 +213,7 @@ fi
 if [ -f ~/.firsthandrc ]; then
   source ~/.firsthandrc
 fi
+
+# # Enable completion system (compinit must come before fzf-tab)
+
+# [ -f "$BREW_PREFIX/share/fzf-tab/fzf-tab.zsh" ] && source "$BREW_PREFIX/share/fzf-tab/fzf-tab.zsh"
