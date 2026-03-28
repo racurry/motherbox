@@ -1,0 +1,623 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["httpx"]
+# ///
+"""Pull Granola meeting notes and transform into normalized schema.
+
+Commands:
+  fetch    - Pull raw notes from Granola API into granola/raw/
+  process  - Transform raw notes into normalized schema in granola/processed/
+  render   - Generate Obsidian markdown from processed notes into granola/md/
+  sync     - Fetch, process, and render (default)
+"""
+
+import argparse
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+import httpx
+
+DEFAULT_RAW_DIR = Path.home() / "granola" / "raw"
+DEFAULT_PROCESSED_DIR = Path.home() / "granola" / "processed"
+DEFAULT_MD_DIR = Path.home() / "granola" / "md"
+DEFAULT_CONFIG_PATH = Path.home() / "granola" / "config.json"
+DEFAULT_META_PATH = Path.home() / "granola" / "meta.json"
+
+# Default config written if no config file exists
+DEFAULT_CONFIG = {
+    "folder_tag_map": {
+        "Galileo": "meeting/galileo",
+        "Firsthand": "meeting/firsthand",
+    },
+}
+
+
+# --- Granola API Client ---
+
+class GranolaClient:
+    """Client for the Granola public API (v1).
+
+    Built against the beta API as of 2026-03-28.
+    Docs: https://docs.granola.ai/introduction
+
+    The API is very new and limited — only two endpoints exist (list + get).
+    The Zapier integration exposes more fields (link, my_notes, UUID-based IDs)
+    that aren't available here yet. Before doing work on this client, re-read
+    the API docs to check for new endpoints or fields.
+    """
+
+    BASE_URL = "https://public-api.granola.ai/v1"
+
+    def __init__(self, api_key: str):
+        self._client = httpx.Client(
+            base_url=self.BASE_URL,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30,
+        )
+
+    def list_notes(
+        self,
+        *,
+        created_before: str | None = None,
+        created_after: str | None = None,
+        updated_after: str | None = None,
+        cursor: str | None = None,
+        page_size: int = 30,
+    ) -> dict:
+        """GET /notes — list note summaries with optional filters.
+
+        Args:
+            created_before: Date or datetime string (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ). Use Z suffix, not +00:00.
+            created_after:  Date or datetime string (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ). Use Z suffix, not +00:00.
+            updated_after:  Date or datetime string (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ). Use Z suffix, not +00:00.
+            cursor: Opaque pagination cursor from a previous response.
+            page_size: 1–30 (default 30). API default is 10.
+
+        Returns:
+            {"notes": [...], "hasMore": bool, "cursor": str | None}
+        """
+        params: dict[str, str | int] = {"page_size": page_size}
+        if created_before:
+            params["created_before"] = created_before
+        if created_after:
+            params["created_after"] = created_after
+        if updated_after:
+            params["updated_after"] = updated_after
+        if cursor:
+            params["cursor"] = cursor
+        resp = self._client.get("/notes", params=params)
+        resp.raise_for_status()
+        return resp.json()
+
+    def list_all_notes(
+        self,
+        *,
+        created_before: str | None = None,
+        created_after: str | None = None,
+        updated_after: str | None = None,
+        page_size: int = 30,
+    ) -> list[dict]:
+        """Paginate through all notes matching the given filters.
+
+        Args:
+            created_before: Date string (YYYY-MM-DD).
+            created_after:  Date string (YYYY-MM-DD).
+            updated_after:  Date string (YYYY-MM-DD).
+            page_size: 1–30 (default 30).
+        """
+        notes: list[dict] = []
+        cursor: str | None = None
+        while True:
+            data = self.list_notes(
+                created_before=created_before,
+                created_after=created_after,
+                updated_after=updated_after,
+                page_size=page_size,
+                cursor=cursor,
+            )
+            notes.extend(data["notes"])
+            if not data.get("hasMore"):
+                break
+            cursor = data.get("cursor")
+        return notes
+
+    def get_note(self, note_id: str, *, include_transcript: bool = True) -> dict:
+        """GET /notes/{note_id} — fetch a single note.
+
+        Args:
+            note_id: Granola note ID (format: not_[a-zA-Z0-9]{14}).
+            include_transcript: If True, includes transcript array in response.
+                "transcript" is the only supported value for the include param.
+
+        Returns:
+            Full note object with: id, object, title, owner, created_at,
+            updated_at, calendar_event, attendees, folder_membership,
+            summary_text, summary_markdown, transcript (if requested).
+        """
+        params: dict[str, str] = {}
+        if include_transcript:
+            params["include"] = "transcript"
+        resp = self._client.get(f"/notes/{note_id}", params=params)
+        resp.raise_for_status()
+        return resp.json()
+
+
+# --- Fetcher ---
+
+class NoteFetcher:
+    """Pulls raw notes from the Granola API and stores them as JSON files."""
+
+    def __init__(self, client: GranolaClient, raw_dir: Path):
+        self.client = client
+        self.raw_dir = raw_dir
+
+    def resolve_note_ids(
+        self, note_id: str | None = None, since: str | None = None
+    ) -> list[str]:
+        if note_id:
+            return [note_id]
+        stubs = self.client.list_all_notes(updated_after=since)
+        return [n["id"] for n in stubs]
+
+    # Expected top-level fields from the API. If the API response deviates,
+    # we raise rather than silently overwrite with a different schema.
+    EXPECTED_FIELDS = {
+        "id", "object", "title", "owner", "created_at", "updated_at",
+        "calendar_event", "attendees", "folder_membership",
+        "summary_text", "summary_markdown", "transcript",
+    }
+
+    def _validate_response(self, data: dict, note_id: str):
+        fields = set(data.keys())
+        missing = self.EXPECTED_FIELDS - fields
+        extra = fields - self.EXPECTED_FIELDS
+        if missing:
+            raise ValueError(f"Note {note_id}: missing fields {missing}")
+        if extra:
+            print(f"  warning: note {note_id} has new fields {extra}")
+
+    def fetch(
+        self, note_id: str | None = None, since: str | None = None
+    ) -> list[str]:
+        """Fetch notes and return list of IDs that were written."""
+        self.raw_dir.mkdir(parents=True, exist_ok=True)
+        note_ids = self.resolve_note_ids(note_id, since)
+
+        print(f"Found {len(note_ids)} note(s)")
+        fetched = []
+        for nid in note_ids:
+            print(f"  fetching: {nid}")
+            raw = self.client.get_note(nid)
+            self._validate_response(raw, nid)
+            outfile = self.raw_dir / f"{nid}.json"
+            outfile.write_text(json.dumps(raw, indent=2, ensure_ascii=False))
+            fetched.append(nid)
+
+        print(f"Fetched {len(fetched)} note(s).")
+        return fetched
+
+
+# --- Processor ---
+
+class NoteProcessor:
+    """Transforms raw API JSON into our normalized storage schema."""
+
+    def __init__(self, raw_dir: Path, processed_dir: Path):
+        self.raw_dir = raw_dir
+        self.processed_dir = processed_dir
+
+    @staticmethod
+    def _normalize_speaker(source: str) -> str:
+        return "me" if source == "microphone" else "them"
+
+    @staticmethod
+    def _normalize_name(name: str) -> str:
+        """Convert 'Last, First' to 'First Last', leave others as-is."""
+        if ", " in name:
+            parts = name.split(", ", 1)
+            return f"{parts[1]} {parts[0]}"
+        return name
+
+    @staticmethod
+    def transform(raw: dict) -> dict:
+        cal = raw.get("calendar_event") or {}
+
+        owner_email = raw.get("owner", {}).get("email", "")
+        people = []
+        seen_emails = set()
+        for a in raw.get("attendees", []):
+            email = a.get("email", "")
+            if email and email != owner_email and email not in seen_emails:
+                seen_emails.add(email)
+                name = NoteProcessor._normalize_name(a.get("name", ""))
+                people.append({"name": name, "email": email})
+
+        transcript = []
+        for entry in raw.get("transcript") or []:
+            source = entry.get("speaker", {}).get("source", "speaker")
+            transcript.append({
+                "speaker": NoteProcessor._normalize_speaker(source),
+                "text": entry.get("text", ""),
+                "start_time": entry.get("start_time"),
+            })
+
+        return {
+            "id": raw["id"],
+            "synced_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": raw.get("updated_at"),
+            "created_at": raw.get("created_at"),
+            "title": raw.get("title"),
+            "scheduled_start": cal.get("scheduled_start_time"),
+            "scheduled_end": cal.get("scheduled_end_time"),
+            "organizer": cal.get("organiser"),
+            "people": people,
+            # NOTE: Granola folder changes don't seem to bump updated_at,
+            # so updated_after filtering may miss folder-only edits.
+            "folders": raw.get("folder_membership", []),
+            "summary": {
+                "markdown": raw.get("summary_markdown"),
+                "text": raw.get("summary_text"),
+            },
+            "transcript": transcript,
+        }
+
+    def resolve_raw_files(self, note_id: str | None = None) -> list[Path]:
+        if note_id:
+            return [self.raw_dir / f"{note_id}.json"]
+        return sorted(self.raw_dir.glob("*.json"))
+
+    @staticmethod
+    def _is_stale(source: Path, target: Path) -> bool:
+        """True if target doesn't exist or is older than source."""
+        if not target.exists():
+            return True
+        return source.stat().st_mtime > target.stat().st_mtime
+
+    def process(self, note_id: str | None = None) -> list[str]:
+        """Process raw notes and return list of IDs that were written."""
+        self.processed_dir.mkdir(parents=True, exist_ok=True)
+        raw_files = self.resolve_raw_files(note_id)
+
+        print(f"Processing {len(raw_files)} note(s)")
+        processed = []
+        for raw_file in raw_files:
+            outfile = self.processed_dir / raw_file.name
+            if not self._is_stale(raw_file, outfile):
+                continue
+            raw = json.loads(raw_file.read_text())
+            normalized = self.transform(raw)
+            outfile.write_text(
+                json.dumps(normalized, indent=2, ensure_ascii=False)
+            )
+            print(f"  processed: {raw_file.stem}")
+            processed.append(raw_file.stem)
+
+        print(f"Processed {len(processed)} of {len(raw_files)} note(s).")
+        return processed
+
+
+# --- Renderer ---
+
+class NoteRenderer:
+    """Renders processed notes as Obsidian-flavored markdown."""
+
+    def __init__(self, processed_dir: Path, md_dir: Path, config: dict):
+        self.processed_dir = processed_dir
+        self.md_dir = md_dir
+        self.folder_tag_map = config.get("folder_tag_map", {})
+
+    @staticmethod
+    def _format_date(iso_str: str | None) -> str | None:
+        """Parse ISO datetime and return 'YYYY-MM-DD h.MMam/pm' format."""
+        if not iso_str:
+            return None
+        dt = datetime.fromisoformat(iso_str)
+        hour = dt.strftime("%I").lstrip("0")
+        minute = f".{dt.strftime('%M')}"
+        ampm = dt.strftime("%p").lower()
+        return f"{dt.strftime('%Y-%m-%d')} {hour}{minute}{ampm}"
+
+    @staticmethod
+    def _format_daily_note(iso_str: str | None) -> str | None:
+        """Format as Obsidian daily note wikilink: [[YYYY-MM-DD Weekday]]."""
+        if not iso_str:
+            return None
+        dt = datetime.fromisoformat(iso_str)
+        return f"[[{dt.strftime('%Y-%m-%d %A')}]]"
+
+    def _format_filename(self, note: dict) -> str:
+        """Generate filename as 'YYYY-MM-DD HH.MMam/pm - Title.md'."""
+        title = note.get("title") or note["id"]
+        date_str = note.get("scheduled_start") or note.get("created_at")
+        date_part = self._format_date(date_str) or note["id"]
+        # Sanitize title for filesystem
+        for ch in '/\\:*?"<>|':
+            title = title.replace(ch, "-")
+        return f"{date_part} - {title}.md"
+
+    @staticmethod
+    def _render_transcript(transcript: list[dict]) -> str:
+        lines = []
+        for entry in transcript:
+            speaker = "Me" if entry["speaker"] == "me" else "Them"
+            lines.append(f"{speaker}: {entry['text']}  ")
+        return "\n".join(lines)
+
+    def render_note(self, note: dict) -> str:
+        date_src = note.get("scheduled_start") or note.get("created_at")
+
+        # Frontmatter
+        people_names = [p["name"] for p in note.get("people", []) if p.get("name")]
+        people_yaml = "\n".join(f"  - '[[{name}]]'" for name in people_names) if people_names else ""
+
+        date_formatted = self._format_date(date_src) or ""
+        daily_note = self._format_daily_note(date_src) or ""
+        granola_id = note.get("id", "")
+
+        # Build tags: always include meeting/granola_notes, then map folders
+        tags = ["meeting/granola_notes"]
+        for folder in note.get("folders", []):
+            folder_name = folder.get("name", "")
+            if folder_name in self.folder_tag_map:
+                tags.append(self.folder_tag_map[folder_name])
+        tags_yaml = "\n".join(f"  - {tag}" for tag in tags)
+
+        frontmatter = f"""---
+aliases:
+granola_id: {granola_id}
+date: {date_formatted}
+daily_note:
+  - '{daily_note}'
+topics:
+tags:
+{tags_yaml}
+people:
+{people_yaml}
+summary:
+---"""
+
+        # Body
+        title = note.get("title") or note["id"]
+        people_names_str = ", ".join(people_names) if people_names else ""
+        people_emails = [p["email"] for p in note.get("people", []) if p.get("email")]
+        people_emails_str = ", ".join(people_emails) if people_emails else ""
+
+        summary_md = note.get("summary", {}).get("markdown") or ""
+        transcript = note.get("transcript", [])
+        transcript_block = self._render_transcript(transcript) if transcript else ""
+
+        parts = [
+            frontmatter,
+            "",
+            f"# {title}",
+            "",
+            f"Granola attendees: {people_names_str}",
+            f"Granola emails: {people_emails_str}",
+            "",
+            "## My Notes",
+            "",
+            "## Granola Notes",
+            "",
+            summary_md,
+            "",
+            "## Transcript",
+            "",
+            "```",
+            transcript_block,
+            "```",
+            "",
+        ]
+
+        return "\n".join(parts)
+
+    def resolve_processed_files(self, note_id: str | None = None) -> list[Path]:
+        if note_id:
+            return [self.processed_dir / f"{note_id}.json"]
+        return sorted(self.processed_dir.glob("*.json"))
+
+    def _build_id_index(self) -> dict[str, Path]:
+        """Scan existing md files and build a granola_id → filepath map."""
+        index = {}
+        for md_file in self.md_dir.glob("*.md"):
+            text = md_file.read_text()
+            for line in text.splitlines():
+                if line.startswith("granola_id:"):
+                    gid = line.split(":", 1)[1].strip()
+                    if gid:
+                        index[gid] = md_file
+                    break
+                if line == "---" and index:
+                    break
+        return index
+
+    def render(self, note_id: str | None = None) -> list[str]:
+        """Render processed notes to markdown. Returns list of rendered IDs."""
+        self.md_dir.mkdir(parents=True, exist_ok=True)
+        id_index = self._build_id_index()
+        processed_files = self.resolve_processed_files(note_id)
+
+        print(f"Rendering {len(processed_files)} note(s)")
+        rendered = []
+        for pfile in processed_files:
+            note = json.loads(pfile.read_text())
+            filename = self._format_filename(note)
+            outfile = self.md_dir / filename
+
+            # Remove old file if this note was previously rendered
+            # under a different filename (e.g. title changed)
+            old_file = id_index.get(note["id"])
+            renamed = old_file and old_file != outfile
+            if renamed:
+                print(f"  removing old: {old_file.name}")
+                old_file.unlink()
+
+            # Skip if output is newer than input and filename hasn't changed
+            if not renamed and outfile.exists():
+                if pfile.stat().st_mtime <= outfile.stat().st_mtime:
+                    continue
+
+            md = self.render_note(note)
+            outfile.write_text(md)
+            print(f"  rendered: {filename}")
+            rendered.append(pfile.stem)
+
+        print(f"Rendered {len(rendered)} of {len(processed_files)} note(s).")
+        return rendered
+
+
+# --- CLI ---
+
+def get_client() -> GranolaClient:
+    key = os.environ.get("GRANOLA_API_KEY")
+    if not key:
+        print("Error: GRANOLA_API_KEY env var not set", file=sys.stderr)
+        sys.exit(1)
+    return GranolaClient(key)
+
+
+def load_config(path: Path) -> dict:
+    if path.exists():
+        return json.loads(path.read_text())
+    # Write default config for the user to edit
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(DEFAULT_CONFIG, indent=2))
+    print(f"Created default config at {path}")
+    return DEFAULT_CONFIG
+
+
+def load_meta(path: Path) -> dict:
+    if path.exists():
+        return json.loads(path.read_text())
+    return {}
+
+
+def save_meta(path: Path, meta: dict):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(meta, indent=2))
+
+
+def resolve_since(args, meta: dict) -> str | None:
+    """Determine the --since value from args or meta."""
+    if args.since:
+        return args.since
+    if args.latest:
+        last = meta.get("last_sync")
+        if not last:
+            print("Error: --latest but no previous sync found in meta.json",
+                  file=sys.stderr)
+            sys.exit(1)
+        return last
+    return None
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Sync Granola meeting notes to Obsidian-flavored markdown.",
+        epilog="""examples:
+  granola-sync                         Sync all notes (fetch + process + render)
+  granola-sync --since 2026-03-01      Sync notes updated after March 1
+  granola-sync --latest                Sync notes updated since last run
+  granola-sync --note not_ABC123       Sync a single note by ID
+  granola-sync fetch --since 2026-03-01  Fetch only, no processing or rendering
+  granola-sync process                 Re-process all raw notes
+  granola-sync render                  Re-render all processed notes
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "command",
+        nargs="?",
+        default="sync",
+        choices=["fetch", "process", "render", "sync"],
+        help=(
+            "Stage to run. fetch=pull raw JSON from API, "
+            "process=transform to normalized schema, "
+            "render=generate Obsidian markdown, "
+            "sync=all three (default: sync)"
+        ),
+    )
+    since_group = parser.add_mutually_exclusive_group()
+    since_group.add_argument(
+        "--since",
+        help="Notes updated after this date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ)",
+    )
+    since_group.add_argument(
+        "--latest",
+        action="store_true",
+        help="Fetch notes updated since last sync (reads from meta.json)",
+    )
+    parser.add_argument(
+        "--note",
+        help="Target a single note by Granola ID (e.g. not_ABC12345678901)",
+    )
+    parser.add_argument(
+        "--raw-dir",
+        default=str(DEFAULT_RAW_DIR),
+        help=f"Directory for raw API responses (default: {DEFAULT_RAW_DIR})",
+    )
+    parser.add_argument(
+        "--processed-dir",
+        default=str(DEFAULT_PROCESSED_DIR),
+        help=f"Directory for processed notes (default: {DEFAULT_PROCESSED_DIR})",
+    )
+    parser.add_argument(
+        "--md-dir",
+        default=str(DEFAULT_MD_DIR),
+        help=f"Directory for rendered markdown (default: {DEFAULT_MD_DIR})",
+    )
+    parser.add_argument(
+        "--config",
+        default=str(DEFAULT_CONFIG_PATH),
+        help=f"Config file path (default: {DEFAULT_CONFIG_PATH})",
+    )
+    parser.add_argument(
+        "--meta",
+        default=str(DEFAULT_META_PATH),
+        help=f"Meta file path (default: {DEFAULT_META_PATH})",
+    )
+
+    args = parser.parse_args()
+    raw_dir = Path(args.raw_dir)
+    processed_dir = Path(args.processed_dir)
+    md_dir = Path(args.md_dir)
+    config = load_config(Path(args.config))
+    meta_path = Path(args.meta)
+    meta = load_meta(meta_path)
+
+    since = resolve_since(args, meta)
+
+    # Record sync start time before fetching so we don't miss
+    # notes updated during the sync. API accepts YYYY-MM-DDTHH:MM:SSZ.
+    sync_start = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    match args.command:
+        case "fetch":
+            fetcher = NoteFetcher(get_client(), raw_dir)
+            fetcher.fetch(args.note, since)
+        case "process":
+            processor = NoteProcessor(raw_dir, processed_dir)
+            processor.process(args.note)
+        case "render":
+            renderer = NoteRenderer(processed_dir, md_dir, config)
+            renderer.render(args.note)
+        case "sync":
+            fetcher = NoteFetcher(get_client(), raw_dir)
+            fetcher.fetch(args.note, since)
+            processor = NoteProcessor(raw_dir, processed_dir)
+            processor.process(args.note)
+            renderer = NoteRenderer(processed_dir, md_dir, config)
+            renderer.render(args.note)
+
+    # Update last_sync timestamp after successful fetch or sync
+    if args.command in ("fetch", "sync"):
+        meta["last_sync"] = sync_start
+        save_meta(meta_path, meta)
+        print(f"Updated last_sync to {sync_start}")
+
+
+if __name__ == "__main__":
+    main()
