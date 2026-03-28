@@ -141,7 +141,7 @@ install_uv() {
     fi
 
     log_info "Installing uv via standalone installer..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    INSTALLER_NO_MODIFY_PATH=1 curl -LsSf https://astral.sh/uv/install.sh | sh
     export PATH="${HOME}/.local/bin:${PATH}"
     log_success "uv installed to ~/.local/bin/uv"
 
