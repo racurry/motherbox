@@ -161,6 +161,7 @@ Optional commands: npm, asdf, code
     tmp_dir = repo_root / ".tmp"
     tmp_dir.mkdir(exist_ok=True)
     audit_path = tmp_dir / "APP_AUDIT.md"
+    core_brewfile = repo_root / "apps" / "brew" / "core.Brewfile"
     brewfile = repo_root / "apps" / "brew" / "Brewfile"
     optional_personal = repo_root / "apps" / "brew" / "personal.Brewfile"
     optional_work = repo_root / "apps" / "brew" / "galileo.Brewfile"
@@ -173,8 +174,11 @@ Optional commands: npm, asdf, code
     tool_versions_file = repo_root / "apps" / "asdf" / ".tool-versions"
     default_npm_file = repo_root / "apps" / "asdf" / ".default-npm-packages"
 
-    # Parse main Brewfile
+    # Parse core + main Brewfile
     brew_formulas_declared, brew_casks_declared, _ = parse_brewfile(brewfile)
+    if core_brewfile.exists():
+        core_formulas, _, _ = parse_brewfile(core_brewfile)
+        brew_formulas_declared.extend(core_formulas)
 
     # Parse mas app lists from apps/mas/
     mas_dir = repo_root / "apps" / "mas"

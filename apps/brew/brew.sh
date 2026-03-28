@@ -13,10 +13,11 @@ Manage Homebrew installation and package management.
 
 Commands:
     setup       Run full setup (install Homebrew, then install packages)
+    bootstrap   Install Homebrew + core formulae only
     install     Install Homebrew if not already installed
     bundle      Install packages from Brewfile(s)
     audit       Audit installed apps against Brewfile definitions
-    maintain    Run regular Homebrew maintenance (update, upgrade, cleanup)
+    maintain    Run regular Homebrew maintenance
     help        Show this help message (also: -h, --help)
 
 Options:
@@ -58,6 +59,18 @@ install_homebrew() {
     else
         fail "Homebrew installer failed"
     fi
+}
+
+install_core_bundle() {
+    print_heading "Install core Homebrew formulae"
+
+    require_command brew
+
+    local core_manifest="${REPO_ROOT}/apps/brew/core.Brewfile"
+    [[ -f "${core_manifest}" ]] || fail "Missing core Brewfile at ${core_manifest}"
+
+    log_info "Installing core formulae from core.Brewfile"
+    install_brewfile "${core_manifest}"
 }
 
 install_bundle() {
@@ -137,7 +150,7 @@ main() {
             show_help
             exit 0
             ;;
-        setup | install | bundle | audit | maintain)
+        setup | bootstrap | install | bundle | audit | maintain)
             command="$1"
             shift
             ;;
@@ -157,7 +170,12 @@ main() {
     setup)
         determine_profile "${args[@]}" || exit 1
         install_homebrew
+        install_core_bundle
         install_bundle
+        ;;
+    bootstrap)
+        install_homebrew
+        install_core_bundle
         ;;
     install)
         install_homebrew

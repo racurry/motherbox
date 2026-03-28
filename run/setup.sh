@@ -133,25 +133,25 @@ run_app_setup() {
     esac
 }
 
-print_heading "Baseline Required Apps"
-run_app_setup brew
+# ==========================================================================
+# PHASE 1: BOOTSTRAP — core dev environment
+# ==========================================================================
+
+print_heading "Phase 1: Bootstrap"
+
+# Install Homebrew + core formulae only
+"${REPO_ROOT}/apps/brew/brew.sh" bootstrap ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"}
 
 # Source Homebrew into this shell so downstream scripts can find brew-installed tools
 if ! command -v brew >/dev/null 2>&1; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-print_heading "Shell Settings"
 run_app_setup zsh
-
-print_heading "macOS Settings"
-run_app_setup macos
-run_app_setup icloud
-
-print_heading "Dev Tools"
 run_app_setup asdf
 
 # Source asdf into this shell so downstream scripts can find asdf-managed runtimes
+# shellcheck source=/dev/null
 asdf_sh="$(brew --prefix)/opt/asdf/libexec/asdf.sh"
 if [[ -f "${asdf_sh}" ]] && ! command -v asdf >/dev/null 2>&1; then
     . "${asdf_sh}"
@@ -162,10 +162,25 @@ run_app_setup direnv
 run_app_setup 1password
 run_app_setup shellcheck
 run_app_setup markdownlint
-run_app_setup mdformat
 run_app_setup shfmt
 run_app_setup ruff
 run_app_setup uv
+
+print_heading "Bootstrap complete"
+
+# ==========================================================================
+# PHASE 2: FULL INSTALL — all apps, settings, and preferences
+# ==========================================================================
+
+print_heading "Phase 2: Full Install"
+
+run_app_setup brew
+
+print_heading "macOS Settings"
+run_app_setup macos
+run_app_setup icloud
+
+run_app_setup mdformat
 
 print_heading "Mac App Store"
 run_app_setup mas
