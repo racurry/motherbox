@@ -28,32 +28,9 @@ link_config_files() {
     link_home_dotfile "${SCRIPT_DIR}/.default-python-packages" "${APP_NAME}"
 }
 
-ensure_asdf_sourced() {
-    if command -v asdf >/dev/null 2>&1; then
-        return 0
-    fi
-
-    # Source Homebrew first (asdf is installed via Homebrew)
-    local brew_path="/opt/homebrew/bin/brew"
-    if [[ -x "${brew_path}" ]]; then
-        eval "$(${brew_path} shellenv)"
-    fi
-
-    # Source asdf
-    local brew_prefix
-    brew_prefix="$(brew --prefix 2>/dev/null || true)"
-    local asdf_sh="${brew_prefix}/opt/asdf/libexec/asdf.sh"
-    if [[ -f "${asdf_sh}" ]]; then
-        # shellcheck source=/dev/null
-        . "${asdf_sh}"
-        log_info "asdf sourced into current shell"
-    fi
-}
-
 add_plugins() {
     print_heading "Add asdf plugins"
 
-    ensure_asdf_sourced
     require_command asdf
 
     # Get plugin list from asdf's current command (relies on asdf finding .tool-versions)
@@ -73,7 +50,6 @@ add_plugins() {
 install_runtimes() {
     print_heading "Install asdf runtimes"
 
-    ensure_asdf_sourced
     require_command asdf
 
     log_info "Running 'asdf install'"

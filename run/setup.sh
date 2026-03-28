@@ -136,6 +136,11 @@ run_app_setup() {
 print_heading "Baseline Required Apps"
 run_app_setup brew
 
+# Source Homebrew into this shell so downstream scripts can find brew-installed tools
+if ! command -v brew >/dev/null 2>&1; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
 print_heading "Shell Settings"
 run_app_setup zsh
 
@@ -145,6 +150,13 @@ run_app_setup icloud
 
 print_heading "Dev Tools"
 run_app_setup asdf
+
+# Source asdf into this shell so downstream scripts can find asdf-managed runtimes
+asdf_sh="$(brew --prefix)/opt/asdf/libexec/asdf.sh"
+if [[ -f "${asdf_sh}" ]] && ! command -v asdf >/dev/null 2>&1; then
+    . "${asdf_sh}"
+fi
+
 run_app_setup git
 run_app_setup direnv
 run_app_setup 1password
