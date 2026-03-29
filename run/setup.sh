@@ -167,11 +167,6 @@ print_heading "Bootstrap complete"
 # PHASE 2: FULL INSTALL — all apps, settings, and preferences
 # ==========================================================================
 
-# Ensure ~/.local/bin is on PATH (uv installs there)
-if [[ -d "${HOME}/.local/bin" ]] && [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
-    export PATH="${HOME}/.local/bin:${PATH}"
-fi
-
 print_heading "Phase 2: Full Install"
 
 run_app_setup brew
@@ -192,12 +187,18 @@ run_app_setup karabiner
 
 print_heading "Dev Tools"
 
+run_app_setup uv
+
+# Ensure ~/.local/bin is on PATH (uv installs there)
+if [[ -d "${HOME}/.local/bin" ]] && [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
+    export PATH="${HOME}/.local/bin:${PATH}"
+fi
+
 run_app_setup shellcheck
 run_app_setup markdownlint
 run_app_setup shfmt
 run_app_setup ruff
 run_app_setup mdformat
-run_app_setup uv
 
 
 # Run machine-specific setup if a machine is specified

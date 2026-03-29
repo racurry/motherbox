@@ -9,8 +9,9 @@ All-in-one project for managing multiple macOS environments (personal and work) 
 3. Enable SSH agent: Settings → Developer → SSH Agent.
    - Accept the automated config from 1Password.
    - Check "Integrate with 1Password CLI".
-4. Clone: `git clone git@github.com:racurry/motherbox.git ~/code/me/motherbox`
-5. Run: `cd ~/code/me/motherbox && ./run/setup.sh`
+4. Sign into the Mac App Store app
+5. Clone: `git clone git@github.com:racurry/motherbox.git ~/code/me/motherbox`
+6. Run: `cd ~/code/me/motherbox && ./run/setup.sh`
 
 ## Structure
 
