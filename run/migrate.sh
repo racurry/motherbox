@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+shopt -s nullglob
 
 # Migration: ~/workspace → ~/code
 # One-time use. Run from anywhere. Delete after.
@@ -17,13 +18,13 @@ skip() { log "skip: $1"; }
 # ── Preflight ────────────────────────────────────────────────────────
 
 if [[ ! -d "${OLD}" ]]; then
-    echo "ERROR: ${OLD} does not exist, nothing to migrate"
-    exit 1
+    echo "==> ${OLD} does not exist, skipping"
+    exit 0
 fi
 
 if [[ -d "${NEW}/me" ]]; then
-    echo "ERROR: ${NEW}/me already exists, looks like migration already ran"
-    exit 1
+    echo "==> ${NEW}/me already exists, looks like migration already ran"
+    exit 0
 fi
 
 echo "==> Creating directory structure"
@@ -37,36 +38,48 @@ rm -rf "${OLD}/infra/worktrees"
 
 # ── Move infra/ repos (except motherbox) ──────────────────────────────
 
-echo "==> Moving infra repos"
-for item in "${OLD}/infra/"*; do
-    name="$(basename "$item")"
-    case "$name" in
-    .DS_Store | .claude | motherbox) skip "$name" ;;
-    *) move "$item" "${NEW}/me/${name}" ;;
-    esac
-done
+if [[ -d "${OLD}/infra" ]]; then
+    echo "==> Moving infra repos"
+    for item in "${OLD}/infra/"*; do
+        name="$(basename "$item")"
+        case "$name" in
+        .DS_Store | .claude | motherbox) skip "$name" ;;
+        *) move "$item" "${NEW}/me/${name}" ;;
+        esac
+    done
+else
+    echo "==> No infra/ directory, skipping"
+fi
 
 # ── Move vendor/ repos ───────────────────────────────────────────────
 
-echo "==> Moving vendor repos"
-for item in "${OLD}/vendor/"*; do
-    name="$(basename "$item")"
-    case "$name" in
-    .DS_Store) skip "$name" ;;
-    *) move "$item" "${NEW}/vendor/${name}" ;;
-    esac
-done
+if [[ -d "${OLD}/vendor" ]]; then
+    echo "==> Moving vendor repos"
+    for item in "${OLD}/vendor/"*; do
+        name="$(basename "$item")"
+        case "$name" in
+        .DS_Store) skip "$name" ;;
+        *) move "$item" "${NEW}/vendor/${name}" ;;
+        esac
+    done
+else
+    echo "==> No vendor/ directory, skipping"
+fi
 
 # ── Move sandbox/ → _scratch ─────────────────────────────────────────
 
-echo "==> Moving sandbox repos to _scratch"
-for item in "${OLD}/sandbox/"*; do
-    name="$(basename "$item")"
-    case "$name" in
-    .DS_Store) skip "$name" ;;
-    *) move "$item" "${NEW}/me/_scratch/${name}" ;;
-    esac
-done
+if [[ -d "${OLD}/sandbox" ]]; then
+    echo "==> Moving sandbox repos to _scratch"
+    for item in "${OLD}/sandbox/"*; do
+        name="$(basename "$item")"
+        case "$name" in
+        .DS_Store) skip "$name" ;;
+        *) move "$item" "${NEW}/me/_scratch/${name}" ;;
+        esac
+    done
+else
+    echo "==> No sandbox/ directory, skipping"
+fi
 
 # ── Move loose repos from workspace root ──────────────────────────────
 
