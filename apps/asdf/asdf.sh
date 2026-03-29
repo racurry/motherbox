@@ -33,8 +33,13 @@ add_plugins() {
 
     require_command asdf
 
-    # Get plugin list from asdf's current command (relies on asdf finding .tool-versions)
-    plugin_list=$(asdf current --no-header 2>/dev/null | awk '{print $1}' || true)
+    # Get plugin list from .tool-versions file
+    local tool_versions="${SCRIPT_DIR}/.tool-versions"
+    if [[ ! -f "${tool_versions}" ]]; then
+        log_info "No .tool-versions file found"
+        return 0
+    fi
+    plugin_list=$(awk '{print $1}' "${tool_versions}" || true)
     if [[ -z "${plugin_list}" ]]; then
         log_info "No tools configured for asdf"
         return 0
