@@ -160,22 +160,17 @@ fi
 run_app_setup git
 run_app_setup direnv
 run_app_setup 1password
-run_app_setup shellcheck
-run_app_setup markdownlint
-run_app_setup shfmt
-run_app_setup ruff
-run_app_setup uv
-
-# Ensure ~/.local/bin is on PATH (uv installs there)
-if [[ -d "${HOME}/.local/bin" ]] && [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
-    export PATH="${HOME}/.local/bin:${PATH}"
-fi
 
 print_heading "Bootstrap complete"
 
 # ==========================================================================
 # PHASE 2: FULL INSTALL — all apps, settings, and preferences
 # ==========================================================================
+
+# Ensure ~/.local/bin is on PATH (uv installs there)
+if [[ -d "${HOME}/.local/bin" ]] && [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
+    export PATH="${HOME}/.local/bin:${PATH}"
+fi
 
 print_heading "Phase 2: Full Install"
 
@@ -184,8 +179,6 @@ run_app_setup brew
 print_heading "macOS Settings"
 run_app_setup macos
 run_app_setup icloud
-
-run_app_setup mdformat
 
 print_heading "Mac App Store"
 run_app_setup mas
@@ -196,6 +189,16 @@ run_app_setup claudecode
 run_app_setup gemini-cli
 run_app_setup codex-cli
 run_app_setup karabiner
+
+print_heading "Dev Tools"
+
+run_app_setup shellcheck
+run_app_setup markdownlint
+run_app_setup shfmt
+run_app_setup ruff
+run_app_setup mdformat
+run_app_setup uv
+
 
 # Run machine-specific setup if a machine is specified
 if [[ -n "${MACHINE:-}" ]]; then
