@@ -3,6 +3,8 @@
 # Everything else (casks, dev tools, etc.) lives in the main Brewfile.
 
 brew "asdf"                      # asdf.sh — runtime manager
+brew "libyaml"                   # asdf ruby build dep (psych extension)
+brew "openssl@3"                 # asdf erlang build dep
 brew "direnv"                    # direnv.sh
 brew "fzf"                       # sourced in .zshrc
 brew "jq"                        # claudecode.sh settings merge
