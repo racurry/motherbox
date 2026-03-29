@@ -1,29 +1,33 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 shopt -s nullglob
 
 # Migration: ~/workspace → ~/code
-# One-time use. Run from anywhere. Delete after.
+# Idempotent — safe to re-run. Skips items already moved.
 
 OLD="${HOME}/workspace"
 NEW="${HOME}/code"
+ERRORS=0
 
 log() { printf '  %s\n' "$1"; }
 move() {
-    log "mv $1 → $2"
-    mv "$1" "$2"
+    local src="$1" dest="$2"
+    if [[ -e "$dest" ]]; then
+        log "exists: $dest (skipping)"
+        return 0
+    fi
+    log "mv $src → $dest"
+    if ! mv "$src" "$dest"; then
+        log "FAILED: mv $src → $dest"
+        ERRORS=$((ERRORS + 1))
+    fi
 }
 skip() { log "skip: $1"; }
 
 # ── Preflight ────────────────────────────────────────────────────────
 
 if [[ ! -d "${OLD}" ]]; then
-    echo "==> ${OLD} does not exist, skipping"
-    exit 0
-fi
-
-if [[ -d "${NEW}/me" ]]; then
-    echo "==> ${NEW}/me already exists, looks like migration already ran"
+    echo "==> ${OLD} does not exist, nothing to migrate"
     exit 0
 fi
 
@@ -122,9 +126,15 @@ else
 fi
 
 echo ""
-echo "==> Done! Everything except motherbox now lives in ${NEW}/"
+if [[ "$ERRORS" -gt 0 ]]; then
+    echo "==> Done with ${ERRORS} error(s). Re-run to retry failed moves."
+else
+    echo "==> Done! Everything except motherbox now lives in ${NEW}/"
+fi
 echo ""
 echo "    Next steps:"
 echo "      mv ~/workspace/infra/motherbox ~/code/me/motherbox"
 echo "      cd ~/code/me/motherbox && ./run/setup.sh"
 echo "      rm ~/migrate.sh"
+
+exit "$ERRORS"
