@@ -4,10 +4,12 @@ All-in-one project for managing multiple macOS environments (personal and work) 
 
 ## Set up a new mac
 
-1. [Download 1Password](https://1password.com/downloads/mac), install, and sign in
-2. Enable SSH agent: Settings → Developer → SSH Agent
-3. Clone: `git clone git@github.com:racurry/motherbox.git ~/code/me/motherbox`
-4. Run: `cd ~/code/me/motherbox && ./run/setup.sh`
+1. Install command line tools: `xcode-select --install`
+2. [Download 1Password](https://1password.com/downloads/mac), install, and sign in
+3. Enable SSH agent: Settings → Developer → SSH Agent.
+   - Accept the automated config from 1password.
+4. Clone: `git clone git@github.com:racurry/motherbox.git ~/code/me/motherbox`
+5. Run: `cd ~/code/me/motherbox && ./run/setup.sh`
 
 ## Structure
 

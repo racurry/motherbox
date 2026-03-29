@@ -75,7 +75,6 @@ export_public_keys() {
     if [[ "${PROFILE}" == "firsthand" ]]; then
         # TODO: Move to Firsthand company vault once account is set up
         export_key "Firsthand github ssh key" "Private" "my.1password.com" "firsthand_github.pub"
-        export_key "Galileo github ssh key" "Employee" "galileo.1password.com" "galileo_github.pub"
         export_key "Aaron's github ssh key" "Private" "my.1password.com" "personal_github.pub"
     elif [[ "${PROFILE}" == "galileo" ]]; then
         export_key "Galileo github ssh key" "Employee" "galileo.1password.com" "galileo_github.pub"

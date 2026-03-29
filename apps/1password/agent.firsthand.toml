@@ -1,5 +1,5 @@
 # 1Password SSH Agent Configuration
-# Firsthand machine: firsthand key preferred, galileo + personal available
+# Firsthand machine: firsthand key preferred, personal available
 
 [[ssh-keys]]
 # TODO: Move to Firsthand company vault once account is set up

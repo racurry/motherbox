@@ -12,13 +12,6 @@ Host github.com
     IdentityFile ~/.ssh/personal_github.pub
     IdentitiesOnly yes
 
-# GitHub alias for Galileo repos (still contracting)
-Host github-work
-    HostName github.com
-    User git
-    IdentityFile ~/.ssh/galileo_github.pub
-    IdentitiesOnly yes
-
 # GitHub alias for Firsthand repos (auto-rewritten by git for ~/code/firsthand/)
 Host github-firsthand
     HostName github.com
