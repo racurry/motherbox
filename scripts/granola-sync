@@ -9,12 +9,14 @@ Commands:
   fetch    - Pull raw notes from Granola API into granola/raw/
   process  - Transform raw notes into normalized schema in granola/processed/
   render   - Generate Obsidian markdown from processed notes into granola/md/
-  sync     - Fetch, process, and render (default)
+  publish  - Copy rendered markdown into Obsidian vault with date-based folders
+  sync     - Fetch, process, render, and publish (default)
 """
 
 import argparse
 import json
 import os
+import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,7 +30,10 @@ DEFAULT_CONFIG_PATH = Path.home() / "granola" / "config.json"
 DEFAULT_META_PATH = Path.home() / "granola" / "meta.json"
 
 # Default config written if no config file exists
+DEFAULT_VAULT_DIR = Path.home() / "Notes" / "Memex" / "300. Time" / "Meetings"
+
 DEFAULT_CONFIG = {
+    "vault_dir": str(DEFAULT_VAULT_DIR),
     "folder_tag_map": {
         "Galileo": "meeting/galileo",
         "Firsthand": "meeting/firsthand",
@@ -316,7 +321,7 @@ class NoteRenderer:
         if not iso_str:
             return None
         dt = datetime.fromisoformat(iso_str)
-        hour = dt.strftime("%I").lstrip("0")
+        hour = dt.strftime("%I")
         minute = f".{dt.strftime('%M')}"
         ampm = dt.strftime("%p").lower()
         return f"{dt.strftime('%Y-%m-%d')} {hour}{minute}{ampm}"
@@ -469,6 +474,60 @@ summary:
         return rendered
 
 
+# --- Publisher ---
+
+class NotePublisher:
+    """Copies rendered markdown into an Obsidian vault with date-based folders.
+
+    Target structure: {vault_dir}/YYYY/MM/<filename>.md
+    The date is extracted from the filename prefix (YYYY-MM-DD).
+    """
+
+    def __init__(self, md_dir: Path, vault_dir: Path):
+        self.md_dir = md_dir
+        self.vault_dir = vault_dir
+
+    def publish(self, note_id: str | None = None) -> list[str]:
+        """Copy markdown files into the vault. Returns list of published filenames."""
+        if note_id:
+            md_files = list(self.md_dir.glob(f"*{note_id}*"))
+            if not md_files:
+                md_files = [self.md_dir / f"{note_id}.md"]
+        else:
+            md_files = sorted(self.md_dir.glob("*.md"))
+
+        print(f"Publishing {len(md_files)} note(s) to vault")
+        published = []
+        for md_file in md_files:
+            if not md_file.exists():
+                print(f"  skipping (not found): {md_file.name}")
+                continue
+
+            # Extract YYYY-MM from filename prefix
+            name = md_file.name
+            if len(name) >= 7 and name[4] == "-" and name[7] == "-":
+                year = name[:4]
+                month = name[5:7]
+            else:
+                print(f"  skipping (no date prefix): {name}")
+                continue
+
+            dest_dir = self.vault_dir / year / month
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            dest = dest_dir / name
+
+            # Skip if destination is already up to date
+            if dest.exists() and dest.stat().st_mtime >= md_file.stat().st_mtime:
+                continue
+
+            shutil.copy2(md_file, dest)
+            print(f"  published: {year}/{month}/{name}")
+            published.append(name)
+
+        print(f"Published {len(published)} of {len(md_files)} note(s).")
+        return published
+
+
 # --- CLI ---
 
 def get_client() -> GranolaClient:
@@ -525,6 +584,7 @@ def main():
   granola-sync fetch --since 2026-03-01  Fetch only, no processing or rendering
   granola-sync process                 Re-process all raw notes
   granola-sync render                  Re-render all processed notes
+  granola-sync publish                 Copy rendered notes into Obsidian vault
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -532,12 +592,13 @@ def main():
         "command",
         nargs="?",
         default="sync",
-        choices=["fetch", "process", "render", "sync"],
+        choices=["fetch", "process", "render", "publish", "sync"],
         help=(
             "Stage to run. fetch=pull raw JSON from API, "
             "process=transform to normalized schema, "
             "render=generate Obsidian markdown, "
-            "sync=all three (default: sync)"
+            "publish=copy to Obsidian vault, "
+            "sync=all four (default: sync)"
         ),
     )
     since_group = parser.add_mutually_exclusive_group()
@@ -570,6 +631,10 @@ def main():
         help=f"Directory for rendered markdown (default: {DEFAULT_MD_DIR})",
     )
     parser.add_argument(
+        "--vault-dir",
+        help=f"Obsidian vault meetings dir (default: from config or {DEFAULT_VAULT_DIR})",
+    )
+    parser.add_argument(
         "--config",
         default=str(DEFAULT_CONFIG_PATH),
         help=f"Config file path (default: {DEFAULT_CONFIG_PATH})",
@@ -585,6 +650,7 @@ def main():
     processed_dir = Path(args.processed_dir)
     md_dir = Path(args.md_dir)
     config = load_config(Path(args.config))
+    vault_dir = Path(args.vault_dir) if args.vault_dir else Path(config.get("vault_dir", str(DEFAULT_VAULT_DIR)))
     meta_path = Path(args.meta)
     meta = load_meta(meta_path)
 
@@ -604,6 +670,9 @@ def main():
         case "render":
             renderer = NoteRenderer(processed_dir, md_dir, config)
             renderer.render(args.note)
+        case "publish":
+            publisher = NotePublisher(md_dir, vault_dir)
+            publisher.publish(args.note)
         case "sync":
             fetcher = NoteFetcher(get_client(), raw_dir)
             fetcher.fetch(args.note, since)
@@ -611,6 +680,8 @@ def main():
             processor.process(args.note)
             renderer = NoteRenderer(processed_dir, md_dir, config)
             renderer.render(args.note)
+            publisher = NotePublisher(md_dir, vault_dir)
+            publisher.publish(args.note)
 
     # Update last_sync timestamp after successful fetch or sync
     if args.command in ("fetch", "sync"):
