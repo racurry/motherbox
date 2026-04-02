@@ -20,7 +20,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --profile MODE     Set mode to 'galileo' or 'personal'
+    --profile MODE     Set mode to 'firsthand' or 'galileo'
     --unattended    Skip prompts, fail if mode unknown
 
 Folders created in ${PATH_CODE}:
@@ -45,13 +45,18 @@ Additional folders created in galileo mode:
 Folders created in ${PATH_DOCUMENTS}:
     @auto           Automated/scripted content
     000_Inbox       Incoming items to be processed
-    100_Life        Personal life organization
-    150_Projects    Active projects
+    100_Areas       Areas of responsibility
     200_People      People-related information
+    300_Time        Time-based records
     400_Topics      Topic-based resources
-    700_Libraries   Reference materials
-    800_Posterity   Long-term archival
+    500_Projects    Active projects
+    600_Output      Published/output content
+    800_Libraries   Reference materials
+    900_Sharing     Shared content
     999_Meta        Meta information about the system
+
+Folders created in ~/skynet:
+    skynet/
 
 Examples:
     $0 setup    # Create folder structure in Documents
@@ -127,6 +132,10 @@ do_setup() {
     for folder in "${documents_folders[@]}"; do
         ensure_folder "${PATH_DOCUMENTS}/${folder}"
     done
+
+    # Skynet folder
+    log_info "Creating skynet folder"
+    ensure_folder "${HOME}/skynet"
 
     log_info "Created the folders we like"
 }

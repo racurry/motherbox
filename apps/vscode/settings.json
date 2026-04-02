@@ -99,4 +99,5 @@
   "python.interpreter.infoVisibility": "always",
   "flake8.enabled": false,
   "geminicodeassist.displayInlineContextHint": false,
+  "window.autoDetectColorScheme": true,
 }
