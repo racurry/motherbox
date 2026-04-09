@@ -184,6 +184,7 @@ run_app_setup claudecode
 run_app_setup gemini-cli
 run_app_setup codex-cli
 run_app_setup karabiner
+run_app_setup ghostty
 
 print_heading "Dev Tools"
 
@@ -199,7 +200,6 @@ run_app_setup markdownlint
 run_app_setup shfmt
 run_app_setup ruff
 run_app_setup mdformat
-
 
 # Run machine-specific setup if a machine is specified
 if [[ -n "${MACHINE:-}" ]]; then
