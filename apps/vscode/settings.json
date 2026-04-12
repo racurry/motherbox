@@ -100,4 +100,9 @@
   "flake8.enabled": false,
   "geminicodeassist.displayInlineContextHint": false,
   "window.autoDetectColorScheme": true,
+  "rainbow_csv.highlight_rows": true,
+  "rainbow_csv.virtual_alignment_mode": "always",
+  "[csv]": {
+    "editor.inlayHints.maximumLength": 0
+  },
 }

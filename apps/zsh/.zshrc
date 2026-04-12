@@ -184,6 +184,13 @@ alias clddanger='claude --allow-dangerously-skip-permissions'
 alias cldc='claude --continue'
 alias cldr='claude --resume'
 alias cldp='claude --print'
+## - move to cc
+alias cc='claude'
+alias ccup='curl -fsSL https://claude.ai/install.sh | bash'
+alias ccdanger='claude --allow-dangerously-skip-permissions'
+alias ccc='claude --continue'
+alias ccr='claude --resume'
+alias ccp='claude --print'
 
 # Doin things
 alias c='clear'

@@ -291,7 +291,7 @@ Optional commands: npm, asdf, code
     # --- VSCode extensions ---
     vscode_declared = []
     if vscode_brewfile.exists():
-        _, _, _, vscode_declared = parse_brewfile(vscode_brewfile)
+        _, _, vscode_declared = parse_brewfile(vscode_brewfile)
     vscode_declared_set = set(vscode_declared)
 
     vscode_installed_set = set()
