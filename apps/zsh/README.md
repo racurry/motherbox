@@ -23,17 +23,20 @@ This symlinks `.zshrc` to `~/`.
 
 ## Local Configuration
 
-The `.zshrc` sources `~/.local.zshrc` if it exists. Use this file for:
+Local secrets and machine-specific env vars live in `~/.zshenv`. Zsh loads
+this file automatically on every shell invocation (interactive, login, and
+scripts) — no `source` needed.
+
+Use it for:
 
 - API tokens and secrets
-- Machine-specific paths
-- Personal aliases not suitable for git
+- Machine-specific env vars (e.g. `MOTHERBOX_ROOT`)
 - Anything sensitive that shouldn't be committed
 
 Create it manually:
 
 ```bash
-touch ~/.local.zshrc
+touch ~/.zshenv
 ```
 
 Example contents:
@@ -45,6 +48,10 @@ export MY_CUSTOM_PATH="/some/local/path"
 ```
 
 This file is **not tracked in git** and should never be committed.
+
+> Keep `.zshenv` to env-var exports only. It runs for every zsh invocation
+> (including non-interactive scripts), so aliases, prompts, and other
+> interactive-only setup belong in `.zshrc`.
 
 ## Syncing Preferences
 
