@@ -101,3 +101,59 @@ teardown() {
   grep -q 'PreToolUse' "${HOME}/.claude/settings.json"
   grep -q 'enforce-local-tmp' "${HOME}/.claude/settings.json"
 }
+
+@test "claudecode.sh dereff copies ~/.claude with symlinks dereferenced" {
+  # Set up a fake ~/.claude with a real file, a symlink to a file, and a
+  # symlink to a directory.
+  mkdir -p "${HOME}/.claude/commands"
+  echo "real content" > "${HOME}/.claude/CLAUDE.md"
+
+  mkdir -p "${TEST_TMPDIR}/external"
+  echo "linked file content" > "${TEST_TMPDIR}/external/linked.md"
+  ln -s "${TEST_TMPDIR}/external/linked.md" "${HOME}/.claude/commands/linked.md"
+
+  mkdir -p "${TEST_TMPDIR}/external-dir"
+  echo "in linked dir" > "${TEST_TMPDIR}/external-dir/inside.txt"
+  ln -s "${TEST_TMPDIR}/external-dir" "${HOME}/.claude/external-dir"
+
+  run env HOME="${HOME}" "${CLAUDECODE_SCRIPT}" dereff
+  [ "$status" -eq 0 ]
+
+  # Destination exists
+  [ -d "${HOME}/.claude-dereffed" ]
+
+  # Real file is copied
+  [ -f "${HOME}/.claude-dereffed/CLAUDE.md" ]
+  [ ! -L "${HOME}/.claude-dereffed/CLAUDE.md" ]
+  grep -q "real content" "${HOME}/.claude-dereffed/CLAUDE.md"
+
+  # Symlinked file became a real file with the target's contents
+  [ -f "${HOME}/.claude-dereffed/commands/linked.md" ]
+  [ ! -L "${HOME}/.claude-dereffed/commands/linked.md" ]
+  grep -q "linked file content" "${HOME}/.claude-dereffed/commands/linked.md"
+
+  # Symlinked directory became a real directory with its contents copied in
+  [ -d "${HOME}/.claude-dereffed/external-dir" ]
+  [ ! -L "${HOME}/.claude-dereffed/external-dir" ]
+  [ -f "${HOME}/.claude-dereffed/external-dir/inside.txt" ]
+  grep -q "in linked dir" "${HOME}/.claude-dereffed/external-dir/inside.txt"
+}
+
+@test "claudecode.sh dereff replaces existing destination" {
+  mkdir -p "${HOME}/.claude"
+  echo "new" > "${HOME}/.claude/marker.txt"
+
+  mkdir -p "${HOME}/.claude-dereffed"
+  echo "stale" > "${HOME}/.claude-dereffed/old.txt"
+
+  run env HOME="${HOME}" "${CLAUDECODE_SCRIPT}" dereff
+  [ "$status" -eq 0 ]
+
+  [ -f "${HOME}/.claude-dereffed/marker.txt" ]
+  [ ! -f "${HOME}/.claude-dereffed/old.txt" ]
+}
+
+@test "claudecode.sh dereff fails when ~/.claude is missing" {
+  run env HOME="${HOME}" "${CLAUDECODE_SCRIPT}" dereff
+  [ "$status" -ne 0 ]
+}

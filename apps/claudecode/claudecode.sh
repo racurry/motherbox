@@ -12,13 +12,14 @@ Usage: $0 [COMMAND] [OPTIONS]
 Link Claude Code global configuration to ~/.claude.
 
 Commands:
-    setup       Run full setup (install + rules + commands + statuslines + hooks + keybindings + settings)
+    setup       Run full setup (install + rules + commands + statuslines + hooks + keybindings + settings + dereff)
     install     Install Claude Code via native installer
     rules       Link CLAUDE.md and AGENTS.md files
     commands    Sync commands to ~/.claude/commands
     statuslines Sync statuslines to ~/.claude/statuslines
     hooks       Sync hooks to ~/.claude/hooks
     settings    Configure settings.json (includes hooks)
+    dereff      Copy ~/.claude to ~/.claude-dereffed, dereferencing symlinks
     help        Show this help message (also: -h, --help)
 
 Description:
@@ -28,6 +29,9 @@ Description:
     - apps/claudecode/commands/* -> ~/.claude/commands/* (each file separately)
     - apps/claudecode/statuslines/* -> ~/.claude/statuslines/* (each file separately)
     - apps/claudecode/hooks/* -> ~/.claude/hooks/* (each file separately)
+
+    The 'dereff' command produces a symlink-free copy of ~/.claude at
+    ~/.claude-dereffed for use in dev containers that don't follow host symlinks.
 EOF
 }
 
@@ -173,6 +177,25 @@ do_install() {
     log_success "Claude Code installed"
 }
 
+do_dereff() {
+    print_heading "Dereference ~/.claude to ~/.claude-dereffed"
+
+    local src_dir="${HOME}/.claude"
+    local dest_dir="${HOME}/.claude-dereffed"
+
+    require_directory "${src_dir}"
+
+    if [[ -e "${dest_dir}" || -L "${dest_dir}" ]]; then
+        log_info "Removing existing ${dest_dir}"
+        rm -rf "${dest_dir}"
+    fi
+
+    # -R recursive, -L dereference symlinks (copy targets, not links)
+    cp -RL "${src_dir}" "${dest_dir}"
+
+    log_success "Dereferenced copy created at ${dest_dir}"
+}
+
 do_setup() {
     do_install
     do_rules
@@ -181,6 +204,7 @@ do_setup() {
     do_hooks
     do_keybindings
     do_settings
+    do_dereff
 }
 
 main() {
@@ -192,7 +216,7 @@ main() {
             show_help
             exit 0
             ;;
-        setup | install | rules | commands | statuslines | hooks | keybindings | settings)
+        setup | install | rules | commands | statuslines | hooks | keybindings | settings | dereff)
             command="$1"
             shift
             ;;
@@ -232,6 +256,9 @@ main() {
         ;;
     settings)
         do_settings
+        ;;
+    dereff)
+        do_dereff
         ;;
     "")
         show_help
