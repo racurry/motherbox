@@ -24,7 +24,6 @@ link_config_files() {
     link_home_dotfile "${SCRIPT_DIR}/.tool-versions" "${APP_NAME}"
     link_home_dotfile "${SCRIPT_DIR}/.asdfrc" "${APP_NAME}"
     link_home_dotfile "${SCRIPT_DIR}/.default-gems" "${APP_NAME}"
-    link_home_dotfile "${SCRIPT_DIR}/.default-npm-packages" "${APP_NAME}"
     link_home_dotfile "${SCRIPT_DIR}/.default-python-packages" "${APP_NAME}"
 }
 

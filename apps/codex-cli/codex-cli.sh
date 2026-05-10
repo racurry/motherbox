@@ -35,8 +35,8 @@ do_rules() {
 }
 
 do_setup() {
-    # Install via npm (not brew) for immediate updates
-    # Also added to apps/asdf/.default-npm-packages for new node versions
+    # Install via npm (not brew) — codex ships multiple updates per day and
+    # brew can't keep up.
     npm install -g @openai/codex
     do_rules
     log_success "Codex CLI setup complete"

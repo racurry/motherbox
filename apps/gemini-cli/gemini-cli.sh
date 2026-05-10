@@ -36,7 +36,6 @@ do_rules() {
 
 do_setup() {
     # Install via npm (not brew) to avoid node version conflicts with asdf
-    # Also in apps/asdf/.default-npm-packages for new node versions
     npm install -g @google/gemini-cli
     do_rules
     log_success "Gemini CLI setup complete"

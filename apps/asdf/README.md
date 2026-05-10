@@ -15,7 +15,6 @@ Version manager for multiple runtime versions (Node.js, Python, Ruby, etc.).
 - `.tool-versions` - Global tool versions specification
 - `.asdfrc` - asdf configuration (e.g., `legacy_version_file = yes`)
 - `.default-gems` - Gems to auto-install with new Ruby versions
-- `.default-npm-packages` - npm packages to auto-install with new Node.js versions
 - `.default-python-packages` - pip packages to auto-install with new Python versions
 
 ## Setup
