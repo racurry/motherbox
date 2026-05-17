@@ -183,6 +183,9 @@ run_app_setup vscode
 run_app_setup claudecode
 run_app_setup gemini-cli
 run_app_setup codex-cli
+run_app_setup codex-app
+run_app_setup chatgpt-atlas
+run_app_setup comet
 run_app_setup karabiner
 run_app_setup ghostty
 
