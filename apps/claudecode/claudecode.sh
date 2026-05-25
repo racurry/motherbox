@@ -190,8 +190,24 @@ do_dereff() {
         rm -rf "${dest_dir}"
     fi
 
-    # -R recursive, -L dereference symlinks (copy targets, not links)
-    cp -RL "${src_dir}" "${dest_dir}"
+    # Copy preserving symlinks (-R recreates links, does not follow them), then
+    # dereference each link in the copy. A plain `cp -RL` aborts on the first
+    # broken symlink (e.g. ~/.claude/debug/latest pointing at a rotated log, or
+    # a renamed/moved repo target); a symlink-free copy cannot represent those
+    # anyway, so we drop them with a warning instead of failing the whole setup.
+    cp -R "${src_dir}" "${dest_dir}"
+
+    while IFS= read -r -d '' link; do
+        if [[ -e "${link}" ]]; then
+            local deref="${link}.deref.$$"
+            cp -RL "${link}" "${deref}"
+            rm "${link}"
+            mv "${deref}" "${link}"
+        else
+            log_warn "Dropping broken symlink: ${link} -> $(readlink "${link}")"
+            rm "${link}"
+        fi
+    done < <(find "${dest_dir}" -type l -print0)
 
     log_success "Dereferenced copy created at ${dest_dir}"
 }

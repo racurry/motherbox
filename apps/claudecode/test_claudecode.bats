@@ -139,6 +139,25 @@ teardown() {
   grep -q "in linked dir" "${HOME}/.claude-dereffed/external-dir/inside.txt"
 }
 
+@test "claudecode.sh dereff drops broken symlinks instead of failing" {
+  # A broken symlink (e.g. ~/.claude/debug/latest pointing at a rotated log, or
+  # a renamed/moved repo target) must not abort the whole dereference.
+  mkdir -p "${HOME}/.claude/debug"
+  echo "real content" > "${HOME}/.claude/CLAUDE.md"
+  ln -s "${HOME}/.claude/debug/does-not-exist.txt" "${HOME}/.claude/debug/latest"
+
+  run env HOME="${HOME}" "${CLAUDECODE_SCRIPT}" dereff
+  [ "$status" -eq 0 ]
+
+  # Valid content still copied
+  [ -f "${HOME}/.claude-dereffed/CLAUDE.md" ]
+  grep -q "real content" "${HOME}/.claude-dereffed/CLAUDE.md"
+
+  # Broken symlink dropped from the copy, source left untouched
+  [ ! -e "${HOME}/.claude-dereffed/debug/latest" ]
+  [ -L "${HOME}/.claude/debug/latest" ]
+}
+
 @test "claudecode.sh dereff replaces existing destination" {
   mkdir -p "${HOME}/.claude"
   echo "new" > "${HOME}/.claude/marker.txt"
