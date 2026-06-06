@@ -81,17 +81,17 @@ When writing tests:
 
 ## Secrets and Sensitive Data
 
-**Never commit secrets to this repository.** API tokens, passwords, and sensitive data belong in `~/.local.zshrc`, which is sourced by `.zshrc` but not tracked in git.
+**Never commit secrets to this repository.** API tokens, passwords, and sensitive data belong in `~/.zshenv`, which is sourced by `.zshrc` but not tracked in git.
 
 ```bash
-# ~/.local.zshrc (example)
+# ~/.zshenv (example)
 export AIRTABLE_API_TOKEN="pat..."
 export OPENAI_API_KEY="sk-..."
 ```
 
 When documenting apps that need API tokens or secrets:
 
-- Tell users to add exports to `~/.local.zshrc`
+- Tell users to add exports to `~/.zshenv`
 - Reference environment variable names, not values
 - See `apps/zsh/README.md` for full documentation
 
