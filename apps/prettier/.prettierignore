@@ -88,7 +88,16 @@ public/vendor/
 # CLAUDE CODE
 # =============================================================================
 # Settings files with large permission arrays — printWidth: 9999 collapses them
-*/apps/claudecode/settings.json
+**/apps/claudecode/settings.json
+
+# =============================================================================
+# VS CODE
+# =============================================================================
+# settings.json is symlinked into VS Code's User dir; VS Code rewrites it
+# (Settings Sync, programmatic toggles like "Don't ask again") in strict JSON
+# style, then Prettier puts trailing commas back on save. Ignoring it here
+# stops the tug-of-war.
+**/apps/vscode/settings.json
 
 # =============================================================================
 # MISC
