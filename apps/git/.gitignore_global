@@ -4,3 +4,5 @@ tmp/
 .emdash.json
 .claude/*.local.*
 .claude/worktrees/
+
+**/.claude/settings.local.json
