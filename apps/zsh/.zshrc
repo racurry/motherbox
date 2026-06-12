@@ -138,8 +138,9 @@ tldr () {
 # PATH modifications
 export PATH="$PATH:$HOME/.config/motherbox/scripts:$HOME/.local/bin"  # Personal scripts and tools
 export PATH="$BREW_PREFIX/opt/bison/bin:$PATH"  # Modern bison for parser generation
-export PATH="$PATH:$HOME/.lmstudio/bin" # Local Llama Studio binaries
 export PATH="$PATH:$HOME/.antigravity/antigravity/bin" # Google's Antigravity - agry
+export PATH="$HOME/.opencode/bin:$PATH"
+
 
 # Remove duplicates from PATH
 typeset -U PATH
@@ -219,7 +220,3 @@ fi
 if [ -f ~/.firsthandrc ]; then
   source ~/.firsthandrc
 fi
-
-# # Enable completion system (compinit must come before fzf-tab)
-
-# [ -f "$BREW_PREFIX/share/fzf-tab/fzf-tab.zsh" ] && source "$BREW_PREFIX/share/fzf-tab/fzf-tab.zsh"
