@@ -1,0 +1,19 @@
+# SSH Configuration for Personal mode on the mini
+# Managed by motherbox - do not edit directly
+#
+# The mini talks to GitHub with a local on-disk key, bypassing the 1Password
+# SSH agent. The github.com block must come before the Host * agent block so
+# that "IdentityAgent none" wins (ssh uses the first value obtained per host).
+
+# GitHub: use the local mini key, not the 1Password agent
+Host github.com
+    HostName github.com
+    User git
+    IdentitiesOnly yes
+    IdentityFile ~/.ssh/id_ed25519_mini
+    IdentityAgent none
+    UseKeychain yes
+
+# 1Password SSH Agent (everything else)
+Host *
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
