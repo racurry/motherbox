@@ -1,3 +1,5 @@
+Include /Users/aaron/.colima/ssh_config
+
 # SSH Configuration for Firsthand (work) mode
 # Managed by motherbox - do not edit directly
 
