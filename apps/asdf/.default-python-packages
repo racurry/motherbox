@@ -1,5 +1,0 @@
-# Add one pip package per line, e.g. requests
-mdformat
-mdformat-gfm
-mdformat-frontmatter
-mdformat-wikilink

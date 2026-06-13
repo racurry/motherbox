@@ -14,7 +14,7 @@ brew install direnv
 ./apps/direnv/direnv.sh setup
 ```
 
-This symlinks `use_asdf.sh` to `~/.config/direnv/lib/` for asdf integration.
+This symlinks custom library files to `~/.config/direnv/lib/`.
 
 ## Manual Setup
 
@@ -25,16 +25,6 @@ This symlinks `use_asdf.sh` to `~/.config/direnv/lib/` for asdf integration.
    ```
 
    This is a security feature - you must explicitly trust each `.envrc`.
-
-## Using with asdf
-
-Add to your project's `.envrc`:
-
-```bash
-use asdf
-```
-
-This loads tool versions from `.tool-versions` and auto-installs missing runtimes.
 
 ## Syncing Preferences
 

@@ -93,7 +93,7 @@
   "scad-lsp.launchPath": "/opt/homebrew/bin/openscad",
   "markdownlint.configFile": "~/.markdownlint-cli2.jsonc",
   "errorLens.excludePatterns": ["**/*.md"],
-  "python.defaultInterpreterPath": "${env:HOME}/.asdf/shims/python",
+  "python.defaultInterpreterPath": "/opt/homebrew/bin/python3",
   "errorLens.enabledDiagnosticLevels": ["error", "warning", "info", "hint"],
   "errorLens.enabled": false,
   "python.interpreter.infoVisibility": "always",

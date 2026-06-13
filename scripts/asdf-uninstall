@@ -1,0 +1,55 @@
+#!/bin/bash
+# asdf-uninstall: tear down asdf on a machine after motherbox has dropped it.
+#
+# Run order on each machine:
+#   1. cd into motherbox and `git pull`  (so ~/.zshrc no longer sources asdf —
+#      otherwise new shells error on the now-missing asdf.sh once the formula
+#      is gone)
+#   2. ./scripts/asdf-uninstall
+#
+# Idempotent and safe to re-run. ~/.asdf is moved aside (not deleted) so the
+# step is reversible; delete the backup yourself once you've confirmed things
+# work.
+
+set -euo pipefail
+
+echo "==> Removing asdf from $(hostname -s)"
+
+# 1. Uninstall the Homebrew formula (if installed via brew)
+if command -v brew >/dev/null 2>&1 && brew list --formula asdf >/dev/null 2>&1; then
+    echo "  - brew uninstall asdf"
+    brew uninstall asdf
+else
+    echo "  - asdf brew formula not installed (skip)"
+fi
+
+# 2. Remove the global dotfiles asdf symlinked into ~ — only if they are
+#    symlinks, so a real per-machine file is never touched.
+for f in .tool-versions .asdfrc .default-gems .default-python-packages; do
+    if [[ -L "${HOME}/${f}" ]]; then
+        echo "  - rm symlink ~/${f}"
+        rm -f "${HOME}/${f}"
+    fi
+done
+
+# 3. Move ~/.asdf aside (reversible backup). Reclaim the space yourself later.
+if [[ -d "${HOME}/.asdf" ]]; then
+    if [[ -e "${HOME}/.asdf.uninstalled" ]]; then
+        echo "  - ~/.asdf.uninstalled already exists; removing stray ~/.asdf"
+        rm -rf "${HOME}/.asdf"
+    else
+        echo "  - mv ~/.asdf -> ~/.asdf.uninstalled (backup)"
+        mv "${HOME}/.asdf" "${HOME}/.asdf.uninstalled"
+    fi
+else
+    echo "  - ~/.asdf not present (skip)"
+fi
+
+cat <<'EOF'
+
+==> Done. Open a FRESH shell and verify:
+      command -v asdf      # expect no output
+      command -v node      # expect /opt/homebrew/bin/node
+
+    Reclaim space when confident:  rm -rf ~/.asdf.uninstalled
+EOF

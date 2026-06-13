@@ -2,7 +2,7 @@
 # Sign ad-hoc binaries so macOS TCC / FDA grants persist across updates.
 #
 # macOS won't remember "Allow" for linker-signed/ad-hoc binaries (common with
-# uv, Homebrew, asdf-managed Python, Node, etc.).  This tool creates a local
+# uv, Homebrew, Python, Node, etc.).  This tool creates a local
 # code-signing identity once, then re-signs any binary you point it at.
 #
 # Usage:

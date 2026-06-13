@@ -2,15 +2,12 @@
 # PACKAGE MANAGERS & TOOL SETUP
 # ============================================================================
 
-# Homebrew and ASDF setup
-# Ensure Homebrew is on the path and asdf is sourced
-# (Order matters as asdf is installed via Homebrew)
+# Homebrew setup
+# Ensure Homebrew is on the path
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Set Homebrew prefix for reuse throughout shell and exported for subprocesses
 export BREW_PREFIX=$(brew --prefix)
-
-. $BREW_PREFIX/opt/asdf/libexec/asdf.sh
 
 # Only auto-update Homebrew once per day (86400 seconds)
 export HOMEBREW_AUTO_UPDATE_SECS=86400
@@ -26,8 +23,6 @@ autoload -U promptinit; promptinit
 prompt pure
 
 autoload -Uz compinit && compinit
-# Add asdf completions
-fpath=(${ASDF_DIR}/completions $fpath)
 
 # Source Homebrew-installed zsh plugins
 source_brew_plugin() {

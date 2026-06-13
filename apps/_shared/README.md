@@ -16,7 +16,7 @@ Universal coding agent rules used by all AI coding assistants:
 
 Contains environment-level rules about:
 
-- Runtime management (asdf)
+- Runtime management
 - Project environments (direnv)
 - Package management
 - Git commit style

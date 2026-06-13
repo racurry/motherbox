@@ -31,7 +31,7 @@ do_setup() {
     # 1. Brew formula doesn't include plugins
     # 2. We need mdformat-gfm for table support
     # 3. We need mdformat-frontmatter for YAML front matter
-    # 4. uv tool install creates an isolated environment independent of asdf Python
+    # 4. uv tool install creates an isolated environment independent of the system Python
     if command -v mdformat &>/dev/null; then
         log_info "mdformat already installed"
     else

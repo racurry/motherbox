@@ -87,19 +87,6 @@ def parse_mas_app_list(path: pathlib.Path):
     return entries
 
 
-def parse_tool_versions(path: pathlib.Path):
-    """Parse a .tool-versions file and return a dict of plugin -> version."""
-    tools = {}
-    for line in path.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        parts = line.split(None, 1)
-        if len(parts) == 2:
-            tools[parts[0]] = parts[1]
-    return tools
-
-
 def parse_default_npm_packages(path: pathlib.Path):
     """Parse .default-npm-packages and return a list of package names."""
     packages = []
@@ -144,13 +131,12 @@ markdown report at .tmp/APP_AUDIT.md covering:
 
   - Brew formulas and casks vs Brewfile, Mac App Store apps vs apps/mas/*.txt
   - NPM global packages vs .default-npm-packages
-  - ASDF plugins and runtime versions vs .tool-versions
   - VSCode extensions vs apps/vscode/Brewfile
   - /Applications not managed by any tracked cask or MAS entry
   - Status of optional Brewfile entries (galileo.Brewfile, personal.Brewfile)
 
 Required commands: brew, mas
-Optional commands: npm, asdf, code
+Optional commands: npm, code
         """,
     )
     parser.parse_args()
@@ -171,8 +157,7 @@ Optional commands: npm, asdf, code
 
     # Manifest paths for non-brew audits
     vscode_brewfile = repo_root / "apps" / "vscode" / "Brewfile"
-    tool_versions_file = repo_root / "apps" / "asdf" / ".tool-versions"
-    default_npm_file = repo_root / "apps" / "asdf" / ".default-npm-packages"
+    default_npm_file = repo_root / "apps" / "brew" / ".default-npm-packages"
 
     # Parse core + main Brewfile
     brew_formulas_declared, brew_casks_declared, _ = parse_brewfile(brewfile)
@@ -256,38 +241,6 @@ Optional commands: npm, asdf, code
     npm_not_tracked = sorted(npm_installed_set - npm_declared_set)
     npm_missing = sorted(npm_declared_set - npm_installed_set)
 
-    # --- ASDF plugins & runtimes ---
-    asdf_declared = {}
-    if tool_versions_file.exists():
-        asdf_declared = parse_tool_versions(tool_versions_file)
-    asdf_declared_plugins = set(asdf_declared.keys())
-
-    asdf_installed_plugins = set()
-    asdf_version_status = {}
-    if check_optional_command("asdf"):
-        plugins_raw = run_command_safe(["asdf", "plugin", "list"])
-        if plugins_raw:
-            asdf_installed_plugins = set(plugins_raw.split())
-
-        # Check version status for declared runtimes
-        for plugin, version in asdf_declared.items():
-            if plugin not in asdf_installed_plugins:
-                asdf_version_status[plugin] = "plugin not installed"
-            else:
-                current_raw = run_command_safe(["asdf", "current", "--no-header", plugin])
-                if current_raw:
-                    parts = current_raw.split()
-                    # Format: name version source installed
-                    if len(parts) >= 2 and parts[1] == version:
-                        asdf_version_status[plugin] = "installed"
-                    else:
-                        asdf_version_status[plugin] = f"wrong version ({parts[1] if len(parts) >= 2 else '?'})"
-                else:
-                    asdf_version_status[plugin] = "not installed"
-
-    asdf_plugins_not_tracked = sorted(asdf_installed_plugins - asdf_declared_plugins)
-    asdf_plugins_missing = sorted(asdf_declared_plugins - asdf_installed_plugins)
-
     # --- VSCode extensions ---
     vscode_declared = []
     if vscode_brewfile.exists():
@@ -366,7 +319,7 @@ Optional commands: npm, asdf, code
     # NPM global packages
     lines.append("## NPM Global Packages")
     lines.append("")
-    lines.append("Managed manifest: `apps/asdf/.default-npm-packages`")
+    lines.append("Managed manifest: `apps/brew/.default-npm-packages`")
     lines.append("")
     lines.append("### Installed global packages not tracked")
     lines.extend(format_items(npm_not_tracked, lambda name: name))
@@ -374,26 +327,6 @@ Optional commands: npm, asdf, code
     lines.append("### Packages declared but not installed")
     lines.extend(format_items(npm_missing, lambda name: name))
     lines.append("")
-
-    # ASDF plugins & runtimes
-    lines.append("## ASDF Plugins & Runtimes")
-    lines.append("")
-    lines.append("Managed manifest: `apps/asdf/.tool-versions`")
-    lines.append("")
-    lines.append("### Installed plugins not tracked")
-    lines.extend(format_items(asdf_plugins_not_tracked, lambda name: name))
-    lines.append("")
-    lines.append("### Plugins declared but not installed")
-    lines.extend(format_items(asdf_plugins_missing, lambda name: name))
-    lines.append("")
-    if asdf_version_status:
-        lines.append("### Runtime version status")
-        for plugin in sorted(asdf_version_status):
-            status = asdf_version_status[plugin]
-            declared_ver = asdf_declared.get(plugin, "?")
-            check = "x" if status == "installed" else " "
-            lines.append(f"- [{check}] {plugin} {declared_ver} — {status}")
-        lines.append("")
 
     # VSCode extensions
     lines.append("## VSCode Extensions")

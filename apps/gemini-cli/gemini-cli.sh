@@ -35,7 +35,7 @@ do_rules() {
 }
 
 do_setup() {
-    # Install via npm (not brew) to avoid node version conflicts with asdf
+    # Install via npm so it tracks upstream releases (runs on Homebrew's node)
     npm install -g @google/gemini-cli
     do_rules
     log_success "Gemini CLI setup complete"

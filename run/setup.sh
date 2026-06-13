@@ -148,15 +148,6 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 run_app_setup zsh
-run_app_setup asdf
-
-# Source asdf into this shell so downstream scripts can find asdf-managed runtimes
-# shellcheck source=/dev/null
-asdf_sh="$(brew --prefix)/opt/asdf/libexec/asdf.sh"
-if [[ -f "${asdf_sh}" ]] && ! command -v asdf >/dev/null 2>&1; then
-    . "${asdf_sh}"
-fi
-
 run_app_setup git
 run_app_setup direnv
 run_app_setup 1password
