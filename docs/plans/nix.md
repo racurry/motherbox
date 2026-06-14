@@ -30,7 +30,7 @@ ______________________________________________________________________
 | Runtime versions (asdf) | 3     | Python 3.12, Ruby 3.4, Node 24                  |
 | Dotfile symlinks        | ~15   | .zshrc, .gitconfig, .editorconfig               |
 | macOS defaults          | ~40   | Dock, Finder, keyboard, screenshots             |
-| Folder structure        | ~15   | ~/workspace/*, ~/Documents/*                    |
+| Folder structure        | ~15   | ~/code/*, ~/Documents/*                         |
 | Application configs     | ~10   | Karabiner, 1Password SSH, Claude Code           |
 
 ### Package Categories by Nix Compatibility

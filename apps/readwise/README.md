@@ -29,7 +29,7 @@ A community server that adds highlights management, daily review, advanced searc
 
 1. Get your Readwise API token: https://readwise.io/access_token
 
-2. Add the token to `~/.local.zshrc`:
+2. Add the token to `~/.zshenv`:
 
    ```bash
    export READWISE_TOKEN="your_token_here"
@@ -55,7 +55,7 @@ A community server that adds highlights management, daily review, advanced searc
 
 ## Syncing Preferences
 
-Repo sync. MCP server config stored in `.mcp.json` in this repo. Auth tokens are managed locally (`~/.local.zshrc` for the enhanced server, MCP client OAuth for the official server).
+Repo sync. MCP server config stored in `.mcp.json` in this repo. Auth tokens are managed locally (`~/.zshenv` for the enhanced server, MCP client OAuth for the official server).
 
 ## References
 

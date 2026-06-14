@@ -16,7 +16,7 @@ Automated macOS setup script that installs and configures development tools,
 applications, and system settings.
 
 OPTIONS:
-  --profile PROFILE   Set profile (galileo or personal)
+  --profile PROFILE   Set profile (personal, galileo, firsthand, or another configured profile)
   --machine MACHINE   Set machine (e.g., mini) for machine-specific setup
   --reset-profile     Ignore saved profile and prompt for selection
   --unattended        Skip operations requiring human interaction

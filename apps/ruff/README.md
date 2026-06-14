@@ -10,8 +10,9 @@ Ruff Python linter and formatter configuration.
 
 ## Setup
 
-Manual setup required. See below.
+```bash
+./apps/ruff/ruff.sh setup
+```
 
-## Notes
-
-TODO: Document setup steps
+Symlinks `ruff.toml` to the user config location. Ruff itself is installed by
+the Homebrew setup.

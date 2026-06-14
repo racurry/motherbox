@@ -6,14 +6,26 @@ Package manager for macOS with Brewfile definitions.
 
 - `audit_apps.py` - Python script to audit installed applications
 - `brew.sh` - Setup script for Homebrew and bundle installation
+- `core.Brewfile` - Bootstrap formulae required before the rest of setup
 - `Brewfile` - Main Brewfile with common packages
 - `personal.Brewfile` - Personal machine packages
 - `galileo.Brewfile` - Galileo work machine packages
+- `firsthand.Brewfile` - Firsthand work machine packages
 
 ## Setup
 
-Run `./apps/brew/brew.sh setup` to set up.
+```bash
+./apps/brew/brew.sh setup
+```
 
-## Notes
+This installs Homebrew if needed, installs core bootstrap packages, then runs
+the common Brewfile and the active profile Brewfile.
 
-TODO: Document setup steps
+Useful subcommands:
+
+```bash
+./apps/brew/brew.sh bootstrap
+./apps/brew/brew.sh bundle --profile personal
+./apps/brew/brew.sh audit
+./apps/brew/brew.sh maintain
+```

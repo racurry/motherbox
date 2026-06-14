@@ -81,7 +81,7 @@ When writing tests:
 
 ## Secrets and Sensitive Data
 
-**Never commit secrets to this repository.** API tokens, passwords, and sensitive data belong in `~/.zshenv`, which is sourced by `.zshrc` but not tracked in git.
+**Never commit secrets to this repository.** API tokens, passwords, and sensitive data belong in `~/.zshenv`, which zsh loads automatically and which is not tracked in git. Non-secret environment variables that can be shared across machines belong in the repo-managed `.zshrc`.
 
 ```bash
 # ~/.zshenv (example)

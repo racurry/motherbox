@@ -30,7 +30,7 @@ This:
    ollama pull llama3.3:70b    # Best quality (40GB+ RAM)
    ```
 
-2. **Configure environment** (optional) - Add to `~/.local.zshrc`:
+2. **Configure environment** (optional) - Add to the managed `.zshrc` if the values should be shared, or `~/.zshenv` if they are private to the machine:
 
    ```bash
    export OLLAMA_KEEP_ALIVE="30m"     # Keep models loaded longer

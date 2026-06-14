@@ -526,7 +526,7 @@ rv tool run rubocop --version
 
 ```bash
 # Test a Ruby project
-cd ~/workspace/some-ruby-project
+cd ~/code/me/some-ruby-project
 direnv allow
 ruby --version  # Should match .ruby-version
 bundle check    # Dependencies should be satisfied

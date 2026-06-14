@@ -17,7 +17,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --profile MODE   Include profile-specific apps (galileo/personal)
+    --profile MODE   Include profile-specific apps (personal/galileo/firsthand)
     --unattended     Skip installation (mas apps require interactive auth)
 
 App List Format:

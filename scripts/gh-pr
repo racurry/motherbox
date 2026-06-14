@@ -152,7 +152,7 @@ summarize_checks() {
     elif [[ "$pending" -gt 0 ]]; then
         echo "pending:${pending}/${total}"
     else
-        echo "passing:${total}/${total}"
+        echo "passing:${passing}/${total}"
     fi
 }
 

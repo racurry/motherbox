@@ -20,7 +20,7 @@ config.window_close_confirmation = 'NeverPrompt'
 config.skip_close_confirmation_for_processes_named = {
   'bash', 'sh', 'zsh', 'fish', 'tmux', 'nu', 'cmd.exe', 'pwsh.exe', 'powershell.exe',
 }
-config.default_cwd = wezterm.home_dir .. '/workspace'
+config.default_cwd = wezterm.home_dir .. '/code'
 
 
 ----- macOS SPECIFIC -----

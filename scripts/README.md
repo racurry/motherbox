@@ -1,211 +1,56 @@
 # Utility Scripts
 
-This directory contains a collection of utility scripts for common file and media operations on macOS. All scripts are located in the `scripts/` directory and include `--help` flags for usage information.
+Standalone utilities symlinked to `~/.config/motherbox/scripts` by
+`./run/sync.sh`. That directory is added to `PATH` by the managed zsh config.
 
-## Video Conversion
+Every file here should be directly executable and support `-h`/`--help` when it
+has a CLI surface.
 
-### avitomp4
-
-Convert AVI video files to MP4 format using ffmpeg.
-
-```bash
-avitomp4 FILE_OR_DIRECTORY
-```
-
-- Converts using codec copy (no re-encoding) for fast conversion
-- Can process individual files or entire directories
-- Preserves original file names with new extension
-
-**Requirements:** ffmpeg
-
-### mkvtomp4
-
-Convert MKV video files to MP4 format using ffmpeg.
+## Tools
 
 ```bash
-mkvtomp4 FILE_OR_DIRECTORY
-```
-
-- Converts using codec copy (no re-encoding) for fast conversion
-- Can process individual files or entire directories
-- Preserves original file names with new extension
-
-**Requirements:** ffmpeg
-
-### vidmerge
-
-Merge multiple video files into a single MP4.
-
-```bash
-vidmerge FILE1 FILE2 ... OUTPUT_NAME
-vidmerge DIRECTORY OUTPUT_NAME
-vidmerge --delete-originals FILE1 FILE2 ... OUTPUT_NAME
-```
-
-- Concatenates videos using ffmpeg
-- Can merge specified files or all files in a directory
-- Optional `--delete-originals` flag to remove source files after merging
-- Files are merged in alphabetical order when using directory mode
-
-**Requirements:** ffmpeg
-
-## Image Processing
-
-### backgroundify
-
-Add solid color backgrounds to transparent images.
-
-```bash
-backgroundify SOURCE_DIR TARGET_DIR COLOR
-```
-
-- Replaces transparent pixels with specified color
-- Color can be name ('white'), hex ('#FFFFFF'), or RGB ('rgb(255,255,255)')
-- Processes entire directories
-- Uses 25% fuzz tolerance for better edge blending
-
-**Requirements:** ImageMagick (convert)
-
-### iconify
-
-Create macOS .icns icon files from images.
-
-```bash
-iconify SOURCE_IMAGE
-```
-
-- Generates all required macOS icon sizes (16x16 to 512x512)
-- Creates both standard and @2x retina versions
-- Outputs icon.icns in current directory
-- Automatically creates icon.iconset directory for intermediate files
-
-**Requirements:** ImageMagick (convert), iconutil
-
-### ocrify
-
-Perform OCR (Optical Character Recognition) on images or PDFs.
-
-```bash
-ocrify FILE
-```
-
-- Converts input to TIFF format at 300 DPI
-- Performs OCR using Tesseract
-- Outputs searchable PDF named FILENAME-ocred.pdf
-- Optimized for English text
-
-**Requirements:** ImageMagick (convert), Tesseract
-
-## File Organization
-
-### folderify
-
-Move each file into its own subdirectory.
-
-```bash
-folderify DIRECTORY
-```
-
-- Creates subdirectory for each file based on filename (without extension)
-- Moves file into its new subdirectory
-- Example: `file.txt` becomes `file/file.txt`
-- Useful for organizing files that need individual folders
-
-### unfolderify
-
-Flatten directory structure by moving all files to current directory.
-
-```bash
-unfolderify
-```
-
-- Recursively moves all files from subdirectories to current directory
-- Reverse operation of folderify
-- Subdirectories remain (but are empty)
-- Must be run from the directory you want to flatten
-
-## File Naming
-
-### batch_rename
-
-Rename files with sequential numbering.
-
-```bash
-batch_rename DIRECTORY BASE_NAME
-```
-
-- Renames all files to BASE_NAME1.ext, BASE_NAME2.ext, etc.
-- Preserves file extensions
-- Numbers files sequentially starting from 1
-- Processes all files in specified directory
-
-### filename_fixer
-
-Clean up and standardize filenames.
-
-```bash
-filename_fixer DIRECTORY [OPTIONS]
-```
-
-Options:
-
-- `--dedot` - Replace dots with spaces
-- `--strip-digits` - Remove all numeric characters
-
-Features:
-
-- Always removes extra whitespace
-- Always preserves file extensions
-- Can combine multiple options
-
-Example:
-
-```bash
-filename_fixer /path/to/dir --dedot --strip-digits
-```
-
-### swap_extension
-
-Change file extensions in bulk.
-
-```bash
-swap_extension CURRENT_EXT NEW_EXT
-```
-
-- Changes all files with CURRENT_EXT to NEW_EXT
-- Operates only in current directory
-- Extensions should be specified without dots
-- Example: `swap_extension txt md`
-
-## Claude Code Development
-
-### ccmcps
-
-Manage Claude MCP (Model Context Protocol) servers.
-
-```bash
-ccmcps                      # Show status (default)
-ccmcps status              # Show enabled/disabled status
-ccmcps list                # List current MCP servers
-ccmcps disable [SERVER]    # Disable all or specific server
-ccmcps enable [SERVER]     # Enable all or specific server
-```
-
-- Helps manage Claude Code CLI context by toggling MCP servers
-- Backs up server configurations when disabling
-- Restores from backup when enabling
-- Useful for saving context window space when not all servers are needed
-
-**Requirements:** Claude CLI (`claude`)
-
-## Getting Help
-
-All scripts support `-h` or `--help` flags to display usage information:
-
-```bash
-scriptname --help
+256colors                                      # Print terminal color capability output
+asdf-uninstall                                 # Disable an old asdf install after migration
+avitomp4 movie.avi                             # Convert an AVI file to MP4 with ffmpeg
+avitomp4 ~/Movies/avi                          # Convert every AVI file in a directory
+backgroundify src/ out/ white                  # Add a solid background to transparent images
+batch_rename photos Vacation                   # Rename files sequentially with a base name
+filename_fixer downloads --dedot               # Normalize names and replace dots with spaces
+filename_fixer downloads --strip-digits        # Normalize names and remove digits
+folderify ~/Downloads/items                    # Move each file into its own folder
+folderpaint set --folder ~/Docs --color "#34C759" # Set a colored macOS folder icon
+folderpaint clear --folder ~/Docs              # Remove a custom folder icon
+gh-pr                                          # Show open GitHub PR status
+gh-pr --update                                 # Rebase PRs that are behind their base branch
+granola-sync sync                              # Sync Granola notes to local files and Obsidian
+granola-sync fetch                             # Fetch raw Granola notes only
+gwt feature-branch                             # Create an isolated reference clone for a branch
+gwt -e main                                    # Create a clone tracking an existing branch
+gwt list                                       # List reference clones
+gwt remove feature-branch                      # Remove a reference clone
+iconify icon.png                               # Create icon.icns from an image
+mkvtomp4 movie.mkv                             # Convert an MKV file to MP4 with ffmpeg
+mkvtomp4 ~/Movies/mkv                          # Convert every MKV file in a directory
+movtogif clip.mov                              # Convert a video to GIF
+nerdglyphs                                     # Browse Nerd Font glyphs
+ocr-pdf scan.pdf                               # OCR a PDF
+ocrify scan.png                                # OCR an image or PDF into a searchable PDF
+splitpdf file.pdf                              # Split a PDF
+swap_extension txt md                          # Change matching extensions in the current directory
+unfolderify                                    # Flatten folderified directories
+unquarantine App.app                           # Remove macOS quarantine attributes
+vidmerge clips/ merged                         # Merge videos into one MP4
+vidmerge --delete-originals clips/ merged      # Merge videos and remove source files
+whats-on-port 3000                             # Show processes listening on a port
+whats-on-port 3000 --kill                      # Kill processes listening on a port
 ```
 
 ## Installation
 
-These scripts are automatically added to your PATH when you run `./run/setup.sh` from this repository. They can then be called from anywhere on your system.
+Run:
+
+```bash
+./run/sync.sh
+```
+
+`./run/setup.sh` also calls this automatically.

@@ -8,8 +8,17 @@ iCloud Drive symlink management for dotfiles and configuration.
 
 ## Setup
 
-Run `./apps/icloud/icloud.sh` to set up.
+```bash
+./apps/icloud/icloud.sh setup
+```
 
-## Notes
+Creates `~/iCloud` as a symlink to iCloud Drive when iCloud Drive is available.
 
-TODO: Document setup steps
+## Diagnostics
+
+```bash
+./apps/icloud/icloud.sh diagnose
+```
+
+Runs local iCloud Drive checks for sync processes, status, logs, problem files,
+permissions, and remediation tips.

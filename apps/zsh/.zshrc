@@ -64,8 +64,10 @@ export HF_HOME="$HOME/.cache/huggingface"
 # OpenSCAD custom library path (avoids cluttering ~/Documents)
 export OPENSCADPATH="$HOME/OpenSCAD/Libraries"
 
-# Local secrets and machine-specific env vars live in ~/.zshenv,
-# which zsh loads automatically before this file (no source needed).
+# Local secrets live in ~/.zshenv, which zsh loads automatically before this
+# file. Non-secret shared environment belongs here in the repo-managed .zshrc.
+
+export MOTHERBOX_ROOT="$HOME/code/me/motherbox"
 
 # ============================================================================
 # HISTORY CONFIGURATION
@@ -95,9 +97,8 @@ fi
 # ============================================================================
 
 export code=~/code
-export workspace=~/workspace
-export infra=~/workspace/infra/
-export mbox=$MOTHERBOX_ROOT # comes from ~/.zshenv
+export me=~/code/me
+export mbox=$MOTHERBOX_ROOT
 export inbox=~/Documents/"000_Inbox"
 export iCloud=~/iCloud
 export icloud=~/iCloud  # Both cases for convenience - prevents typos

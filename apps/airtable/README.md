@@ -26,7 +26,7 @@ The MCP configuration uses [airtable-mcp-server](https://github.com/domdomegg/ai
 
 ### 2. Set Environment Variable
 
-Add to `~/.local.zshrc`:
+Add to `~/.zshenv`:
 
 ```bash
 export AIRTABLE_API_TOKEN="pat..."

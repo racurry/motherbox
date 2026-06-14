@@ -17,7 +17,8 @@
 
 ## Secrets and environment variables
 
-- **Secrets storage**: API tokens, passwords, and sensitive data go in `~/.zshenv` (sourced by `.zshrc`, not tracked in git)
+- **Secrets storage**: API tokens, passwords, and sensitive data go in `~/.zshenv` (loaded automatically by zsh, not tracked in git)
+- **Shared env vars**: Non-secret environment variables that can be committed go in the repo-managed `.zshrc`
 - **Documenting secrets**: Tell users to add exports to `~/.zshenv`, never include actual values
 
 ## Git rules

@@ -6,9 +6,10 @@ the code they test.
 ## Philosophy
 
 - Write lightweight smoke tests only
-- Test end-to-end workflows that users depend on
+- Test setup workflows that are valuable, practical to run on a laptop, and practical to run in CI
 - A test failure should indicate something meaningful is broken
-- Never mock external commands
+- Prefer real commands and isolated `HOME` directories over complex mocks
+- Do not chase comprehensive unit coverage for setup scripts
 - Never test implementation details (exact log formats, internal variable names)
 
 ## Running Tests

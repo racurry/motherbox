@@ -2,6 +2,11 @@
 
 This guide describes how to add a new app to the repository.
 
+Not every app directory is part of the default `./run/setup.sh` path. `apps/`
+also holds opt-in tools, experiments, occasional-use apps, and manual notes.
+`run/setup.sh` is the source of truth for what gets installed and configured on
+a new machine by default.
+
 ## Directory Structure
 
 Create a new directory under `apps/`:

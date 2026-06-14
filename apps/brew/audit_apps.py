@@ -133,7 +133,7 @@ markdown report at .tmp/APP_AUDIT.md covering:
   - NPM global packages vs .default-npm-packages
   - VSCode extensions vs apps/vscode/Brewfile
   - /Applications not managed by any tracked cask or MAS entry
-  - Status of optional Brewfile entries (galileo.Brewfile, personal.Brewfile)
+  - Status of optional profile Brewfile entries (*.Brewfile except core/common)
 
 Required commands: brew, mas
 Optional commands: npm, code
@@ -149,8 +149,6 @@ Optional commands: npm, code
     audit_path = tmp_dir / "APP_AUDIT.md"
     core_brewfile = repo_root / "apps" / "brew" / "core.Brewfile"
     brewfile = repo_root / "apps" / "brew" / "Brewfile"
-    optional_personal = repo_root / "apps" / "brew" / "personal.Brewfile"
-    optional_work = repo_root / "apps" / "brew" / "galileo.Brewfile"
 
     if not brewfile.exists():
         raise SystemExit(f"Missing Brewfile at {brewfile}")
@@ -176,10 +174,10 @@ Optional commands: npm, code
     optional_formulas = set()
     optional_casks = set()
 
-    if optional_personal.exists():
-        register_optional(optional_personal, optional_entries, optional_formulas, optional_casks)
-    if optional_work.exists():
-        register_optional(optional_work, optional_entries, optional_formulas, optional_casks)
+    for optional_manifest in sorted((repo_root / "apps" / "brew").glob("*.Brewfile")):
+        if optional_manifest.name in {"Brewfile", "core.Brewfile"}:
+            continue
+        register_optional(optional_manifest, optional_entries, optional_formulas, optional_casks)
 
     # Get installed packages
     brew_formulas_installed = run_command(["brew", "list", "--formula"]).split()

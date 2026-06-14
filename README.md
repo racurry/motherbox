@@ -15,7 +15,7 @@ All-in-one project for managing multiple macOS environments (personal and work) 
 
 ## Structure
 
-- [apps](./apps) - Application-specific configs and setup scripts, organized by app. Each app has its own directory with config files & setup scripts
+- [apps](./apps) - Application-specific configs and setup scripts, organized by app. Some are part of the default setup path; others are opt-in apps, experiments, or notes for tools used occasionally
 - [scripts](./scripts) - Standalone utilities that can be run manually. Automatically added to PATH
 - [machines](./machines) - Machine-specific automation (launchd jobs, maintenance scripts)
 - [lib](./lib) - Shared library functions and helpers
@@ -24,7 +24,7 @@ All-in-one project for managing multiple macOS environments (personal and work) 
 
 ## Testing
 
-Tests are distributed throughout the repository, co-located with the code they test.
+Tests are lightweight smoke checks for setup paths that are valuable, practical to run locally, and practical to run in CI. They live next to the code they test and are not meant to provide comprehensive unit coverage.
 
 ```bash
 ./run/test.sh           # Run all tests, run lint

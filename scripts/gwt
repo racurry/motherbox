@@ -45,7 +45,8 @@ copy_gitignored_files() {
     while IFS= read -r dir; do
         [[ -n "$dir" ]] || continue
         local rel_dir="${dir#"$src_root/"}"
-        local dest_dir="$dest/$(dirname "$rel_dir")"
+        local dest_dir
+        dest_dir="$dest/$(dirname "$rel_dir")"
         mkdir -p "$dest_dir"
         cp -r "$dir" "$dest/$rel_dir"
         echo "  Copied $rel_dir/"

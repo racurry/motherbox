@@ -463,7 +463,7 @@ uvx ruff check .
 
 ```bash
 # Test a Python project
-cd ~/workspace/some-python-project
+cd ~/code/me/some-python-project
 direnv allow
 python --version  # Should match .python-version
 uv pip list       # Should show project deps

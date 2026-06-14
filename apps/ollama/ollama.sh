@@ -39,7 +39,7 @@ COMMANDS:
 OPTIONS:
     -h, --help  Show this help message
 
-ENVIRONMENT VARIABLES (set in ~/.local.zshrc):
+ENVIRONMENT VARIABLES (set shared values in the managed .zshrc, private values in ~/.zshenv):
     OLLAMA_HOST           Bind address (default: 127.0.0.1:11434)
     OLLAMA_MODELS         Model storage directory (default: ~/.ollama/models)
     OLLAMA_KEEP_ALIVE     How long models stay loaded (default: 5m)

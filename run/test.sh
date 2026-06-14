@@ -38,6 +38,7 @@ EOF
 
 run_lint() {
     local app_filter="${1:-}"
+    local -a bash_sources=()
 
     if ! command -v shellcheck >/dev/null 2>&1; then
         echo "shellcheck not found; install with 'brew install shellcheck'" >&2
@@ -50,7 +51,6 @@ run_lint() {
         echo "Running shellcheck linting..."
     fi
 
-    bash_sources=()
     if [[ -n "$app_filter" ]]; then
         # Only lint scripts in the specified app directory
         if [[ -d "${SCRIPT_DIR}/../apps/${app_filter}" ]]; then
@@ -62,16 +62,12 @@ run_lint() {
             return 1
         fi
     else
-        # Lint all scripts in directories that exist
-        local search_dirs=()
-        for dir in "${SCRIPT_DIR}/../lib/bash" "${SCRIPT_DIR}/../scripts" "${SCRIPT_DIR}/../apps"; do
-            [[ -d "$dir" ]] && search_dirs+=("$dir")
-        done
-        if [[ ${#search_dirs[@]} -gt 0 ]]; then
-            while IFS= read -r file; do
-                bash_sources+=("$file")
-            done < <(find "${search_dirs[@]}" -name '*.sh' -print | sort)
-        fi
+        collect_bash_sources \
+            "${SCRIPT_DIR}/../apps" \
+            "${SCRIPT_DIR}/../lib/bash" \
+            "${SCRIPT_DIR}/../machines" \
+            "${SCRIPT_DIR}/../run" \
+            "${SCRIPT_DIR}/../scripts"
     fi
 
     if [ ${#bash_sources[@]} -eq 0 ]; then
@@ -82,6 +78,35 @@ run_lint() {
     echo "Checking ${#bash_sources[@]} bash files..."
     shellcheck --severity=warning --source-path="${SCRIPT_DIR}/.." "${bash_sources[@]}"
     echo "✓ All bash files passed shellcheck"
+}
+
+add_bash_source() {
+    local file="$1"
+    local first_line=""
+
+    [[ -f "$file" ]] || return 0
+
+    if [[ "$file" == *.sh ]]; then
+        bash_sources+=("$file")
+        return 0
+    fi
+
+    IFS= read -r first_line <"$file" || true
+    case "$first_line" in
+    *"/bash"* | *" env bash"* | *"/sh"* | *" env sh"*)
+        bash_sources+=("$file")
+        ;;
+    esac
+}
+
+collect_bash_sources() {
+    local dir
+    for dir in "$@"; do
+        [[ -d "$dir" ]] || continue
+        while IFS= read -r file; do
+            add_bash_source "$file"
+        done < <(find "$dir" -type f -print | sort)
+    done
 }
 
 run_unit() {

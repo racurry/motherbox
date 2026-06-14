@@ -528,7 +528,7 @@ determine_profile() {
     if [[ -z "${PROFILE:-}" ]]; then
         if [[ "${unattended}" == "true" ]]; then
             log_error "Setup mode not set and --unattended prevents prompting"
-            log_info "Use --profile=work or --profile=personal to set mode"
+            log_info "Use --profile personal, --profile galileo, or --profile firsthand to set mode"
             return 1
         fi
         prompt_profile

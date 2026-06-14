@@ -10,9 +10,14 @@ macOS system preferences and folder structure configuration.
 
 ## Setup
 
-Run `./apps/macos/macos.sh` to set up system preferences.
-Run `./apps/macos/folders.sh` to create folder structure.
+```bash
+./apps/macos/macos.sh setup
+```
 
-## Notes
+Configures macOS defaults and creates the standard folder structure.
 
-TODO: Document setup steps
+Folder setup can also be run directly:
+
+```bash
+./apps/macos/folders.sh setup
+```

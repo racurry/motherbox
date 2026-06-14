@@ -21,8 +21,8 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --profile MODE   Set to 'galileo' or 'personal' to install mode-specific packages
-                  from apps/brew/galileo.Brewfile or apps/brew/personal.Brewfile
+    --profile MODE   Install profile-specific packages from apps/brew/{mode}.Brewfile
+                  (common profiles: personal, galileo, firsthand)
                   in addition to the main apps/brew/Brewfile
 Brewfile Structure:
     Brewfile              Common packages (brew, cask, vscode)
