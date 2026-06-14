@@ -27,8 +27,13 @@ EOF
 do_setup() {
     print_heading "Setting up Codex desktop app"
     require_command brew
-    brew install --cask codex-app
-    log_success "Codex desktop app setup complete"
+    # --adopt: take ownership of a matching pre-existing /Applications/Codex.app
+    # instead of erroring. Non-fatal on failure so setup continues.
+    if brew install --cask --adopt codex-app; then
+        log_success "Codex desktop app setup complete"
+    else
+        log_error "codex-app install failed; skipping (continuing setup)"
+    fi
 }
 
 main() {
