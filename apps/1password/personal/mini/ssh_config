@@ -5,6 +5,14 @@
 # SSH agent. The github.com block must come before the Host * agent block so
 # that "IdentityAgent none" wins (ssh uses the first value obtained per host).
 
+Include ~/.orbstack/ssh/config
+Include ~/.colima/ssh_config
+
+# 1Password SSH Agent
+Host *
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+
 # GitHub: use the local mini key, not the 1Password agent
 Host github.com
     HostName github.com

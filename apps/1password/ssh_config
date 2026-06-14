@@ -1,4 +1,5 @@
 Include ~/.colima/ssh_config
+Include ~/.orbstack/ssh/config
 
 # 1Password SSH Agent
 Host *
