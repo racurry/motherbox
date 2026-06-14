@@ -1,0 +1,8 @@
+# 1Password SSH Agent Configuration
+# Firsthand machine: firsthand key preferred, personal available
+
+[[ssh-keys]]
+account = "team-firsthand.1password.com/"
+
+[[ssh-keys]]
+account = "my.1password.com"

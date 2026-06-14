@@ -1,0 +1,5 @@
+Include ~/.colima/ssh_config
+
+# 1Password SSH Agent
+Host *
+    IdentityAgent ~/.1password/agent.sock

@@ -9,19 +9,26 @@ Password manager with built-in SSH agent. [Official docs](https://developer.1pas
 ## Setup
 
 ```bash
-./apps/1password/1password.sh setup --profile personal  # or --profile galileo
+./apps/1password/1password.sh setup --profile personal  # or --profile firsthand
 ```
 
-This symlinks the appropriate SSH agent config (`agent.personal.toml` or `agent.galileo.toml`) to `~/.config/1password/ssh/agent.toml`.
+Setup does three things, all via symlink:
+
+1. Symlinks `~/.1password/agent.sock` to the real 1Password agent socket.
+2. Symlinks `~/.ssh/config` to the active `ssh_config`.
+3. Symlinks `~/.config/1password/ssh/agent.toml` to the profile's `agent.toml`.
+
+`agent.toml` lives per-profile under `apps/1password/<profile>/`. `ssh_config`
+is shared (`apps/1password/ssh_config`).
 
 ### Machine-specific SSH config
 
 When a machine is set (via `--machine` or persisted config), setup prefers
-`ssh_config.<profile>.<machine>` over `ssh_config.<profile>` if it exists. This
+`<profile>/<machine>/ssh_config` over `<profile>/ssh_config` if it exists. This
 lets a specific machine override how SSH is configured without affecting the
 shared profile.
 
-Example: `ssh_config.personal.mini` takes the 1Password agent out of the SSH
+Example: `personal/mini/ssh_config` takes the 1Password agent out of the SSH
 path for `github.com` and uses a local on-disk key (`~/.ssh/id_ed25519_mini`)
 instead. The `Host github.com` block is placed before `Host *` so that
 `IdentityAgent none` wins (ssh uses the first value obtained per host). The
@@ -50,7 +57,7 @@ After running the setup script:
 
 ## Syncing Preferences
 
-Repo sync. SSH agent config (`agent.toml`) symlinked to `~/.config/1password/ssh/`. App preferences sync via 1Password account.
+Repo sync. SSH agent config (`agent.toml`) and SSH client config (`ssh_config`) symlinked into place from the active profile. App preferences sync via 1Password account.
 
 ## References
 
