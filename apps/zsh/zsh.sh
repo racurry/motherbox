@@ -11,10 +11,10 @@ show_help() {
     cat <<EOF
 Usage: $0 [COMMAND]
 
-Symlink zsh configuration files to home directory.
+Apply zsh configuration files to home directory.
 
 Files managed:
-    .zshrc        - Main zsh configuration
+    .zshrc        - Main zsh configuration (managed by chezmoi)
     .galileorc    - Galileo work-specific zsh config
     .firsthandrc  - Firsthand work-specific zsh config
 
@@ -27,7 +27,7 @@ EOF
 do_setup() {
     print_heading "Setting up zsh configuration"
 
-    link_home_dotfile "${SCRIPT_DIR}/.zshrc" "${APP_NAME}"
+    "${REPO_ROOT}/run/chezmoi.sh" apply "${HOME}/.zshrc"
     link_home_dotfile "${SCRIPT_DIR}/.galileorc" "${APP_NAME}"
     link_home_dotfile "${SCRIPT_DIR}/.firsthandrc" "${APP_NAME}"
 

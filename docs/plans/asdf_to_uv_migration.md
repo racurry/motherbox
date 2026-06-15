@@ -289,7 +289,7 @@ ______________________________________________________________________
 
 ## Phase 4: Update Shell Configuration
 
-### 4.1 Modify `apps/zsh/.zshrc`
+### 4.1 Modify `home/dot_zshrc.tmpl`
 
 Add PATH and muscle-memory aliases:
 
@@ -591,7 +591,7 @@ ______________________________________________________________________
 | `apps/asdf/.tool-versions`           | Remove `python` line           |
 | `apps/asdf/.default-python-packages` | Delete                         |
 | `apps/asdf/asdf.sh`                  | Remove Python env var handling |
-| `apps/zsh/.zshrc`                    | Add PATH and pip aliases       |
+| `home/dot_zshrc.tmpl`                | Add PATH and pip aliases       |
 | `apps/claudecode/AGENTS.global.md`   | Update rules                   |
 | `run/setup.sh`                       | Add `run_app_setup uv`         |
 | `apps/direnv/README.md`              | Add uv usage docs              |

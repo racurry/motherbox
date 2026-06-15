@@ -5,7 +5,7 @@ Zsh shell configuration.
 ## Installation
 
 ```bash
-brew install zsh
+brew install chezmoi zsh
 ```
 
 ## Setup
@@ -14,12 +14,13 @@ brew install zsh
 ./apps/zsh/zsh.sh setup
 ```
 
-This symlinks `.zshrc` to `~/`.
+This applies `.zshrc` with chezmoi and symlinks work-specific rc files to `~/`.
 
 ## Contents
 
-- `.zshrc` - Main Zsh configuration file
+- `../../home/dot_zshrc.tmpl` - Main Zsh configuration file, applied to `~/.zshrc`
 - `.galileorc` - Work-specific shell configuration (sourced if present)
+- `.firsthandrc` - Work-specific shell configuration (sourced if present)
 
 ## Local Configuration
 
@@ -55,7 +56,8 @@ Non-secret environment variables that can be committed belong in the managed
 
 ## Syncing Preferences
 
-Repo sync. `.zshrc`, `.galileorc`, and `.firsthandrc` are symlinked to `~/`.
+Repo sync. `.zshrc` is managed by chezmoi from `home/dot_zshrc.tmpl`.
+`.galileorc` and `.firsthandrc` are still symlinked to `~/` by this app script.
 
 ## References
 

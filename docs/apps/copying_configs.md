@@ -59,7 +59,7 @@ don't re-resolve symlinks, or explicitly check for regular files).
 
 ```bash
 # Symlink a config file
-link_file "${REPO_ROOT}/apps/zsh/.zshrc" "${HOME}/.zshrc" "zsh"
+link_file "${REPO_ROOT}/apps/git/.gitconfig" "${HOME}/.gitconfig" "git"
 
 # Copy when symlinks aren't supported
 copy_file "${REPO_ROOT}/apps/mailmate/Pumpkin.plist" "${target_plist}" "mailmate"

@@ -67,7 +67,7 @@ export OPENSCADPATH="$HOME/OpenSCAD/Libraries"
 # Local secrets live in ~/.zshenv, which zsh loads automatically before this
 # file. Non-secret shared environment belongs here in the repo-managed .zshrc.
 
-export MOTHERBOX_ROOT="$HOME/code/me/motherbox"
+export MOTHERBOX_ROOT={{ .chezmoi.workingTree | quote }}
 
 # ============================================================================
 # HISTORY CONFIGURATION
@@ -147,10 +147,10 @@ typeset -U PATH
 
 # Shell convenience
 alias rezsh="source ~/.zshrc"
-alias zshcfg='code -nw "$(readlink ~/.zshrc 2>/dev/null || echo ~/.zshrc)"'
+alias zshcfg='code -nw "$MOTHERBOX_ROOT/home/dot_zshrc.tmpl"'
 
-# Motherbox repo shortcut (derived from zshrc symlink location)
-alias motherbox='cd "$(dirname "$(readlink ~/.zshrc)")"/../..'
+# Motherbox repo shortcut
+alias motherbox='cd "$MOTHERBOX_ROOT"'
 
 # Enhanced & tool overwrites
 command -v bat >/dev/null 2>&1 && alias cat='bat'

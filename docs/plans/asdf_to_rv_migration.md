@@ -347,7 +347,7 @@ ______________________________________________________________________
 
 ## Phase 4: Update Shell Configuration
 
-### 4.1 Modify `apps/zsh/.zshrc`
+### 4.1 Modify `home/dot_zshrc.tmpl`
 
 Replace asdf Ruby handling with rv:
 
@@ -457,7 +457,7 @@ ruby --version  # Should show rv-managed version
 asdf plugin remove ruby
 
 # 7. Update shell config
-# Edit apps/zsh/.zshrc as described
+# Edit home/dot_zshrc.tmpl as described
 
 # 8. Reinstall asdf runtimes (Node.js only now)
 ./apps/asdf/asdf.sh setup
@@ -622,7 +622,7 @@ ______________________________________________________________________
 | `apps/asdf/.tool-versions`         | Remove `ruby` line                        |
 | `apps/asdf/.default-gems`          | Delete                                    |
 | `apps/asdf/asdf.sh`                | Remove Ruby env var, `.default-gems` link |
-| `apps/zsh/.zshrc`                  | Add rv init, keep asdf for Node.js        |
+| `home/dot_zshrc.tmpl`              | Add rv init, keep asdf for Node.js        |
 | `apps/claudecode/AGENTS.global.md` | Update rules                              |
 | `run/setup.sh`                     | Add `run_app_setup rv`                    |
 | `apps/direnv/README.md`            | Add rv usage docs                         |
