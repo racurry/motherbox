@@ -16,8 +16,7 @@ For copying or symlinking config files to user locations, see [copying_configs.m
 ~/.config/motherbox/backups/
 └── 20241130/
     ├── zsh/
-    │   ├── .zshrc.20241130_143022
-    │   └── .galileorc.20241130_143055
+    │   └── .zprofile.20241130_143022
     └── git/
         └── .gitconfig.20241130_143102
 ```

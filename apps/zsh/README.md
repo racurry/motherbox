@@ -5,21 +5,25 @@ Zsh shell configuration.
 ## Installation
 
 ```bash
-brew install zsh
+brew install chezmoi zsh
 ```
 
 ## Setup
 
 ```bash
-./apps/zsh/zsh.sh setup
+./run/setup.sh
 ```
 
-This symlinks `.zshrc` to `~/`.
+Mother Box configures chezmoi to use this repo, then applies the zsh rc files
+from `home/`. Work-specific zsh fragments are rendered into `.zshrc` based on
+the Mother Box profile.
 
 ## Contents
 
-- `.zshrc` - Main Zsh configuration file
-- `.galileorc` - Work-specific shell configuration (sourced if present)
+- `../../home/dot_zshrc.tmpl` - Main Zsh configuration template, rendered to
+  `~/.zshrc`
+- `../../home/.chezmoitemplates/galileo.zsh.tmpl` - Galileo shell fragment
+- `../../home/.chezmoitemplates/firsthand.zsh.tmpl` - Firsthand shell fragment
 
 ## Local Configuration
 
@@ -55,7 +59,8 @@ Non-secret environment variables that can be committed belong in the managed
 
 ## Syncing Preferences
 
-Repo sync. `.zshrc`, `.galileorc`, and `.firsthandrc` are symlinked to `~/`.
+Repo sync. `.zshrc` is managed by chezmoi for every profile. Work-specific
+configuration is rendered directly into `.zshrc`.
 
 ## References
 

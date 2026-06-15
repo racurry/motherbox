@@ -133,6 +133,27 @@ run_app_setup() {
     esac
 }
 
+configure_chezmoi() {
+    print_heading "Chezmoi"
+
+    require_command chezmoi
+
+    local chezmoi_config_dir="${HOME}/.config/chezmoi"
+    local chezmoi_config="${chezmoi_config_dir}/chezmoi.toml"
+
+    mkdir -p "${chezmoi_config_dir}"
+    printf 'sourceDir = "%s"\n\n[data]\nprofile = "%s"\n' "${REPO_ROOT}" "${PROFILE}" >"${chezmoi_config}"
+
+    log_info "Configured chezmoi sourceDir: ${REPO_ROOT}"
+    log_info "Configured chezmoi profile: ${PROFILE}"
+}
+
+apply_home_state() {
+    print_heading "Home State"
+
+    chezmoi apply
+}
+
 # ==========================================================================
 # PHASE 1: BOOTSTRAP — core dev environment
 # ==========================================================================
@@ -147,7 +168,8 @@ if ! command -v brew >/dev/null 2>&1; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-run_app_setup zsh
+configure_chezmoi
+apply_home_state
 run_app_setup git
 run_app_setup direnv
 run_app_setup 1password

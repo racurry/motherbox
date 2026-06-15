@@ -1,3 +1,4 @@
+{{- $profile := index . "profile" | default "personal" -}}
 # ============================================================================
 # PACKAGE MANAGERS & TOOL SETUP
 # ============================================================================
@@ -147,10 +148,9 @@ typeset -U PATH
 
 # Shell convenience
 alias rezsh="source ~/.zshrc"
-alias zshcfg='code -nw "$(readlink ~/.zshrc 2>/dev/null || echo ~/.zshrc)"'
 
-# Motherbox repo shortcut (derived from zshrc symlink location)
-alias motherbox='cd "$(dirname "$(readlink ~/.zshrc)")"/../..'
+# Motherbox repo shortcut
+alias motherbox='cd "$MOTHERBOX_ROOT"'
 
 # Enhanced & tool overwrites
 command -v bat >/dev/null 2>&1 && alias cat='bat'
@@ -208,11 +208,9 @@ alias grbp='git rebase-and-push'
 # ============================================================================
 # Work laptop overrides
 # ============================================================================
-# Grab any work-specific aliases & configs
-if [ -f ~/.galileorc ]; then
-  source ~/.galileorc
-fi
-
-if [ -f ~/.firsthandrc ]; then
-  source ~/.firsthandrc
-fi
+# Render any profile-specific aliases and configuration into this file.
+{{ if eq $profile "galileo" }}
+{{ template "galileo.zsh.tmpl" . }}
+{{ else if eq $profile "firsthand" }}
+{{ template "firsthand.zsh.tmpl" . }}
+{{ end }}
