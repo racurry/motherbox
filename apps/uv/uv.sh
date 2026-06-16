@@ -21,8 +21,8 @@ COMMANDS:
     help        Show this help message
 
 OPTIONS:
-    --profile MODE   Set to 'galileo' or 'personal' to install mode-specific tools
-                  from apps/uv/galileo.uv-tools or apps/uv/personal.uv-tools
+    --profile MODE   Set to 'firsthand' or 'personal' to install mode-specific tools
+                  from apps/uv/firsthand.uv-tools or apps/uv/personal.uv-tools
                   in addition to the main apps/uv/uv-tools
 
 MANIFEST FORMAT:

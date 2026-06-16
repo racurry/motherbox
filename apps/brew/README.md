@@ -9,7 +9,6 @@ Package manager for macOS with Brewfile definitions.
 - `core.Brewfile` - Bootstrap formulae required before the rest of setup
 - `Brewfile` - Main Brewfile with common packages
 - `personal.Brewfile` - Personal machine packages
-- `galileo.Brewfile` - Galileo work machine packages
 - `firsthand.Brewfile` - Firsthand work machine packages
 
 ## Setup

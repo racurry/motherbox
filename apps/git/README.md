@@ -24,7 +24,7 @@ This symlinks to `~/`:
 
 - `.gitconfig` - Main configuration
 - `.gitignore_global` - Global ignore patterns
-- `.gitconfig_galileo` - Work-specific overrides (if present)
+- `.gitconfig_firsthand` - Work-specific overrides (if present)
 
 ## Manual Setup
 
@@ -39,8 +39,8 @@ Complete these steps after running the setup script:
 The config uses Git's `includeIf` to load different settings based on repository location:
 
 ```ini
-[includeIf "gitdir:~/code/galileo/"]
-  path = ~/.gitconfig_galileo
+[includeIf "gitdir:~/code/firsthand/"]
+  path = ~/.gitconfig_firsthand
 ```
 
 To add your own work config:

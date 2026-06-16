@@ -38,7 +38,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --profile MODE     Set mode to 'firsthand', 'galileo', or 'personal'
+    --profile MODE     Set mode to 'firsthand' or 'personal'
     --machine MACHINE  Use a machine-specific SSH config if present
                        (<profile>/<machine>/ssh_config, e.g. the mini)
     --unattended    Skip prompts, fail if mode unknown

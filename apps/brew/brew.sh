@@ -22,7 +22,7 @@ Commands:
 
 Options:
     --profile MODE   Install profile-specific packages from apps/brew/{mode}.Brewfile
-                  (common profiles: personal, galileo, firsthand)
+                  (common profiles: personal, firsthand)
                   in addition to the main apps/brew/Brewfile
 Brewfile Structure:
     Brewfile              Common packages (brew, cask, vscode)

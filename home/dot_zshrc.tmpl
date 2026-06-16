@@ -209,8 +209,6 @@ alias grbp='git rebase-and-push'
 # Work laptop overrides
 # ============================================================================
 # Render any profile-specific aliases and configuration into this file.
-{{ if eq $profile "galileo" }}
-{{ template "galileo.zsh.tmpl" . }}
-{{ else if eq $profile "firsthand" }}
+{{ if eq $profile "firsthand" }}
 {{ template "firsthand.zsh.tmpl" . }}
 {{ end }}

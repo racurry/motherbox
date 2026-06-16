@@ -437,7 +437,7 @@ link_xdg_config() {
 ################################################################################
 #                            SETUP MODE
 ################################################################################
-# Determines and manages the setup mode (galileo/personal) for the system.
+# Determines and manages the setup mode (firsthand/personal) for the system.
 # Mode can come from: command-line flag > config file > interactive prompt.
 #
 # Functions:
@@ -456,27 +456,22 @@ prompt_profile() {
     print_heading "Setup Mode Selection"
     echo "Please select your setup mode:"
     echo "  1) firsthand - Install Firsthand work-specific tools & settings"
-    echo "  2) galileo   - Install Galileo work-specific tools & settings"
-    echo "  3) personal  - Install personal-specific tools & settings"
+    echo "  2) personal  - Install personal-specific tools & settings"
     echo ""
 
     while true; do
-        read -rp "Enter your choice (1, 2, or 3): " choice
+        read -rp "Enter your choice (1 or 2): " choice
         case $choice in
         1 | firsthand)
             PROFILE="firsthand"
             break
             ;;
-        2 | galileo)
-            PROFILE="galileo"
-            break
-            ;;
-        3 | personal)
+        2 | personal)
             PROFILE="personal"
             break
             ;;
         *)
-            echo "Invalid choice. Please enter 1 (firsthand), 2 (galileo), or 3 (personal)"
+            echo "Invalid choice. Please enter 1 (firsthand) or 2 (personal)"
             ;;
         esac
     done
@@ -528,7 +523,7 @@ determine_profile() {
     if [[ -z "${PROFILE:-}" ]]; then
         if [[ "${unattended}" == "true" ]]; then
             log_error "Setup mode not set and --unattended prevents prompting"
-            log_info "Use --profile personal, --profile galileo, or --profile firsthand to set mode"
+            log_info "Use --profile personal or --profile firsthand to set mode"
             return 1
         fi
         prompt_profile
@@ -584,7 +579,7 @@ determine_machine() {
 #                           Returns 1 if not a global flag
 #
 # Global flags recognized by run/setup.sh and passed to all scripts:
-#   --profile MODE      Setup profile (galileo/personal)
+#   --profile MODE      Setup profile (firsthand/personal)
 #   --machine MACHINE   Target machine (e.g., mini)
 #   --reset-profile     Reset saved profile
 #   --unattended     Skip interactive operations

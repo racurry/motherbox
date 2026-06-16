@@ -22,7 +22,6 @@ the Mother Box profile.
 
 - `../../home/dot_zshrc.tmpl` - Main Zsh configuration template, rendered to
   `~/.zshrc`
-- `../../home/.chezmoitemplates/galileo.zsh.tmpl` - Galileo shell fragment
 - `../../home/.chezmoitemplates/firsthand.zsh.tmpl` - Firsthand shell fragment
 
 ## Local Configuration

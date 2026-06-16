@@ -146,7 +146,7 @@ Scripts are called by `run/setup.sh` with global flags like `--profile`, `--unat
     ;;
 ```
 
-This prevents noise from known pass-through flags while still warning about truly unknown arguments. The function handles both boolean flags (`--unattended`) and value flags (`--profile galileo`) correctly.
+This prevents noise from known pass-through flags while still warning about truly unknown arguments. The function handles both boolean flags (`--unattended`) and value flags (`--profile firsthand`) correctly.
 
 ## Path Variables (from `common.sh`)
 

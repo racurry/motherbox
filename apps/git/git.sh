@@ -16,7 +16,6 @@ Symlink git configuration files to home directory.
 Files managed:
     .gitconfig            Main git configuration
     .gitignore_global     Global gitignore patterns
-    .gitconfig_galileo    Galileo git config (if present)
     .gitconfig_firsthand  Firsthand git config (if present)
 
 Commands:
@@ -32,9 +31,6 @@ do_setup() {
     link_home_dotfile "${SCRIPT_DIR}/.gitignore_global" "${APP_NAME}"
 
     # Link work-specific configs if present
-    if [[ -f "${SCRIPT_DIR}/.gitconfig_galileo" ]]; then
-        link_home_dotfile "${SCRIPT_DIR}/.gitconfig_galileo" "${APP_NAME}"
-    fi
     if [[ -f "${SCRIPT_DIR}/.gitconfig_firsthand" ]]; then
         link_home_dotfile "${SCRIPT_DIR}/.gitconfig_firsthand" "${APP_NAME}"
     fi

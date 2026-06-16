@@ -6,7 +6,7 @@ Manages Python CLI tools installed globally via `uv tool install`.
 
 - `uv.sh` - Setup script for installing and managing UV tools
 - `uv-tools` - Main manifest of global tools to install
-- `galileo.uv-tools` - (optional) Galileo work-specific tools
+- `firsthand.uv-tools` - (optional) Firsthand work-specific tools
 - `personal.uv-tools` - (optional) Personal machine-specific tools
 
 ## Setup
@@ -45,7 +45,7 @@ UV doesn't have a native manifest for global tools (like Brewfile). The `uv-tool
 - Declarative tool management
 - Support for `--with` dependencies
 - Version pinning
-- Mode-specific tool lists (galileo/personal)
+- Mode-specific tool lists (firsthand/personal)
 
 ## Notes
 

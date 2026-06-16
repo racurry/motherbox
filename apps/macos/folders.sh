@@ -20,7 +20,7 @@ Commands:
     help        Show this help message (also: -h, --help)
 
 Options:
-    --profile MODE     Set mode to 'firsthand' or 'galileo'
+    --profile MODE     Set mode to 'firsthand' or 'personal'
     --unattended    Skip prompts, fail if mode unknown
 
 Folders created in ${PATH_CODE}:
@@ -33,14 +33,6 @@ Additional folders created in firsthand mode:
     firsthand/          Firsthand work projects
     firsthand/_archive  Archived Firsthand projects
     firsthand/_scratch  Firsthand experiments
-    galileo/            Galileo work projects (contracting)
-    galileo/_archive    Archived Galileo projects
-    galileo/_scratch    Galileo experiments
-
-Additional folders created in galileo mode:
-    galileo/            Galileo work projects
-    galileo/_archive    Archived Galileo projects
-    galileo/_scratch    Galileo experiments
 
 Folders created in ${PATH_DOCUMENTS}:
     @auto           Automated/scripted content
@@ -95,21 +87,8 @@ do_setup() {
             "firsthand"
             "firsthand/_archive"
             "firsthand/_scratch"
-            "galileo"
-            "galileo/_archive"
-            "galileo/_scratch"
         )
         for folder in "${firsthand_folders[@]}"; do
-            ensure_folder "${PATH_CODE}/${folder}"
-        done
-    elif [[ "${PROFILE}" == "galileo" ]]; then
-        log_info "Creating galileo code folders"
-        local galileo_folders=(
-            "galileo"
-            "galileo/_archive"
-            "galileo/_scratch"
-        )
-        for folder in "${galileo_folders[@]}"; do
             ensure_folder "${PATH_CODE}/${folder}"
         done
     fi
