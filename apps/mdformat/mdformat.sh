@@ -14,7 +14,7 @@ Usage: $(basename "$0") <command>
 Manage mdformat installation and configuration.
 
 COMMANDS:
-  setup         Install mdformat with plugins and symlink config
+  setup         Install mdformat with plugins 
   help          Show this help message
 
 INSTALLATION:
@@ -39,9 +39,6 @@ do_setup() {
         log_info "Installing mdformat with plugins..."
         uv tool install mdformat --with mdformat-gfm --with mdformat-frontmatter
     fi
-
-    # Symlink configuration to home directory
-    link_home_dotfile "${SCRIPT_DIR}/.mdformat.toml" "${APP_NAME}"
 
     log_success "mdformat setup complete"
 }
