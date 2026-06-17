@@ -5,7 +5,7 @@
 
 # Work-specific settings; basically, user & signing key
 [includeIf "gitdir:~/code/firsthand/"]
-  path = ~/.gitconfig_firsthand
+  path = config_firsthand
 
 [gpg]
   format = ssh
@@ -107,7 +107,6 @@
   wipe = !git reset --hard && git clean -fd
 
 [core]
-  excludesfile = ~/.gitignore_global
   pager = "diff-so-fancy | less --tabs=4"
   editor = "code --wait"
 

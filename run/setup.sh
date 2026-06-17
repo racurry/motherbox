@@ -136,16 +136,16 @@ run_app_setup() {
 configure_chezmoi() {
     print_heading "Chezmoi"
 
-    require_command chezmoi
+    # require_command chezmoi
 
-    local chezmoi_config_dir="${HOME}/.config/chezmoi"
-    local chezmoi_config="${chezmoi_config_dir}/chezmoi.toml"
+    # local chezmoi_config_dir="${HOME}/.config/chezmoi"
+    # local chezmoi_config="${chezmoi_config_dir}/chezmoi.toml"
 
-    mkdir -p "${chezmoi_config_dir}"
-    printf 'sourceDir = "%s"\n\n[data]\nprofile = "%s"\n' "${REPO_ROOT}" "${PROFILE}" >"${chezmoi_config}"
+    # mkdir -p "${chezmoi_config_dir}"
+    # printf 'sourceDir = "%s"\n\n[data]\nprofile = "%s"\n' "${REPO_ROOT}" "${PROFILE}" >"${chezmoi_config}"
 
-    log_info "Configured chezmoi sourceDir: ${REPO_ROOT}"
-    log_info "Configured chezmoi profile: ${PROFILE}"
+    # log_info "Configured chezmoi sourceDir: ${REPO_ROOT}"
+    # log_info "Configured chezmoi profile: ${PROFILE}"
 }
 
 apply_home_state() {
