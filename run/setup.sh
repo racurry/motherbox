@@ -170,7 +170,6 @@ fi
 
 configure_chezmoi
 apply_home_state
-run_app_setup git
 run_app_setup direnv
 run_app_setup 1password
 
@@ -200,7 +199,6 @@ run_app_setup codex-app
 run_app_setup chatgpt-atlas
 run_app_setup comet
 run_app_setup karabiner
-run_app_setup ghostty
 
 print_heading "Dev Tools"
 
