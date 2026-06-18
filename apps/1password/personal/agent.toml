@@ -1,5 +1,0 @@
-# 1Password SSH Agent Configuration
-# Personal machine
-
-[[ssh-keys]]
-account = "my.1password.com"

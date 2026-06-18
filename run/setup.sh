@@ -171,7 +171,6 @@ fi
 configure_chezmoi
 apply_home_state
 run_app_setup direnv
-run_app_setup 1password
 
 print_heading "Bootstrap complete"
 

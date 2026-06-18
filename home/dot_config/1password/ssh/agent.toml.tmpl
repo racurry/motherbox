@@ -1,8 +1,9 @@
+{{- $profile := index . "profile" | default "personal" -}}
 # 1Password SSH Agent Configuration
-# Firsthand machine: firsthand key preferred, personal available
 
+{{ if eq $profile "firsthand" }}
 [[ssh-keys]]
 account = "team-firsthand.1password.com/"
-
+{{ end }}
 [[ssh-keys]]
 account = "my.1password.com"
