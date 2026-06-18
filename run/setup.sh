@@ -136,16 +136,16 @@ run_app_setup() {
 configure_chezmoi() {
     print_heading "Chezmoi"
 
-    # require_command chezmoi
+    require_command chezmoi
 
-    # local chezmoi_config_dir="${HOME}/.config/chezmoi"
-    # local chezmoi_config="${chezmoi_config_dir}/chezmoi.toml"
+    # Generate ~/.config/chezmoi/chezmoi.toml from home/.chezmoi.toml.tmpl.
+    # Pass the already-determined profile/machine so promptStringOnce doesn't
+    # re-prompt; chezmoi init still prompts if run standalone on a fresh machine.
+    chezmoi init --source="${REPO_ROOT}/home" \
+        --promptString "profile=${PROFILE}" \
+        --promptString "machine=${MACHINE:-}"
 
-    # mkdir -p "${chezmoi_config_dir}"
-    # printf 'sourceDir = "%s"\n\n[data]\nprofile = "%s"\n' "${REPO_ROOT}" "${PROFILE}" >"${chezmoi_config}"
-
-    # log_info "Configured chezmoi sourceDir: ${REPO_ROOT}"
-    # log_info "Configured chezmoi profile: ${PROFILE}"
+    log_info "Configured chezmoi via 'chezmoi init' (profile: ${PROFILE}, machine: ${MACHINE:-none})"
 }
 
 apply_home_state() {

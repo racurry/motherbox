@@ -1,0 +1,8 @@
+{{- $profile := promptStringOnce . "profile" "Profile" -}}
+{{- $machine := promptStringOnce . "machine" "Machine" -}}
+
+sourceDir = {{ .chezmoi.sourceDir | quote }}
+
+[data]
+    profile = {{ $profile | quote }}
+    machine = {{ $machine | quote }}
