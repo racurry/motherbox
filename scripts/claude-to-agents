@@ -1,0 +1,48 @@
+#!/usr/bin/env -S uv run --quiet --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
+"""Normalize agent instruction files in the current directory to AGENTS.md.
+
+Looks for ./AGENTS.md, ./CLAUDE.md, and ./.claude/CLAUDE.md, then converges on a
+single canonical AGENTS.md with ./.claude/CLAUDE.md as a symlink pointing to it.
+"""
+
+import sys
+from pathlib import Path
+
+AGENTS = Path("AGENTS.md")
+CLAUDE = Path("CLAUDE.md")
+DOT_CLAUDE = Path(".claude/CLAUDE.md")
+
+
+def link_dot_claude() -> None:
+    """Create ./.claude/CLAUDE.md as a relative symlink to ./AGENTS.md."""
+    DOT_CLAUDE.parent.mkdir(parents=True, exist_ok=True)
+    if DOT_CLAUDE.is_symlink() or DOT_CLAUDE.exists():
+        DOT_CLAUDE.unlink()
+    DOT_CLAUDE.symlink_to(Path("..") / AGENTS)
+
+
+def main() -> int:
+    present = {p for p in (AGENTS, CLAUDE, DOT_CLAUDE) if p.exists() or p.is_symlink()}
+
+    if present == {CLAUDE}:
+        CLAUDE.rename(AGENTS)
+        link_dot_claude()
+    elif present == {AGENTS}:
+        link_dot_claude()
+    elif present == {DOT_CLAUDE}:
+        DOT_CLAUDE.rename(AGENTS)
+        link_dot_claude()
+    else:
+        have = ", ".join(str(p) for p in sorted(map(str, present))) or "nothing"
+        print(f"Can't do it, have {have}", file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
