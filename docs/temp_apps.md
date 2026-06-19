@@ -6,4 +6,5 @@ Some apps that I don't really use very often.  Not installed by default anywhere
 cask "chatgpt-atlas"
 cask "comet"
 cask "keyboard-maestro"
+cask "devonthink"
 ```

@@ -26,6 +26,8 @@ Mise by default:
 
 - Python, Node, Ruby, Go
 
+Runtime managers are installed using Layer 1 mechanisms. Homebrew installs mise; the App Store or Xcode installer installs Xcode. Layer 2 starts once the manager owns runtime versions.
+
 Exceptions are languages that ship with their own strong version manager:
 
 - Rustup for Rust
@@ -55,7 +57,7 @@ Eg:
 
 **Tiebreakers**
 
-- if a tool's version needs to be pinned per-project, mise owns it. node@22 in mise, ripgrep in Homebrew
+- if a runtime or toolchain version needs to be pinned per-project, mise owns it. node@22 in mise, ripgrep in Homebrew
 - Python turf: mise owns the interpreter; uv owns deps/venvs. Don't let uv install Python.  Use `python-preference = "only-system"` in uv.
 
 ** Cross-cutting - Configs and secrets:**

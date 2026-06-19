@@ -13,6 +13,46 @@ Get an API token
 4. Select which bases/workspaces the token can access
 5. Copy the token (shown only once)
 
+## Mailmate
+
+Quit Mailmate.  Copy the custom keybindings file in.
+
+```bash
+cp mailmate/Motherbox.plist /Applications/MailMate.app/Contents/Resources/KeyBindings/
+```
+
+## Obsidian
+
+Set up headless sync:
+
+```bash
+npm install -g obsidian-headless
+ob login
+ob sync-setup --vault {Vault name} --path ~/Notes/{Vault name}
+```
+
+## Rayccast
+
+Setup:
+
+- Point the custom script location to `raycast/scripts`
+
+## Readwise
+
+Unofficial "readwise-enhanced" API server adds more functionality than official one. Get API token from https://readwise.io/access_token
+
+## Shottr
+
+Make sure all of the default keyboard shortcuts are set up/turned off in macOS.  System Preferences > Keyboard > Shortcuts
+
+![Keyboard Shortcuts](assets/macos_screenshot_settings.png)
+
+1. Pull the license from 1Password and set it in Shottr.
+2. Update Shottr settings:
+
+![Shottr](assets/shottr_general.png)
+![Shottr](assets/shottr_hotkeys.png)
+
 ## Stream deck
 
 Configuration needs to be set up manually.  Export from old, import to new.
