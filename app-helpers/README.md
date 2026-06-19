@@ -31,6 +31,17 @@ ob login
 ob sync-setup --vault {Vault name} --path ~/Notes/{Vault name}
 ```
 
+## OpenSCAD
+
+Install with Homebrew.  Libraries live in `~/OpenSCAD/Libraries`, which is on `$OPENSCADPATH` from zsh config. Install BOSL2 there when needed:
+
+```bash
+mkdir -p ~/OpenSCAD/Libraries
+git clone https://github.com/BelfrySCAD/BOSL2.git ~/OpenSCAD/Libraries/BOSL2
+
+git -C ~/OpenSCAD/Libraries/BOSL2 pull # update BOSL2
+```
+
 ## Rayccast
 
 Setup:
