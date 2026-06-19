@@ -22,8 +22,8 @@ COMMANDS:
 
 OPTIONS:
     --profile MODE   Set to 'firsthand' or 'personal' to install mode-specific tools
-                  from apps/uv/firsthand.uv-tools or apps/uv/personal.uv-tools
-                  in addition to the main apps/uv/uv-tools
+                  from setup-stuff/uv/firsthand.uv-tools or setup-stuff/uv/personal.uv-tools
+                  in addition to the main setup-stuff/uv/uv-tools
 
 MANIFEST FORMAT:
     # Comment lines start with #

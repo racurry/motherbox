@@ -12,7 +12,7 @@ Manages Python CLI tools installed globally via `uv tool install`.
 ## Setup
 
 ```bash
-./apps/uv/uv.sh setup
+./setup-stuff/uv/uv.sh setup
 ```
 
 ## Commands
@@ -49,4 +49,4 @@ UV doesn't have a native manifest for global tools (like Brewfile). The `uv-tool
 
 ## Notes
 
-Individual tools may have their own `apps/*/` directories for configuration (e.g., `apps/mdformat/.mdformat.toml`). This manifest handles installation; app directories handle config.
+Individual tools may still have configuration elsewhere in the repo. This manifest handles installation; chezmoi-managed files under `home/` handle home-state config.

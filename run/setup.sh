@@ -211,7 +211,6 @@ run_app_setup shellcheck
 run_app_setup markdownlint
 run_app_setup shfmt
 run_app_setup ruff
-run_app_setup mdformat
 run_app_setup prettier
 
 # Run machine-specific setup if a machine is specified

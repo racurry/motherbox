@@ -5,3 +5,5 @@
 #   tool "ruff"
 #   tool "black@24.0.0"
 #   tool "mdformat" --with mdformat-gfm --with mdformat-frontmatter
+
+tool "mdformat" --with mdformat-gfm --with mdformat-frontmatter
