@@ -1,9 +1,0 @@
-# iTerm2
-
-> ⚠️ Installed via Homebrew
-
-Terminal emulator for macOS.
-
-## Manual Setup
-
-- [ ] Set up settings sync using Google Drive
