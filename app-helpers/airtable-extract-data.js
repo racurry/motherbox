@@ -7,7 +7,19 @@
  * - All table records
  * - All attachments (images, files, etc.)
  *
+ * Get an API Token
+ *
+ * 1. Go to [Airtable Developer Hub](https://airtable.com/create/tokens)
+ * 2. Click **Create new token**
+ * 3. Name your token and select scopes:
+ *    - `schema.bases:read` (required)
+ *    - `data.records:read` (required)
+ *    - `data.records:write` (optional, for write access)
+ * 4. Select which bases/workspaces the token can access
+ * 5. Copy the token (shown only once)
+ *
  * Usage:
+ *   export AIRTABLE_API_TOKEN="pat..."
  *   node scripts/extract-airtable-data.js <base-id-or-name>
  *   node scripts/extract-airtable-data.js apphIp20oHxZ7JbW1
  *   node scripts/extract-airtable-data.js "Stay Home Travel"
@@ -35,14 +47,14 @@ function setupDirectories(outputDir, tableNames) {
   const dataDir = path.join(outputDir, 'data');
   const imagesDir = path.join(outputDir, 'images');
 
-  [outputDir, dataDir, imagesDir].forEach(dir => {
+  [outputDir, dataDir, imagesDir].forEach((dir) => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
   });
 
   // Create subdirectories for each table (for potential images)
-  tableNames.forEach(tableName => {
+  tableNames.forEach((tableName) => {
     const tableImageDir = path.join(imagesDir, tableName.toLowerCase().replace(/\s+/g, '-'));
     if (!fs.existsSync(tableImageDir)) {
       fs.mkdirSync(tableImageDir, { recursive: true });
@@ -57,8 +69,8 @@ async function airtableRequest(endpoint) {
   const url = `https://api.airtable.com/v0${endpoint}`;
   const response = await fetch(url, {
     headers: {
-      'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-    }
+      Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+    },
   });
 
   if (!response.ok) {
@@ -84,12 +96,12 @@ async function findBase(identifier) {
 
   // Otherwise, search by name
   const bases = await listBases();
-  const base = bases.find(b => b.name.toLowerCase() === identifier.toLowerCase());
+  const base = bases.find((b) => b.name.toLowerCase() === identifier.toLowerCase());
 
   if (!base) {
     console.error(`\nERROR: Could not find base "${identifier}"`);
     console.error('\nAvailable bases:');
-    bases.forEach(b => console.error(`  - ${b.name} (${b.id})`));
+    bases.forEach((b) => console.error(`  - ${b.name} (${b.id})`));
     process.exit(1);
   }
 
@@ -108,25 +120,27 @@ function downloadFile(url, filepath) {
     const protocol = url.startsWith('https') ? https : http;
     const file = fs.createWriteStream(filepath);
 
-    protocol.get(url, (response) => {
-      if (response.statusCode === 200) {
-        response.pipe(file);
-        file.on('finish', () => {
+    protocol
+      .get(url, (response) => {
+        if (response.statusCode === 200) {
+          response.pipe(file);
+          file.on('finish', () => {
+            file.close();
+            resolve(filepath);
+          });
+        } else {
           file.close();
-          resolve(filepath);
-        });
-      } else {
+          fs.unlinkSync(filepath);
+          reject(new Error(`Failed to download: ${response.statusCode}`));
+        }
+      })
+      .on('error', (err) => {
         file.close();
-        fs.unlinkSync(filepath);
-        reject(new Error(`Failed to download: ${response.statusCode}`));
-      }
-    }).on('error', (err) => {
-      file.close();
-      if (fs.existsSync(filepath)) {
-        fs.unlinkSync(filepath);
-      }
-      reject(err);
-    });
+        if (fs.existsSync(filepath)) {
+          fs.unlinkSync(filepath);
+        }
+        reject(err);
+      });
   });
 }
 
@@ -148,7 +162,7 @@ async function fetchTableRecords(baseId, tableId, tableName) {
 
     // Small delay to respect rate limits (5 req/sec)
     if (offset) {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
   } while (offset);
 
@@ -158,9 +172,7 @@ async function fetchTableRecords(baseId, tableId, tableName) {
 
 // Find all attachment fields in a table schema
 function findAttachmentFields(tableSchema) {
-  return tableSchema.fields
-    .filter(field => field.type === 'multipleAttachments')
-    .map(field => field.name);
+  return tableSchema.fields.filter((field) => field.type === 'multipleAttachments').map((field) => field.name);
 }
 
 // Download all attachments from records
@@ -198,7 +210,6 @@ async function downloadAttachments(records, tableName, attachmentFields, imagesD
 
           // Update the record to include local file path
           attachment.localPath = path.relative(path.join(imagesDir, '..'), filepath);
-
         } catch (err) {
           console.error(`  ✗ Failed to download ${attachment.filename}: ${err.message}`);
           errors.push({ record: record.id, file: attachment.filename, error: err.message });
@@ -224,8 +235,8 @@ function generateReport(baseInfo, stats, outputDir) {
       totalTables: stats.length,
       totalRecords: stats.reduce((sum, t) => sum + t.recordCount, 0),
       totalAttachments: stats.reduce((sum, t) => sum + t.attachmentsDownloaded, 0),
-      totalErrors: stats.reduce((sum, t) => sum + t.errors.length, 0)
-    }
+      totalErrors: stats.reduce((sum, t) => sum + t.errors.length, 0),
+    },
   };
 
   const reportPath = path.join(outputDir, 'migration-report.json');
@@ -233,33 +244,7 @@ function generateReport(baseInfo, stats, outputDir) {
 
   // Also create a human-readable version
   const readablePath = path.join(outputDir, 'migration-report.txt');
-  const lines = [
-    '='.repeat(60),
-    'AIRTABLE EXTRACTION REPORT',
-    '='.repeat(60),
-    `Date: ${new Date().toISOString()}`,
-    `Base: ${baseInfo.name}`,
-    `Base ID: ${baseInfo.id}`,
-    '',
-    'TABLES:',
-    ...stats.map(t =>
-      `  - ${t.tableName}: ${t.recordCount} records, ${t.attachmentsDownloaded} attachments`
-    ),
-    '',
-    'SUMMARY:',
-    `  Total Tables: ${report.summary.totalTables}`,
-    `  Total Records: ${report.summary.totalRecords}`,
-    `  Total Attachments: ${report.summary.totalAttachments}`,
-    `  Total Errors: ${report.summary.totalErrors}`,
-    '',
-    ...(report.summary.totalErrors > 0 ? [
-      'ERRORS:',
-      ...stats.filter(t => t.errors.length > 0).flatMap(t =>
-        t.errors.map(e => `  - [${t.tableName}] ${e.file}: ${e.error}`)
-      )
-    ] : ['All data extracted successfully!']),
-    '='.repeat(60)
-  ];
+  const lines = ['='.repeat(60), 'AIRTABLE EXTRACTION REPORT', '='.repeat(60), `Date: ${new Date().toISOString()}`, `Base: ${baseInfo.name}`, `Base ID: ${baseInfo.id}`, '', 'TABLES:', ...stats.map((t) => `  - ${t.tableName}: ${t.recordCount} records, ${t.attachmentsDownloaded} attachments`), '', 'SUMMARY:', `  Total Tables: ${report.summary.totalTables}`, `  Total Records: ${report.summary.totalRecords}`, `  Total Attachments: ${report.summary.totalAttachments}`, `  Total Errors: ${report.summary.totalErrors}`, '', ...(report.summary.totalErrors > 0 ? ['ERRORS:', ...stats.filter((t) => t.errors.length > 0).flatMap((t) => t.errors.map((e) => `  - [${t.tableName}] ${e.file}: ${e.error}`))] : ['All data extracted successfully!']), '='.repeat(60)];
 
   fs.writeFileSync(readablePath, lines.join('\n'));
 
@@ -283,7 +268,7 @@ async function listAllBases() {
 
   console.log(`Found ${bases.length} base${bases.length === 1 ? '' : 's'}:\n`);
 
-  bases.forEach(base => {
+  bases.forEach((base) => {
     console.log(`  ${base.name}`);
     console.log(`    ID: ${base.id}`);
     console.log(`    Permission: ${base.permissionLevel}`);
@@ -324,7 +309,10 @@ async function extractAllData() {
 
   // Setup output directory
   const outputDir = path.join(__dirname, '..', 'airtable-export', base.id);
-  const { dataDir, imagesDir } = setupDirectories(outputDir, tables.map(t => t.name));
+  const { dataDir, imagesDir } = setupDirectories(
+    outputDir,
+    tables.map((t) => t.name),
+  );
 
   console.log(`\nOutput Directory: ${outputDir}`);
   console.log('='.repeat(60));
@@ -340,22 +328,24 @@ async function extractAllData() {
       const attachmentFields = findAttachmentFields(table);
 
       // Download attachments if applicable
-      const { downloaded, errors } = await downloadAttachments(
-        records,
-        table.name,
-        attachmentFields,
-        imagesDir
-      );
+      const { downloaded, errors } = await downloadAttachments(records, table.name, attachmentFields, imagesDir);
 
       // Save records to JSON
       const safeTableName = table.name.toLowerCase().replace(/\s+/g, '-');
       const dataPath = path.join(dataDir, `${safeTableName}.json`);
-      fs.writeFileSync(dataPath, JSON.stringify({
-        tableId: table.id,
-        tableName: table.name,
-        schema: table,
-        records: records
-      }, null, 2));
+      fs.writeFileSync(
+        dataPath,
+        JSON.stringify(
+          {
+            tableId: table.id,
+            tableName: table.name,
+            schema: table,
+            records: records,
+          },
+          null,
+          2,
+        ),
+      );
       console.log(`✓ Saved data to ${path.relative(process.cwd(), dataPath)}`);
 
       stats.push({
@@ -364,9 +354,8 @@ async function extractAllData() {
         recordCount: records.length,
         attachmentFields: attachmentFields,
         attachmentsDownloaded: downloaded,
-        errors: errors
+        errors: errors,
       });
-
     } catch (err) {
       console.error(`✗ Error processing ${table.name}: ${err.message}`);
       stats.push({
@@ -375,7 +364,7 @@ async function extractAllData() {
         recordCount: 0,
         attachmentFields: [],
         attachmentsDownloaded: 0,
-        errors: [{ error: err.message }]
+        errors: [{ error: err.message }],
       });
     }
   }
@@ -399,7 +388,7 @@ async function extractAllData() {
 }
 
 // Run the extraction
-extractAllData().catch(err => {
+extractAllData().catch((err) => {
   console.error('\nFatal error:', err.message);
   console.error(err.stack);
   process.exit(1);
