@@ -1,11 +1,63 @@
 {
-  "mcp-servers": {
+  "mcpServers": {
     "airtable": {
       "command": "npx",
       "args": ["-y", "airtable-mcp-server"],
       "env": {
         "AIRTABLE_API_KEY": "${AIRTABLE_API_TOKEN}"
       }
+    },
+    "mcp-obsidian": {
+      "command": "uvx",
+      "args": ["mcp-obsidian"],
+      "env": {
+        "OBSIDIAN_API_KEY": "${OBSIDIAN_API_KEY}",
+        "OBSIDIAN_HOST": "${OBSIDIAN_HOST}",
+        "OBSIDIAN_PORT": "${OBSIDIAN_PORT}"
+      }
+    },
+    "blender": {
+      "command": "uvx",
+      "args": ["--from", "git+https://projects.blender.org/lab/blender_mcp.git#subdirectory=mcp", "blender-mcp"],
+      "env": {
+        "BLENDER_MCP_HOST": "localhost",
+        "BLENDER_MCP_PORT": "9876"
+      }
+    },
+    "readwise": {
+      "type": "http",
+      "url": "https://mcp2.readwise.io/mcp"
+    },
+    "readwise-enhanced": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["readwise-mcp-enhanced"],
+      "env": {
+        "READWISE_TOKEN": "${READWISE_TOKEN}"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "n8n": {
+      "command": "npx",
+      "args": ["n8n-mcp"],
+      "env": {
+        "MCP_MODE": "stdio",
+        "LOG_LEVEL": "error",
+        "DISABLE_CONSOLE_OUTPUT": "true",
+        "N8N_API_URL": "${N8N_API_URL}",
+        "N8N_API_KEY": "${N8N_API_KEY}"
+      }
+    },
+    "figma-desktop": {
+      "type": "http",
+      "url": "http://127.0.0.1:3845/mcp"
+    },
+    "figma-remote": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
     }
   }
 }
