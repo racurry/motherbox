@@ -141,11 +141,20 @@ else
 fi
 
 print_heading "Interactive / privileged"
-# TODO: macOS defaults (sudo), TCC signing. These live here, outside chezmoi, so
-# a routine `chezmoi apply` never triggers password prompts or system mutation.
+# macOS defaults (incl. one sudo write) plus Dock/Finder restarts. These live in
+# libexec/ — invoked by ping, never on $PATH — and run here, outside chezmoi, so
+# a routine `chezmoi apply` never triggers password prompts or UI restarts. The
+# script's sudo step self-skips under --unattended.
 # Mac App Store apps install as part of L1 (mas entries in the Brewfile); the
 # only manual prerequisite is signing in to App Store.app (mas 7.x has no CLI
 # sign-in). The L1 hook skips mas entirely when --unattended.
-log_info "No interactive steps wired yet"
+# TODO: TCC signing belongs in this phase too (libexec/).
+macos_args=(setup)
+[[ "${UNATTENDED:-false}" == "true" ]] && macos_args+=(--unattended)
+if [[ "${DRY_RUN}" == "true" ]]; then
+    log_info "[dry-run] would run: libexec/macos.sh ${macos_args[*]}"
+else
+    "${REPO_ROOT}/libexec/macos.sh" "${macos_args[@]}"
+fi
 
 print_heading "Done"

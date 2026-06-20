@@ -86,7 +86,8 @@ They live in ./scripts. I stick these on on the PATH.
 - apps/      # notes, back up files, helper scripts that are app-specific.  stuff i need to 
              #    keep around, but that isn't really auto-manageable
 - docs/      # info & instructions on the repo itself
-- scripts.   # utility scripts.  I push these onto $PATH for global use
+- scripts/   # utility scripts.  I push these onto $PATH for global use
+- libexec/   # internal scripts 
 ```
 
 Homeless stuff:

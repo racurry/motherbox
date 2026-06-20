@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/bash/common.sh
-source "${SCRIPT_DIR}/../../lib/bash/common.sh"
+source "${SCRIPT_DIR}/../lib/bash/common.sh"
 
 # Paths used by this script
 PATH_DOCUMENTS="${HOME}/Documents"
@@ -224,9 +224,6 @@ apply_misc_settings() {
 }
 
 do_setup() {
-    # Set up folder structure first
-    "${SCRIPT_DIR}/folders.sh" setup
-
     apply_global_settings
     apply_input_settings
     apply_dock_settings

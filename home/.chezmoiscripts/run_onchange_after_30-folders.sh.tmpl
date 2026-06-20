@@ -1,0 +1,26 @@
+#!/bin/bash
+# Folder structure — the declarative list lives in .chezmoidata/folders.toml.
+#
+# Run by chezmoi during `chezmoi apply`. The mkdir lines below are rendered from
+# that data (and the active profile), so run_onchange re-runs automatically
+# whenever the rendered set changes. Creating folders is idempotent and
+# non-privileged, so unlike macOS defaults it belongs in the apply flow rather
+# than ping's interactive phase. Removing a folder from the data does NOT delete
+# it on disk — prune deliberately by hand.
+set -euo pipefail
+
+echo "==> Folders: ensure structure"
+{{ range .folders.code }}
+mkdir -p "${HOME}/code/{{ . }}"
+{{- end }}
+{{- if eq .profile "firsthand" }}
+{{- range .folders.code_firsthand }}
+mkdir -p "${HOME}/code/{{ . }}"
+{{- end }}
+{{- end }}
+{{- range .folders.documents }}
+mkdir -p "${HOME}/Documents/{{ . }}"
+{{- end }}
+{{- range .folders.home }}
+mkdir -p "${HOME}/{{ . }}"
+{{- end }}

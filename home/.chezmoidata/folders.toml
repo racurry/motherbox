@@ -1,0 +1,23 @@
+# Declarative folder structure, created by the 30-folders run_onchange hook.
+# Paths are relative to the base directory named by each key.
+[folders]
+# Created in ~/code (always)
+code = ["me", "me/_archive", "me/_scratch", "vendor"]
+# Created in ~/code only when profile == "firsthand"
+code_firsthand = ["firsthand", "firsthand/_archive", "firsthand/_scratch"]
+# Created in ~/Documents
+documents = [
+    "@auto",
+    "000_Inbox",
+    "100_Areas",
+    "200_People",
+    "300_Time",
+    "400_Topics",
+    "500_Projects",
+    "600_Output",
+    "800_Libraries",
+    "900_Sharing",
+    "999_Meta",
+]
+# Created in ~ (home)
+home = ["skynet"]
