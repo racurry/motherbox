@@ -67,3 +67,10 @@ Make sure all of the default keyboard shortcuts are set up/turned off in macOS. 
 ## Stream deck
 
 Configuration needs to be set up manually.  Export from old, import to new.
+
+## VS Code
+
+Complete these steps after installation:
+
+1. **Enable Settings Sync** - Open Command Palette > "Settings Sync: Turn On" > Sign in with GitHub (not MS!)
+2. **Wait for sync** - Extensions, settings, keybindings, and snippets will sync automatically
