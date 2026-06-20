@@ -1,0 +1,15 @@
+#!/bin/bash
+# Layer 1 — Claude Code CLI bootstrap.
+#
+# Run by chezmoi during `chezmoi apply`, after 10-brew/20-mise. run_once (not
+# onchange) because Claude Code self-updates after this initial install; rerun
+# manually by clearing the chezmoi state if you ever need a fresh install.
+set -euo pipefail
+
+if command -v claude >/dev/null 2>&1; then
+    echo "==> Claude Code already installed; skipping"
+    exit 0
+fi
+
+echo "==> Layer 1: install Claude Code"
+curl -fsSL https://claude.ai/install.sh | bash

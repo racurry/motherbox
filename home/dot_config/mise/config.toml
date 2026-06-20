@@ -4,6 +4,11 @@ python = "3.14"
 pnpm = "10"
 uv = "latest"
 
+# Coding-agent CLIs — installed via the npm backend (runs on mise's node).
+# Codex/Gemini ship frequent releases, so track latest and `mise up` to bump.
+"npm:@openai/codex" = "latest"
+"npm:@google/gemini-cli" = "latest"
+
 # Python global CLIs — installed via the pipx backend, which uses uv (uvx) as
 # the engine (see [settings.pipx]). Migrated from the old uv-tools manifest.
 "pipx:yt-dlp" = "latest"
