@@ -84,9 +84,12 @@ They live in ./scripts. I stick these on on the PATH.
              #    because of the actual `ping` tool
 - home/      # chezmoi managed files 
 - apps/      # notes, back up files, helper scripts that are app-specific.  stuff i need to 
-             #    keep around, but that isn't really auto-manageable
+             #    keep around, but that isn't really auto-manageable.  
+             #    TODO - I think I'll move these across scripts/apps/ and docs/
 - docs/      # info & instructions on the repo itself
-- scripts/   # utility scripts.  I push these onto $PATH for global use
+- scripts/                 # all my scripts go in here
+  - global-utilities/      # utility scripts.  I push these onto $PATH for global use
+  - setup/                 # setup or preferences managers called by ping
 - libexec/   # internal scripts 
 ```
 
