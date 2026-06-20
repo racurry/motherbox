@@ -1,0 +1,21 @@
+#!/bin/bash
+# launchd agents — (re)load on change.
+#
+# Run by chezmoi during `chezmoi apply`. chezmoi writes the launchd plist under
+# ~/Library/LaunchAgents, but writing the file does not load it — only
+# `launchctl bootstrap` does. This hook reloads the agent whenever the plist
+# source changes. The agent runs on every machine; maintenance.sh branches on
+# the machine name the plist passes it.
+#
+# Plist source hash: {{ include "Library/LaunchAgents/net.aaroncurry.motherbox.nightly-maintenance.plist.tmpl" | sha256sum }}
+set -euo pipefail
+
+label="net.aaroncurry.motherbox.nightly-maintenance"
+plist="${HOME}/Library/LaunchAgents/${label}.plist"
+
+# The plist writes stdout/stderr here; the dir must exist before bootstrap.
+mkdir -p "${HOME}/.config/motherbox/logs"
+
+echo "==> launchd: reloading ${label}"
+launchctl bootout "gui/$(id -u)/${label}" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "${plist}"

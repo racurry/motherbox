@@ -18,7 +18,6 @@ All-in-one project for managing multiple macOS environments (personal and work) 
 - [apps](./apps) - Application-specific configs and setup scripts, organized by app. Some are part of the default setup path; others are opt-in apps, experiments, or notes for tools used occasionally
 - [home](./home) - Chezmoi source state for files managed directly under `$HOME`
 - [scripts](./scripts) - Standalone utilities that can be run manually. Automatically added to PATH
-- [machines](./machines) - Machine-specific automation (launchd jobs, maintenance scripts)
 - [lib](./lib) - Shared library functions and helpers
 - [run](./run) - App-agnostic or coordination utility scripts
 - [docs](./docs) - Instructions on how to manage this repository

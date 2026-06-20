@@ -3,19 +3,18 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>net.aaroncurry.motherbox.mini-nightly-maintenance</string>
+	<string>net.aaroncurry.motherbox.nightly-maintenance</string>
 
 	<key>ProgramArguments</key>
 	<array>
-		<string>__MINI_SH__</string>
-		<string>maintain</string>
-		<string>nightly</string>
+		<string>{{ .chezmoi.sourceDir | dir }}/scripts/utils/maintenance.sh</string>
+		<string>{{ .machine }}</string>
 	</array>
 
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:__HOME__/.config/motherbox/scripts:__HOME__/.local/bin</string>
+		<string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:{{ .chezmoi.homeDir }}/.local/bin</string>
 	</dict>
 
 	<key>StartCalendarInterval</key>
@@ -27,8 +26,8 @@
 	</dict>
 
 	<key>StandardOutPath</key>
-	<string>__HOME__/.config/motherbox/logs/mini-nightly-maintenance.log</string>
+	<string>{{ .chezmoi.homeDir }}/.config/motherbox/logs/nightly-maintenance.log</string>
 	<key>StandardErrorPath</key>
-	<string>__HOME__/.config/motherbox/logs/mini-nightly-maintenance.log</string>
+	<string>{{ .chezmoi.homeDir }}/.config/motherbox/logs/nightly-maintenance.log</string>
 </dict>
 </plist>

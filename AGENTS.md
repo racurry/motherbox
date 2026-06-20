@@ -105,7 +105,6 @@ When documenting apps that need API tokens or secrets:
   - README: `apps/{appname}/README.md` (required, should include: description, contents list, setup instructions)
 - **home/**: Chezmoi source state for files managed directly under `$HOME` (via `.chezmoiroot`)
 - **scripts/**: Standalone CLI utilities (on PATH)
-- **machines/**: Machine-specific automation (e.g., `machines/mini/` for Mac Mini launchd jobs)
 - **lib/**: Common libraries and test helpers
   - **lib/bash/**: Bash utilities (common.sh, paths.sh, common_test_helper.bash)
   - **lib/test_common.bats**: Tests for lib/bash/common.sh
