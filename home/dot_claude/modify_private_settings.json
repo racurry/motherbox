@@ -1,4 +1,18 @@
-{
+{{- /* chezmoi:modify-template */ -}}
+{{- /* Merge our managed Claude Code settings over whatever is on disk.        */ -}}
+{{- /* Managed keys win; keys Claude writes at runtime — enabledPlugins,       */ -}}
+{{- /* effortLevel, voice, … — are preserved. Arrays (permissions.allow) are   */ -}}
+{{- /* replaced wholesale, not concatenated.                                   */ -}}
+{{- /*                                                                          */ -}}
+{{- /* We only re-serialize (which alpha-sorts keys via toPrettyJson) when the  */ -}}
+{{- /* merge actually changes something. Otherwise we emit the on-disk file     */ -}}
+{{- /* verbatim, so Claude's own key order is preserved and `chezmoi diff`      */ -}}
+{{- /* stays quiet. deepCopy is required because mergeOverwrite mutates its     */ -}}
+{{- /* destination.                                                             */ -}}
+{{- $original := .chezmoi.stdin -}}
+{{- $current := dict -}}
+{{- if $original }}{{ $current = fromJson $original }}{{ end -}}
+{{- $managed := fromJson `{
   "alwaysThinkingEnabled": true,
   "enableAllProjectMcpServers": true,
   "statusLine": {
@@ -45,4 +59,10 @@
       }
     ]
   }
-}
+}` -}}
+{{- $updated := mergeOverwrite (deepCopy $current) $managed -}}
+{{- if deepEqual $current $updated -}}
+{{- $original -}}
+{{- else -}}
+{{ $updated | toPrettyJson }}
+{{- end -}}
