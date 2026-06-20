@@ -6,7 +6,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/bash/common.sh"
 
 # --- Paths --------------------------------------------------------------------
-PATH_ICLOUD="${HOME}/iCloud"
 PATH_ICLOUD_MOBILE_DOCUMENTS="${HOME}/Library/Mobile Documents/com~apple~CloudDocs"
 
 # --- Constants ----------------------------------------------------------------
@@ -19,10 +18,9 @@ show_help() {
     cat <<EOF
 Usage: $0 COMMAND [OPTIONS]
 
-Manage iCloud Drive symlink and diagnose sync issues.
+Diagnose iCloud Drive sync issues.
 
 Commands:
-    setup       Create ~/iCloud symlink (primary entry point)
     diagnose    Run iCloud Drive diagnostics
     help        Show this help message (also: -h, --help)
 
@@ -36,14 +34,12 @@ Diagnose Options:
     --tips          Show remediation tips only
 
 Examples:
-    $0 setup                  # Create ~/iCloud symlink
     $0 diagnose               # Run all diagnostics
     $0 diagnose --processes   # Check sync processes only
 
 Description:
-    Setup mode creates a convenient symlink from ~/iCloud to the actual
-    iCloud Drive directory at ~/Library/Mobile Documents/com~apple~CloudDocs.
-    If iCloud Drive is not available, the script will skip the operation.
+    The ~/iCloud convenience symlink is managed by chezmoi
+    (home/symlink_iCloud.tmpl), not this script.
 
     Diagnose mode helps troubleshoot iCloud Drive sync problems by:
     - Checking iCloud sync processes (bird, cloudd)
@@ -52,41 +48,6 @@ Description:
     - Identifying files with problematic names or sizes
     - Showing permissions on iCloud Drive folders
 EOF
-}
-
-# --- Symlink functions --------------------------------------------------------
-
-do_setup() {
-    print_heading "Set iCloud symlink"
-
-    local target_link="${PATH_ICLOUD}"
-    local icloud_source="${PATH_ICLOUD_MOBILE_DOCUMENTS}"
-
-    if [[ ! -d "${icloud_source}" ]]; then
-        log_warn "iCloud Drive not found at ${icloud_source}; skipping symlink"
-        return 0
-    fi
-
-    if [[ -L "${target_link}" ]]; then
-        local current_target
-        current_target="$(readlink "${target_link}")"
-        if [[ "${current_target}" == "${icloud_source}" ]]; then
-            log_info "'~/iCloud' is already correctly symlinked"
-            return 0
-        else
-            log_info "Updating existing symlink from ${current_target} to ${icloud_source}"
-            ln -sf "${icloud_source}" "${target_link}"
-            return 0
-        fi
-    fi
-
-    if [[ -e "${target_link}" ]]; then
-        fail "${target_link} exists and is not a symlink"
-    fi
-
-    log_info "Creating iCloud symlink ${target_link} -> ${icloud_source}"
-    ln -s "${icloud_source}" "${target_link}"
-    log_info "'~/iCloud' is correctly symlinked"
 }
 
 # --- Diagnostic temp file management ------------------------------------------
@@ -347,10 +308,6 @@ main() {
             show_help
             exit 0
             ;;
-        setup)
-            command="setup"
-            shift
-            ;;
         diagnose)
             command="diagnose"
             shift
@@ -371,9 +328,6 @@ main() {
     done
 
     case "${command}" in
-    setup)
-        do_setup
-        ;;
     diagnose)
         do_diagnose "${diagnose_args[@]}"
         ;;

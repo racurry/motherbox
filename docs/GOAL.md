@@ -88,9 +88,9 @@ They live in ./scripts. I stick these on on the PATH.
              #    TODO - I think I'll move these across scripts/apps/ and docs/
 - docs/      # info & instructions on the repo itself
 - scripts/                 # all my scripts go in here
-  - global-utilities/      # utility scripts.  I push these onto $PATH for global use
-  - setup/                 # setup or preferences managers called by ping
-- libexec/   # internal scripts 
+  - global/      # utility scripts.  I push these onto $PATH for global use
+  - setup/       # setup or preferences managers called by ping
+  - utils/       # utility scripts that I don't really want or need globally
 ```
 
 Homeless stuff:

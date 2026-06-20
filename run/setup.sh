@@ -184,7 +184,6 @@ run_app_setup brew
 
 print_heading "macOS Settings"
 run_app_setup macos
-run_app_setup icloud
 
 print_heading "Mac App Store"
 run_app_setup mas
