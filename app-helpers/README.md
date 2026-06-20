@@ -44,7 +44,7 @@ git -C ~/OpenSCAD/Libraries/BOSL2 pull # update BOSL2
 
 ## Rayccast
 
-Point the script command location to `scripts/raycast/`
+Point the script command location to `scripts/apps/raycast/`
 
 ## Readwise
 
