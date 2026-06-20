@@ -1,0 +1,149 @@
+#!/bin/bash
+# ping — set up this machine, layer by layer (bottom to top).
+#
+# ping owns bootstrap and any interactive/privileged steps. The per-layer
+# installs (Homebrew bundle, mise runtimes, etc.) are change-driven chezmoi
+# run_onchange hooks under home/.chezmoiscripts/, executed by `chezmoi apply`.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/bash/common.sh
+source "${SCRIPT_DIR}/lib/bash/common.sh"
+
+ORIGINAL_ARGS=("$@")
+
+export LOG_TAG="ping"
+: "${DRY_RUN:=false}"
+
+show_help() {
+    cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Set up this machine layer by layer:
+
+  Bootstrap   Install Homebrew + chezmoi + 1Password CLI (the minimum needed
+              to run everything else).
+  Layers      \`chezmoi apply\` runs the change-driven layer hooks:
+                L1  Homebrew host tools & applications
+                L2  mise runtimes              (todo)
+                L3  uv / pnpm / cargo packages (todo)
+  Interactive Privileged / interactive steps that should NOT fire on every
+              \`chezmoi apply\` (macOS defaults, Mac App Store, TCC).  (todo)
+
+OPTIONS:
+  --profile PROFILE   Set profile (personal, firsthand, ...)
+  --machine MACHINE   Set machine (e.g. mini) for machine-specific setup
+  --reset-profile     Ignore saved profile and prompt for selection
+  --unattended        Skip operations requiring human interaction
+  --dry-run           Preview only: no installs, no config writes; shows what
+                      \`chezmoi apply\` would change (run scripts are not executed)
+  --debug             Enable debug output
+  -h, --help          Show this help message and exit
+
+Configuration is persisted to ~/.config/motherbox/config.
+EOF
+}
+
+for arg in "$@"; do
+    case $arg in
+    -h | --help)
+        show_help
+        exit 0
+        ;;
+    --unattended) export UNATTENDED=true ;;
+    --dry-run) DRY_RUN=true ;;
+    --debug) export LOG_DEBUG=true ;;
+    esac
+done
+
+# ==========================================================================
+# Bootstrap — the minimum needed before chezmoi can drive the layers.
+# ==========================================================================
+
+ensure_homebrew() {
+    if command -v brew >/dev/null 2>&1; then
+        log_info "Homebrew present"
+        return 0
+    fi
+
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+        log_info "Homebrew installed; sourced into this shell"
+        return 0
+    fi
+
+    if [[ "${DRY_RUN}" == "true" ]]; then
+        log_info "[dry-run] would install Homebrew"
+        return 0
+    fi
+
+    require_command curl
+    log_info "Installing Homebrew"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+}
+
+ensure_bootstrap_tools() {
+    # chezmoi drives the layers; the 1Password CLI resolves secret templates
+    # during `chezmoi apply`. Both must exist before we apply.
+    if [[ "${DRY_RUN}" == "true" ]]; then
+        command -v chezmoi >/dev/null 2>&1 || log_info "[dry-run] would: brew install chezmoi"
+        command -v op >/dev/null 2>&1 || log_info "[dry-run] would: brew install --cask 1password-cli"
+        return 0
+    fi
+    command -v chezmoi >/dev/null 2>&1 || brew install chezmoi
+    command -v op >/dev/null 2>&1 || brew install --cask 1password-cli
+}
+
+configure_chezmoi() {
+    require_command chezmoi
+    # Pass the resolved profile/machine so promptStringOnce doesn't re-prompt.
+    chezmoi init --source="${REPO_ROOT}/home" \
+        --promptString "profile=${PROFILE}" \
+        --promptString "machine=${MACHINE:-}"
+    log_info "chezmoi configured (profile: ${PROFILE}, machine: ${MACHINE:-none})"
+}
+
+# ==========================================================================
+# Main
+# ==========================================================================
+
+if [[ $EUID -eq 0 ]]; then
+    fail "Run ping as a regular user, not root"
+fi
+
+if [[ "$(pwd)" != "${REPO_ROOT}" ]]; then
+    cd "${REPO_ROOT}"
+fi
+
+determine_profile ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"} || exit 1
+determine_machine ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"}
+
+print_heading "Bootstrap"
+ensure_homebrew
+ensure_bootstrap_tools
+if [[ "${DRY_RUN}" != "true" ]]; then
+    configure_chezmoi
+fi
+
+print_heading "Layers"
+# chezmoi apply runs the run_onchange layer hooks (L1 brew today) and applies
+# dotfiles. Hooks only re-run when their inputs change.
+if [[ "${DRY_RUN}" == "true" ]]; then
+    if command -v chezmoi >/dev/null 2>&1; then
+        log_info "[dry-run] previewing chezmoi apply (no mutations; run scripts are not executed)"
+        chezmoi apply --source="${REPO_ROOT}/home" --dry-run --verbose
+    else
+        log_warn "[dry-run] chezmoi not installed; cannot preview apply"
+    fi
+else
+    chezmoi apply
+fi
+
+print_heading "Interactive / privileged"
+# TODO: macOS defaults (sudo), Mac App Store sign-in + installs, TCC signing.
+# These live here, outside chezmoi, so a routine `chezmoi apply` never triggers
+# password prompts or system mutation.
+log_info "No interactive steps wired yet"
+
+print_heading "Done"

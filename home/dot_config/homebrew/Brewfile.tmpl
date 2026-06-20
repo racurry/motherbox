@@ -1,0 +1,142 @@
+{{- $profile := .profile | default "personal" -}}
+# Layer 1 — Host tools & applications (Homebrew).
+#
+# Managed by chezmoi; rendered to ~/.config/homebrew/Brewfile. This is the
+# global Brewfile: `brew bundle --global` resolves here via XDG_CONFIG_HOME
+# (set in .zshrc). Installs are driven by the run_onchange brew hook during
+# `chezmoi apply`, which re-bundles whenever this file changes.
+#
+# DESIGN CHOICE: chezmoi's idiom for packages is declarative data in
+# .chezmoidata + a run_onchange script that pipes a Brewfile to stdin:
+#   https://www.chezmoi.io/user-guide/advanced/install-packages-declaratively/
+# We intentionally DON'T use that. Instead the Brewfile DSL is the source of
+# truth and we keep it persistent on disk, because:
+#   - A real file enables the by-hand maintenance lifecycle the stdin approach
+#     can't: `brew bundle check/cleanup/list/edit --global` (cleanup with no
+#     file on disk reads "nothing declared" and would uninstall everything).
+#   - The DSL natively expresses options a flat data list can't without schema
+#     work (mas IDs, `brew args:`, casks, vscode extensions, taps).
+# Profile selection is a couple of inline conditionals below — cheaper than the
+# data indirection. Revisit deliberately if the idiom evolves or needs grow.
+#
+# LAYERING RULE: language-ecosystem CLIs that drag a runtime do NOT belong here.
+# They live with their package manager — Python tools in uv (setup-stuff/uv),
+# Node tools in pnpm. Only standalone binaries (incl. ruff, biome) stay in brew.
+
+# --- Runtime managers (Layer 1 seeds Layer 2) ---
+brew "mise"
+
+# --- Shell & core CLI ---
+brew "chezmoi"
+brew "direnv"
+brew "fzf"
+brew "jq"
+brew "mas"
+brew "pure"
+brew "zsh"
+brew "zsh-autosuggestions"
+brew "zsh-syntax-highlighting"
+
+# --- CLI tools ---
+brew "bat"
+brew "bats-core"
+brew "biome"
+brew "diff-so-fancy"
+brew "entr"
+brew "eza"
+brew "ffmpeg"
+brew "fzf-tab"
+brew "gh"
+brew "ghostscript"
+brew "gifsicle"
+brew "gnupg"
+brew "goreleaser"
+brew "hub"
+brew "imagemagick"
+brew "mkcert"
+brew "mole"
+brew "pandoc"
+brew "poppler"
+brew "qpdf"
+brew "ruff"
+brew "shellcheck"
+brew "shfmt"
+brew "tesseract"
+brew "tmux"
+brew "wget"
+brew "zlib"
+
+# --- Applications (casks) ---
+cask "1password-cli"
+cask "antigravity"
+cask "arc"
+cask "chatgpt"
+cask "claude"
+cask "codex-app"
+cask "cursor"
+cask "docker-desktop"
+cask "elgato-stream-deck"
+cask "flux-app"
+cask "ghostty"
+cask "google-chrome"
+cask "google-drive"
+cask "hazel"
+cask "insta360-link-controller"
+cask "karabiner-elements"
+cask "keycastr"
+cask "libreoffice"
+cask "logi-options+"
+cask "mutedeck"
+cask "notunes"
+cask "obsidian"
+cask "ollama-app"
+cask "raycast"
+cask "renamer"
+cask "sf-symbols"
+cask "shottr"
+cask "slack"
+cask "spotify"
+cask "textbuddy"
+cask "visual-studio-code"
+
+# --- Fonts ---
+cask "font-fira-code-nerd-font"
+cask "font-fira-mono-nerd-font"
+cask "font-hack-nerd-font"
+cask "font-monoid"
+
+{{ if eq $profile "personal" -}}
+# --- Personal profile ---
+cask "8bitdo-ultimate-software-v2"
+cask "bambu-studio"
+cask "mesh"
+cask "crossover"
+cask "daisydisk"
+cask "discord"
+cask "downie"
+cask "epic-games"
+cask "gimp"
+cask "handbrake-app"
+cask "heroic"
+cask "inkscape"
+cask "itch"
+cask "itsycal"
+cask "malwarebytes"
+cask "minecraft"
+cask "omnidisksweeper"
+cask "openscad@snapshot"
+cask "plex"
+cask "readwise-ibooks"
+cask "roblox"
+cask "script-debugger"
+cask "steam"
+cask "synologyassistant"
+cask "transmit"
+cask "vlc"
+cask "yacreader"
+cask "zotero"
+{{ end -}}
+{{ if eq $profile "firsthand" -}}
+# --- Firsthand profile ---
+cask "gcloud-cli"
+{{ end -}}

@@ -54,6 +54,13 @@ eval $(thefuck --alias)
 # ENVIRONMENT VARIABLES
 # ============================================================================
 
+# XDG Base Directory standard — declare ~/.config etc. as the canonical config,
+# cache, and data locations. XDG-aware tools (including `brew bundle --global`,
+# which resolves to ~/.config/homebrew/Brewfile) pick these up.
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 export EDITOR='code'

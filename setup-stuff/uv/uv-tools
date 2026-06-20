@@ -7,3 +7,8 @@
 #   tool "mdformat" --with mdformat-gfm --with mdformat-frontmatter
 
 tool "mdformat" --with mdformat-gfm --with mdformat-frontmatter
+tool "yamllint"
+tool "yt-dlp"
+tool "thefuck"
+tool "openai-whisper"
+tool "ocrmypdf"
