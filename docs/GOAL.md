@@ -76,3 +76,21 @@ They live in ./scripts. I stick these on on the PATH.
 ## See Also
 
 [Sovereign Tools](https://www.shiinayane.com/series/sovereign-tools/)
+
+## WIP - what is our repo structure?
+
+```bash
+- ping       # universal script for managing motherbox.  # TODO - i need to rename this, 
+             #    because of the actual `ping` tool
+- home/      # chezmoi managed files 
+- apps/      # notes, back up files, helper scripts that are app-specific.  stuff i need to 
+             #    keep around, but that isn't really auto-manageable
+- docs/      # info & instructions on the repo itself
+- scripts.   # utility scripts.  I push these onto $PATH for global use
+```
+
+Homeless stuff:
+
+- how do I configure all of my AI tools?  I started `./agent-tools`.  That might work?
+  - claude, gemini, codex tools - the setup & sync for these is finicky
+- where does my 'machines/mini' stuff live?  I bet chezmoi templates can just handle this

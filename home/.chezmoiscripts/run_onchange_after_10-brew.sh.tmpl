@@ -19,5 +19,19 @@ fi
 # `chezmoi apply` (not an interactive shell), so it can't rely on XDG_CONFIG_HOME
 # being set; by-hand `brew bundle --global` resolves to this same file via
 # XDG_CONFIG_HOME from .zshrc.
+BREWFILE="${HOME}/.config/homebrew/Brewfile"
+
+# Mac App Store apps need an interactive, signed-in App Store session, so they
+# can't install headless. When unattended (UNATTENDED is exported by ping), skip
+# every `mas` entry by id — otherwise brew bundle aborts the whole bundle on the
+# failed installs. HOMEBREW_BUNDLE_MAS_SKIP matches by name or id.
+if [[ "${UNATTENDED:-false}" == "true" ]]; then
+    mas_ids="$(grep '^mas ' "${BREWFILE}" | sed -E 's/.*id: *//')"
+    if [[ -n "${mas_ids}" ]]; then
+        export HOMEBREW_BUNDLE_MAS_SKIP="${mas_ids//$'\n'/ }"
+        echo "==> Unattended: skipping Mac App Store apps"
+    fi
+fi
+
 echo "==> Layer 1: brew bundle"
-brew bundle --file="${HOME}/.config/homebrew/Brewfile"
+brew bundle --file="${BREWFILE}"

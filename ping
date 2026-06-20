@@ -141,9 +141,11 @@ else
 fi
 
 print_heading "Interactive / privileged"
-# TODO: macOS defaults (sudo), Mac App Store sign-in + installs, TCC signing.
-# These live here, outside chezmoi, so a routine `chezmoi apply` never triggers
-# password prompts or system mutation.
+# TODO: macOS defaults (sudo), TCC signing. These live here, outside chezmoi, so
+# a routine `chezmoi apply` never triggers password prompts or system mutation.
+# Mac App Store apps install as part of L1 (mas entries in the Brewfile); the
+# only manual prerequisite is signing in to App Store.app (mas 7.x has no CLI
+# sign-in). The L1 hook skips mas entirely when --unattended.
 log_info "No interactive steps wired yet"
 
 print_heading "Done"
