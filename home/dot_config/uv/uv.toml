@@ -1,0 +1,6 @@
+# uv configuration.
+#
+# python-preference = "only-system": uv must use an already-installed Python
+# (mise's, or the OS) and never download its own. mise owns the interpreter
+# (see the mise config / GOAL.md); uv owns deps, venvs, and global tools.
+python-preference = "only-system"

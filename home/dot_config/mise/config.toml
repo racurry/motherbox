@@ -1,6 +1,22 @@
 [tools]
 node = "24"
+python = "3.14"
 pnpm = "10"
+uv = "latest"
+
+# Python global CLIs — installed via the pipx backend, which uses uv (uvx) as
+# the engine (see [settings.pipx]). Migrated from the old uv-tools manifest.
+"pipx:yt-dlp" = "latest"
+"pipx:yamllint" = "latest"
+"pipx:ocrmypdf" = "latest"
+"pipx:thefuck" = "latest"
+"pipx:openai-whisper" = "latest"
+"pipx:mdformat" = { version = "latest", uvx_args = "--with mdformat-gfm --with mdformat-frontmatter" }
+
+[settings.pipx]
+# Use uv (uvx) to install pipx: tools. This is mise's default; set explicitly
+# because our whole Python-tool layer depends on uv being the engine.
+uvx = true
 
 [settings.npm]
 package_manager = "pnpm"

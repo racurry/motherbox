@@ -1,0 +1,18 @@
+#!/bin/bash
+# Layer 2 — mise runtimes & global tools.
+#
+# Run by chezmoi during `chezmoi apply`, after 10-brew (brew installs mise).
+# Keyed on the managed mise config below, so `mise install` only re-runs when the
+# tool set changes. Install is additive — removing a tool from the config does
+# NOT uninstall it; run `mise prune` deliberately for that.
+#
+# mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
+set -euo pipefail
+
+# mise is installed by brew; ensure it's on PATH even outside an interactive shell.
+if ! command -v mise >/dev/null 2>&1; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+echo "==> Layer 2: mise install"
+mise install
