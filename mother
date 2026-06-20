@@ -1,7 +1,7 @@
 #!/bin/bash
-# ping — set up this machine, layer by layer (bottom to top).
+# mother — set up this machine, layer by layer (bottom to top).
 #
-# ping owns bootstrap and any interactive/privileged steps. The per-layer
+# mother owns bootstrap and any interactive/privileged steps. The per-layer
 # installs (Homebrew bundle, mise runtimes, etc.) are change-driven chezmoi
 # run_onchange hooks under home/.chezmoiscripts/, executed by `chezmoi apply`.
 set -euo pipefail
@@ -12,7 +12,7 @@ source "${SCRIPT_DIR}/lib/bash/common.sh"
 
 ORIGINAL_ARGS=("$@")
 
-export LOG_TAG="ping"
+export LOG_TAG="mother"
 : "${DRY_RUN:=false}"
 
 show_help() {
@@ -109,7 +109,7 @@ configure_chezmoi() {
 # ==========================================================================
 
 if [[ $EUID -eq 0 ]]; then
-    fail "Run ping as a regular user, not root"
+    fail "Run mother as a regular user, not root"
 fi
 
 if [[ "$(pwd)" != "${REPO_ROOT}" ]]; then
@@ -142,7 +142,7 @@ fi
 
 print_heading "Interactive / privileged"
 # macOS defaults (incl. one sudo write) plus Dock/Finder restarts. These live in
-# libexec/ — invoked by ping, never on $PATH — and run here, outside chezmoi, so
+# libexec/ — invoked by mother, never on $PATH — and run here, outside chezmoi, so
 # a routine `chezmoi apply` never triggers password prompts or UI restarts. The
 # script's sudo step self-skips under --unattended.
 # Mac App Store apps install as part of L1 (mas entries in the Brewfile); the

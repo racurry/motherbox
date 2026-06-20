@@ -80,17 +80,16 @@ They live in ./scripts. I stick these on on the PATH.
 ## WIP - what is our repo structure?
 
 ```bash
-- ping       # universal script for managing motherbox.  # TODO - i need to rename this, 
-             #    because of the actual `ping` tool
-- home/      # chezmoi managed files 
-- apps/      # notes, back up files, helper scripts that are app-specific.  stuff i need to 
-             #    keep around, but that isn't really auto-manageable.  
-             #    TODO - I think I'll move these across scripts/apps/ and docs/
-- docs/      # info & instructions on the repo itself
-- scripts/                 # all my scripts go in here
-  - global/      # utility scripts.  I push these onto $PATH for global use
-  - setup/       # setup or preferences managers called by ping
-  - utils/       # utility scripts that I don't really want or need globally
+- mother          # universal script for managing motherbox. 
+- home/           # chezmoi managed files
+- phantom-zone/   # cold storage for configs.  project-specific stuff or apps
+                  # i am not using now, but want to bring back.
+- docs/           # info, instructions, references
+- scripts/ 
+  - _lib/        # library code used by other scripts, separated by language
+  - setup/       # setup or preferences managers called by `mother`
+  - bin_path/    # utilities added to $PATH for global use
+  - utils/       # utility scripts that I don't want or need globally
 ```
 
 Homeless stuff:
