@@ -53,12 +53,6 @@ fail() {
     exit 1
 }
 
-print_heading() {
-    local text="$1"
-    printf "\n\033[1;36m==> %s\033[0m\n" "$text"
-    _log_emit "==> $text"
-}
-
 require_command() {
     local cmd="$1"
     if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -79,7 +73,7 @@ chezmoi_data() {
 
 # prompt_profile prompts interactively for setup mode. Sets PROFILE.
 prompt_profile() {
-    print_heading "Setup Mode Selection"
+    printf "\n===== Setup Mode Selection =====\n"
     echo "Please select your setup mode:"
     echo "  1) firsthand - Install Firsthand work-specific tools & settings"
     echo "  2) personal  - Install personal-specific tools & settings"
@@ -256,17 +250,17 @@ do_setup() {
     determine_profile ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"} || exit 1
     determine_machine ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"}
 
-    print_heading "Bootstrap"
+    printf "\n===== Bootstrap =====\n"
     ensure_homebrew
     ensure_bootstrap_tools
     configure_chezmoi
 
-    print_heading "Layers"
+    printf "\n===== Layers =====\n"
     # chezmoi apply runs the run_onchange layer hooks (L1 brew today) and applies
     # dotfiles. Hooks only re-run when their inputs change.
     chezmoi apply
 
-    print_heading "Interactive / privileged"
+    printf "\n===== Interactive / privileged =====\n"
     # macOS defaults (incl. one sudo write) plus Dock/Finder restarts. These live in
     # libexec/ — invoked by mother, never on $PATH — and run here, outside chezmoi, so
     # a routine `chezmoi apply` never triggers password prompts or UI restarts. The
@@ -279,7 +273,7 @@ do_setup() {
     [[ "${UNATTENDED:-false}" == "true" ]] && macos_args+=(--unattended)
     "${REPO_ROOT}/libexec/macos.sh" "${macos_args[@]}"
 
-    print_heading "Done"
+    printf "\n===== Done =====\n"
 }
 
 # ==========================================================================
