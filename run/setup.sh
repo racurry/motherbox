@@ -20,7 +20,6 @@ OPTIONS:
   --machine MACHINE   Set machine (e.g., mini) for machine-specific setup
   --reset-profile     Ignore saved profile and prompt for selection
   --unattended        Skip operations requiring human interaction
-  --debug             Enable debug output
   --logging           Enable logging to ~/.config/motherbox/logs/setup.log
   -h, --help          Show this help message and exit
 
@@ -56,9 +55,6 @@ for arg in "$@"; do
         ;;
     --unattended)
         export UNATTENDED=true
-        ;;
-    --debug)
-        export LOG_DEBUG=true
         ;;
     --logging)
         export LOG_FILE_ENABLED=true

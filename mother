@@ -7,13 +7,223 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=lib/bash/common.sh
-source "${SCRIPT_DIR}/lib/bash/common.sh"
+REPO_ROOT="${SCRIPT_DIR}"
 
 ORIGINAL_ARGS=("$@")
 
 export LOG_TAG="mother"
 : "${DRY_RUN:=false}"
+
+# ==========================================================================
+# Helpers — self-contained; only the pieces mother actually uses.
+# ==========================================================================
+
+# Mother Box config paths
+XDG_CFG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
+PATH_MOTHERBOX_CONFIG="${XDG_CFG_HOME}/motherbox"
+PATH_MOTHERBOX_CONFIG_FILE="${PATH_MOTHERBOX_CONFIG}/config"
+
+: "${UNATTENDED:=false}"
+
+# Color codes for readability.
+CLR_RESET=$'\033[0m'    # reset / default
+CLR_INFO=$'\033[1;34m'  # bright blue for informational messages
+CLR_WARN=$'\033[1;33m'  # bright yellow for warnings
+CLR_ERROR=$'\033[1;31m' # bright red for errors
+
+# _log_emit sends a line to the macOS unified log via syslog. The OS owns
+# retention and rotation (auto-pruned), so there is no file to grow or clean
+# up. This logger can't set an os_log subsystem (BSD build: -t/-p only) and the
+# tag is dropped in `log show`, so we prefix the message with "mother:" to make
+# our lines filterable. View with:
+#   log show --predicate 'eventMessage BEGINSWITH "mother:"' --last 1h
+_log_emit() {
+    logger -t mother -p user.notice "mother: $*"
+}
+
+log_info() {
+    printf "%s[%s] %s%s\n" "${CLR_INFO}" "${LOG_TAG}" "$*" "${CLR_RESET}"
+    _log_emit "[INFO] $*"
+}
+
+log_warn() {
+    printf "%s[%s] %s%s\n" "${CLR_WARN}" "${LOG_TAG}" "$*" "${CLR_RESET}" >&2
+    _log_emit "[WARN] $*"
+}
+
+log_error() {
+    printf "%s[%s] %s%s\n" "${CLR_ERROR}" "${LOG_TAG}" "$*" "${CLR_RESET}" >&2
+    _log_emit "[ERROR] $*"
+}
+
+fail() {
+    log_error "$*"
+    exit 1
+}
+
+print_heading() {
+    local text="$1"
+    printf "\n\033[1;36m==> %s\033[0m\n" "$text"
+    _log_emit "==> $text"
+}
+
+require_command() {
+    local cmd="$1"
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        fail "Required command '$cmd' not found in PATH"
+    fi
+}
+
+# _config_defaults returns default config values as shell assignments.
+_config_defaults() {
+    cat <<'EOF'
+BACKUP_RETENTION_DAYS=60
+PROFILE=
+MACHINE=
+EOF
+}
+
+# ensure_config creates the config file with defaults if it doesn't exist.
+ensure_config() {
+    if [[ -f "${PATH_MOTHERBOX_CONFIG_FILE}" ]]; then
+        return 0
+    fi
+
+    mkdir -p "${PATH_MOTHERBOX_CONFIG}"
+    _config_defaults >"${PATH_MOTHERBOX_CONFIG_FILE}"
+}
+
+# get_config retrieves a configuration value via stdout.
+get_config() {
+    local key="$1"
+
+    ensure_config
+
+    (
+        # shellcheck source=/dev/null
+        source "${PATH_MOTHERBOX_CONFIG_FILE}"
+        eval "echo \"\${${key}:-}\""
+    )
+}
+
+# set_config sets a configuration value, creating the config file if needed.
+set_config() {
+    local key="$1"
+    local value="$2"
+
+    ensure_config
+
+    local tmp_file
+    tmp_file="$(mktemp)"
+
+    if grep -q "^${key}=" "${PATH_MOTHERBOX_CONFIG_FILE}"; then
+        sed "s|^${key}=.*|${key}=${value}|" "${PATH_MOTHERBOX_CONFIG_FILE}" >"${tmp_file}"
+    else
+        cat "${PATH_MOTHERBOX_CONFIG_FILE}" >"${tmp_file}"
+        echo "${key}=${value}" >>"${tmp_file}"
+    fi
+
+    mv "${tmp_file}" "${PATH_MOTHERBOX_CONFIG_FILE}"
+}
+
+# prompt_profile prompts interactively for setup mode. Sets PROFILE.
+prompt_profile() {
+    print_heading "Setup Mode Selection"
+    echo "Please select your setup mode:"
+    echo "  1) firsthand - Install Firsthand work-specific tools & settings"
+    echo "  2) personal  - Install personal-specific tools & settings"
+    echo ""
+
+    while true; do
+        read -rp "Enter your choice (1 or 2): " choice
+        case $choice in
+        1 | firsthand)
+            PROFILE="firsthand"
+            break
+            ;;
+        2 | personal)
+            PROFILE="personal"
+            break
+            ;;
+        *)
+            echo "Invalid choice. Please enter 1 (firsthand) or 2 (personal)"
+            ;;
+        esac
+    done
+}
+
+# determine_profile resolves setup mode from flags, config, or prompt.
+# Sets PROFILE and persists to config. Precedence: --profile > config > prompt.
+# Ignores unrecognized arguments, so callers can pass "$@" directly.
+determine_profile() {
+    local reset_mode=false
+    local unattended=false
+    local mode_override=""
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+        --reset | --reset-profile)
+            reset_mode=true
+            shift
+            ;;
+        --unattended)
+            unattended=true
+            shift
+            ;;
+        --profile)
+            mode_override="${2:-}"
+            shift 2
+            ;;
+        *) shift ;;
+        esac
+    done
+
+    if [[ -n "${mode_override}" ]]; then
+        PROFILE="${mode_override}"
+    elif [[ "${reset_mode}" != "true" ]]; then
+        PROFILE="$(get_config PROFILE)"
+    fi
+
+    if [[ -z "${PROFILE:-}" ]]; then
+        if [[ "${unattended}" == "true" ]]; then
+            log_error "Setup mode not set and --unattended prevents prompting"
+            log_info "Use --profile personal or --profile firsthand to set mode"
+            return 1
+        fi
+        prompt_profile
+    fi
+
+    set_config PROFILE "${PROFILE}"
+    log_info "Setup mode: ${PROFILE}"
+    return 0
+}
+
+# determine_machine resolves machine name from flags or config.
+# Sets MACHINE and persists to config. Machine is optional.
+determine_machine() {
+    local machine_override=""
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+        --machine)
+            machine_override="${2:-}"
+            shift 2
+            ;;
+        *) shift ;;
+        esac
+    done
+
+    if [[ -n "${machine_override}" ]]; then
+        MACHINE="${machine_override}"
+    else
+        MACHINE="$(get_config MACHINE)"
+    fi
+
+    if [[ -n "${MACHINE}" ]]; then
+        set_config MACHINE "${MACHINE}"
+        log_info "Machine: ${MACHINE}"
+    fi
+}
 
 show_help() {
     cat <<EOF
@@ -37,7 +247,6 @@ OPTIONS:
   --unattended        Skip operations requiring human interaction
   --dry-run           Preview only: no installs, no config writes; shows what
                       \`chezmoi apply\` would change (run scripts are not executed)
-  --debug             Enable debug output
   -h, --help          Show this help message and exit
 
 Configuration is persisted to ~/.config/motherbox/config.
@@ -52,7 +261,6 @@ for arg in "$@"; do
         ;;
     --unattended) export UNATTENDED=true ;;
     --dry-run) DRY_RUN=true ;;
-    --debug) export LOG_DEBUG=true ;;
     esac
 done
 
