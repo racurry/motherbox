@@ -55,12 +55,60 @@ do_setup() {
     fi
 
     chezmoi init --source="${REPO_ROOT}/home"
-    # chezmoi apply
 
-    if [[ "$UNATTENDED" != "true" ]]; then
+    if [[ "$UNATTENDED" == "true" ]]; then
+        printf "Unattended run: skipping operations that require human interaction\n"
+        set_unattended_skips
+    else
         printf "Setting up things that need sudo access...\n"
         "${REPO_ROOT}/scripts/utils/macos_prefs_sudo.sh"
     fi
+
+    printf "Applying chezmoi...\n"
+    chezmoi apply  # re-apply to skip the interactive bits
+    printf "Setup complete!\n"
+}
+
+# ==========================================================================
+# Unattended skips — some Brewfile entries can't install without a human: Mac
+# App Store apps need a signed-in App Store, and some casks need a sudo password
+# or a GUI installer. Each kind lives in its own chezmoi template fragment (also
+# included into the rendered Brewfile). For unattended runs we gather them here
+# and export the matching HOMEBREW_BUNDLE_*_SKIP so `brew bundle` skips them
+# instead of stalling. Single home for this policy; the brew hook stays unaware.
+# ==========================================================================
+
+INTERACTIVE_FRAGMENT="${REPO_ROOT}/home/.chezmoitemplates/Brewfile-interactive.tmpl"
+MAS_FRAGMENT="${REPO_ROOT}/home/.chezmoitemplates/Brewfile-mas.tmpl"
+
+# Cask tokens (one per line). Cask tokens have no spaces, so a space-separated
+# skip list is unambiguous.
+gather_casks() {
+    [[ -f "$INTERACTIVE_FRAGMENT" ]] || return 0
+    # `|| true`: grep exits 1 when nothing is uncommented, which would abort
+    # the caller's `var="$(...)"` under `set -euo pipefail`.
+    grep -E '^[[:space:]]*cask[[:space:]]' "$INTERACTIVE_FRAGMENT" \
+        | sed -E 's/^[[:space:]]*cask[[:space:]]+"([^"]+)".*/\1/' || true
+}
+
+# Mac App Store numeric ids (one per line). We skip by id, not name, because app
+# names contain spaces and the skip list is space-separated.
+gather_mas_ids() {
+    [[ -f "$MAS_FRAGMENT" ]] || return 0
+    # `|| true`: grep exits 1 when nothing is uncommented, which would abort
+    # the caller's `var="$(...)"` under `set -euo pipefail`.
+    grep -E '^[[:space:]]*mas[[:space:]]' "$MAS_FRAGMENT" \
+        | sed -E 's/.*id:[[:space:]]*([0-9]+).*/\1/' || true
+}
+
+# Export the HOMEBREW_BUNDLE_*_SKIP lists from the fragments (no-op when empty).
+set_unattended_skips() {
+    local casks mas_ids
+    casks="$(gather_casks | paste -sd ' ' -)"
+    mas_ids="$(gather_mas_ids | paste -sd ' ' -)"
+    [[ -n "$casks" ]] && export HOMEBREW_BUNDLE_CASK_SKIP="$casks"
+    [[ -n "$mas_ids" ]] && export HOMEBREW_BUNDLE_MAS_SKIP="$mas_ids"
+    return 0
 }
 
 # ==========================================================================
