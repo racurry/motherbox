@@ -17,46 +17,19 @@ ORIGINAL_ARGS=("$@")
 
 : "${UNATTENDED:=false}"
 
-# Color codes for readability.
-CLR_RESET=$'\033[0m'    # reset / default
-CLR_INFO=$'\033[1;34m'  # bright blue for informational messages
-CLR_WARN=$'\033[1;33m'  # bright yellow for warnings
-CLR_ERROR=$'\033[1;31m' # bright red for errors
-
-# _log_emit sends a line to the macOS unified log via syslog. The OS owns
-# retention and rotation (auto-pruned), so there is no file to grow or clean
-# up. This logger can't set an os_log subsystem (BSD build: -t/-p only) and the
-# tag is dropped in `log show`, so we prefix the message with "mother:" to make
-# our lines filterable. View with:
-#   log show --predicate 'eventMessage BEGINSWITH "mother:"' --last 1h
-_log_emit() {
+# mlog prints the message and sends it to the macOS unified log. Callers embed
+# the level in the message: mlog "[INFO] ...", mlog "[WARN] ...", etc.
+# Filterable with: log show --predicate 'eventMessage BEGINSWITH "mother:"' --last 1h
+mlog() {
+    printf "%s\n" "$*"
     logger -t mother -p user.notice "mother: $*"
-}
-
-log_info() {
-    printf "%s[%s] %s\n" "${CLR_INFO}" "$*" "${CLR_RESET}"
-    _log_emit "[INFO] $*"
-}
-
-log_warn() {
-    printf "%s[%s] %s\n" "${CLR_WARN}" "$*" "${CLR_RESET}" >&2
-    _log_emit "[WARN] $*"
-}
-
-log_error() {
-    printf "%s[%s] %s\n" "${CLR_ERROR}" "$*" "${CLR_RESET}" >&2
-    _log_emit "[ERROR] $*"
-}
-
-fail() {
-    log_error "$*"
-    exit 1
 }
 
 require_command() {
     local cmd="$1"
     if ! command -v "$cmd" >/dev/null 2>&1; then
-        fail "Required command '$cmd' not found in PATH"
+        mlog "[ERROR]Required command '$cmd' not found in PATH"
+        exit 1
     fi
 }
 
@@ -127,14 +100,14 @@ determine_profile() {
 
     if [[ -z "${PROFILE:-}" ]]; then
         if [[ "${unattended}" == "true" ]]; then
-            log_error "Setup mode not set and --unattended prevents prompting"
-            log_info "Use --profile personal or --profile firsthand to set mode"
+            mlog "[ERROR] Setup mode not set and --unattended prevents prompting"
+            mlog "[INFO] Use --profile personal or --profile firsthand to set mode"
             return 1
         fi
         prompt_profile
     fi
 
-    log_info "Setup mode: ${PROFILE}"
+    mlog "[INFO] Setup mode: ${PROFILE}"
     return 0
 }
 
@@ -160,7 +133,7 @@ determine_machine() {
     fi
 
     if [[ -n "${MACHINE}" ]]; then
-        log_info "Machine: ${MACHINE}"
+        mlog "[INFO] Machine: ${MACHINE}"
     fi
 }
 
@@ -206,18 +179,18 @@ done
 
 ensure_homebrew() {
     if command -v brew >/dev/null 2>&1; then
-        log_info "Homebrew present"
+        mlog "[INFO] Homebrew present"
         return 0
     fi
 
     if [[ -x /opt/homebrew/bin/brew ]]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
-        log_info "Homebrew installed; sourced into this shell"
+        mlog "[INFO] Homebrew installed; sourced into this shell"
         return 0
     fi
 
     require_command curl
-    log_info "Installing Homebrew"
+    mlog "[INFO] Installing Homebrew"
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     eval "$(/opt/homebrew/bin/brew shellenv)"
 }
@@ -235,7 +208,7 @@ configure_chezmoi() {
     chezmoi init --source="${REPO_ROOT}/home" \
         --promptString "profile=${PROFILE}" \
         --promptString "machine=${MACHINE:-}"
-    log_info "chezmoi configured (profile: ${PROFILE}, machine: ${MACHINE:-none})"
+    mlog "[INFO] chezmoi configured (profile: ${PROFILE}, machine: ${MACHINE:-none})"
 }
 
 # ==========================================================================
