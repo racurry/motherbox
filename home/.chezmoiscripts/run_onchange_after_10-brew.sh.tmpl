@@ -15,6 +15,8 @@ if ! command -v brew >/dev/null 2>&1; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
+
+
 # Bundle the managed global Brewfile by explicit path. This runs under
 # `chezmoi apply` (not an interactive shell), so it can't rely on XDG_CONFIG_HOME
 # being set; by-hand `brew bundle --global` resolves to this same file via

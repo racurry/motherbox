@@ -31,7 +31,24 @@ EOF
 
 
 do_setup() {
-    cd "${REPO_ROOT}"
+    cd -- "${REPO_ROOT}" || exit 1
+
+    /usr/bin/sudo -v || exit 1
+
+    while sleep 60; do
+        /usr/bin/sudo -n -v >/dev/null 2>&1 || break
+    done &
+    keeper=$!
+
+    cleanup() {
+        kill "$keeper" 2>/dev/null || :
+        wait "$keeper" 2>/dev/null || :
+    }
+
+    trap cleanup EXIT
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
 
     printf "Checking Homebrew\n"
     if ! command -v brew >/dev/null 2>&1; then
@@ -54,18 +71,14 @@ do_setup() {
         brew install chezmoi
     fi
 
-    chezmoi init --source="${REPO_ROOT}/home"
-
-    if [[ "$UNATTENDED" == "true" ]]; then
-        printf "Unattended run: skipping operations that require human interaction\n"
-        set_unattended_skips
-    else
-        printf "Setting up things that need sudo access...\n"
-        "${REPO_ROOT}/scripts/utils/macos_prefs_sudo.sh"
-    fi
-
     printf "Applying chezmoi...\n"
-    chezmoi apply  # re-apply to skip the interactive bits
+    chezmoi init --source="${REPO_ROOT}/home"
+    chezmoi apply 
+
+    # Apply some preferences
+    "${REPO_ROOT}/scripts/utils/macos_prefs_sudo.sh"
+
+     # re-apply to skip the interactive bits
     printf "Setup complete!\n"
 }
 
