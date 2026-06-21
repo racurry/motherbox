@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Diff files, ignoring JSON object key order when both files are JSON."""
+
+import difflib
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+
+HELP = """Usage: chezmoi-diff-ignore-json-key-order <destination> <target>
+
+Show a unified diff for chezmoi. If both files are valid JSON, compare
+canonicalized JSON with sorted object keys so object key order does not create
+noise. Array order is preserved. Non-JSON files fall back to diff -u.
+
+Arguments:
+  destination  Destination-state file path passed by chezmoi
+  target       Target-state file path passed by chezmoi
+
+Examples:
+  chezmoi-diff-ignore-json-key-order ~/.claude/settings.json /tmp/target.json
+"""
+
+
+def load_json(path):
+    try:
+        with Path(path).open(encoding="utf-8") as file:
+            return json.load(file)
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return None
+
+
+def canonical_json_lines(value):
+    text = json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True)
+    return [f"{line}\n" for line in text.splitlines()]
+
+
+def diff_json(destination, target, destination_json, target_json):
+    destination_lines = canonical_json_lines(destination_json)
+    target_lines = canonical_json_lines(target_json)
+
+    diff_lines = list(
+        difflib.unified_diff(
+            destination_lines,
+            target_lines,
+            fromfile=destination,
+            tofile=target,
+        )
+    )
+    sys.stdout.writelines(diff_lines)
+    return 1 if diff_lines else 0
+
+
+def diff_regular(destination, target):
+    result = subprocess.run(["/usr/bin/diff", "-u", destination, target], check=False)
+    return result.returncode
+
+
+def main(argv):
+    if len(argv) == 1 and argv[0] in {"help", "-h", "--help"}:
+        print(HELP)
+        return 0
+
+    if len(argv) != 2:
+        print(HELP, file=sys.stderr)
+        return 2
+
+    destination, target = argv
+    destination_json = load_json(destination)
+    target_json = load_json(target)
+
+    if destination_json is not None and target_json is not None:
+        return diff_json(destination, target, destination_json, target_json)
+
+    return diff_regular(destination, target)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

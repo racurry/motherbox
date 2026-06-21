@@ -3,6 +3,10 @@
 
 sourceDir = {{ .chezmoi.sourceDir | quote }}
 
+[diff]
+    command = "chezmoi-diff-ignore-json-key-order"
+    args = [{{ "{{ .Destination }}" | quote }}, {{ "{{ .Target }}" | quote }}]
+
 [data]
     profile = {{ $profile | quote }}
     machine = {{ $machine | quote }}

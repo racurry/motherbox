@@ -15,6 +15,7 @@ avitomp4 movie.avi                             # Convert an AVI file to MP4 with
 avitomp4 ~/Movies/avi                          # Convert every AVI file in a directory
 backgroundify src/ out/ white                  # Add a solid background to transparent images
 batch_rename photos Vacation                   # Rename files sequentially with a base name
+chezmoi-diff-ignore-json-key-order             # Diff JSON files without object key-order noise
 filename_fixer downloads --dedot               # Normalize names and replace dots with spaces
 filename_fixer downloads --strip-digits        # Normalize names and remove digits
 folderify ~/Downloads/items                    # Move each file into its own folder
