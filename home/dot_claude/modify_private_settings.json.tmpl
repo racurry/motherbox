@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+"""Merge Motherbox-owned Claude settings into Claude's live settings."""
+
+import copy
+import json
+import sys
+
+
+MANAGED_SETTINGS = json.loads(r'''{{ template "claude/settings-base.json" . }}''')
+MANAGED_HOOKS = json.loads(r'''{{ template "claude/hooks.json" . }}''')
+
+
+def deep_merge(base, overlay):
+    for key, value in overlay.items():
+        if isinstance(value, dict) and isinstance(base.get(key), dict):
+            deep_merge(base[key], value)
+        else:
+            base[key] = copy.deepcopy(value)
+    return base
+
+
+def add_hook_once(settings, event, entry):
+    hooks = settings.get("hooks")
+    if not isinstance(hooks, dict):
+        hooks = {}
+        settings["hooks"] = hooks
+
+    entries = hooks.get(event)
+    if not isinstance(entries, list):
+        entries = []
+        hooks[event] = entries
+
+    if entry not in entries:
+        entries.insert(0, copy.deepcopy(entry))
+
+
+raw = sys.stdin.read()
+current = json.loads(raw) if raw.strip() else {}
+if not isinstance(current, dict):
+    current = {}
+
+updated = deep_merge(copy.deepcopy(current), MANAGED_SETTINGS)
+
+for event, entries in MANAGED_HOOKS.items():
+    for entry in reversed(entries):
+        add_hook_once(updated, event, entry)
+
+if raw.strip() and updated == current:
+    sys.stdout.write(raw)
+else:
+    json.dump(updated, sys.stdout, indent=2)
+    sys.stdout.write("\n")

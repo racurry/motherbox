@@ -1,0 +1,24 @@
+{
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "cat $HOME/AGENTS.md"
+        }
+      ]
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "~/.claude/hooks/enforce-local-tmp.sh"
+        }
+      ]
+    }
+  ]
+}
