@@ -1,269 +1,105 @@
 #!/bin/bash
-# mother — set up this machine, layer by layer (bottom to top).
-#
-# mother owns bootstrap and any interactive/privileged steps. The per-layer
-# installs (Homebrew bundle, mise runtimes, etc.) are change-driven chezmoi
-# run_onchange hooks under home/.chezmoiscripts/, executed by `chezmoi apply`.
+# mother — run the machine.  responsible for coordinating any bits across
+#          the repo that need coordination.
+
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${SCRIPT_DIR}"
-
-ORIGINAL_ARGS=("$@")
-
-# ==========================================================================
-# Helpers — self-contained; only the pieces mother actually uses.
-# ==========================================================================
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 : "${UNATTENDED:=false}"
 
-# mlog prints the message and sends it to the macOS unified log. Callers embed
-# the level in the message: mlog "[INFO] ...", mlog "[WARN] ...", etc.
-# Filterable with: log show --predicate 'eventMessage BEGINSWITH "mother:"' --last 1h
-mlog() {
-    printf "%s\n" "$*"
-    logger -t mother -p user.notice "mother: $*"
-}
-
-require_command() {
-    local cmd="$1"
-    if ! command -v "$cmd" >/dev/null 2>&1; then
-        mlog "[ERROR]Required command '$cmd' not found in PATH"
-        exit 1
-    fi
-}
-
-# chezmoi_data reads a value from chezmoi's persisted template data — the
-# [data] section of ~/.config/chezmoi/chezmoi.toml, written by `chezmoi init`
-# from .chezmoi.toml.tmpl. This is the single source of truth for profile and
-# machine; mother no longer keeps a duplicate config of its own. Returns empty
-# if chezmoi isn't installed yet (first run) or the key isn't set.
-chezmoi_data() {
-    local key="$1"
-    command -v chezmoi >/dev/null 2>&1 || return 0
-    chezmoi execute-template "{{ .${key} }}" 2>/dev/null || true
-}
-
-# prompt_profile prompts interactively for setup mode. Sets PROFILE.
-prompt_profile() {
-    printf "\n===== Setup Mode Selection =====\n"
-    echo "Please select your setup mode:"
-    echo "  1) firsthand - Install Firsthand work-specific tools & settings"
-    echo "  2) personal  - Install personal-specific tools & settings"
-    echo ""
-
-    while true; do
-        read -rp "Enter your choice (1 or 2): " choice
-        case $choice in
-        1 | firsthand)
-            PROFILE="firsthand"
-            break
-            ;;
-        2 | personal)
-            PROFILE="personal"
-            break
-            ;;
-        *)
-            echo "Invalid choice. Please enter 1 (firsthand) or 2 (personal)"
-            ;;
-        esac
-    done
-}
-
-# determine_profile resolves setup mode from flags, chezmoi data, or prompt.
-# Sets PROFILE; persistence happens later via configure_chezmoi (chezmoi init).
-# Precedence: --profile > chezmoi data > prompt.
-# Ignores unrecognized arguments, so callers can pass "$@" directly.
-determine_profile() {
-    local unattended=false
-    local mode_override=""
-
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-        --unattended)
-            unattended=true
-            shift
-            ;;
-        --profile)
-            mode_override="${2:-}"
-            shift 2
-            ;;
-        *) shift ;;
-        esac
-    done
-
-    if [[ -n "${mode_override}" ]]; then
-        PROFILE="${mode_override}"
-    else
-        PROFILE="$(chezmoi_data profile)"
-    fi
-
-    if [[ -z "${PROFILE:-}" ]]; then
-        if [[ "${unattended}" == "true" ]]; then
-            mlog "[ERROR] Setup mode not set and --unattended prevents prompting"
-            mlog "[INFO] Use --profile personal or --profile firsthand to set mode"
-            return 1
-        fi
-        prompt_profile
-    fi
-
-    mlog "[INFO] Setup mode: ${PROFILE}"
-    return 0
-}
-
-# determine_machine resolves machine name from flags or chezmoi data.
-# Sets MACHINE; persistence happens later via configure_chezmoi. Machine is optional.
-determine_machine() {
-    local machine_override=""
-
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-        --machine)
-            machine_override="${2:-}"
-            shift 2
-            ;;
-        *) shift ;;
-        esac
-    done
-
-    if [[ -n "${machine_override}" ]]; then
-        MACHINE="${machine_override}"
-    else
-        MACHINE="$(chezmoi_data machine)"
-    fi
-
-    if [[ -n "${MACHINE}" ]]; then
-        mlog "[INFO] Machine: ${MACHINE}"
-    fi
-}
-
 show_help() {
     cat <<EOF
-Usage: $(basename "$0") setup [OPTIONS]
+Usage: $(basename "$0") [COMMAND] [OPTIONS]
 
-Run with no arguments to show this help. Pass \`setup\` to set up this
-machine layer by layer:
-
-  Bootstrap   Install Homebrew + chezmoi + 1Password CLI (the minimum needed
-              to run everything else).
-  Layers      \`chezmoi apply\` runs the change-driven layer hooks:
-                L1  Homebrew host tools & applications
-                L2  mise runtimes              (todo)
-                L3  uv / pnpm / cargo packages (todo)
-  Interactive Privileged / interactive steps that should NOT fire on every
-              \`chezmoi apply\` (macOS defaults, Mac App Store, TCC).  (todo)
+COMMANDS:
+  setup             Run all the things to set up a machine
+  help              You know what help is
 
 OPTIONS:
-  --profile PROFILE   Set profile (personal, firsthand, ...)
-  --machine MACHINE   Set machine (e.g. mini) for machine-specific setup
-  --unattended        Skip operations requiring human interaction
-  -h, --help          Show this help message and exit
+  -u                Skip operations requiring human interaction
 
 Profile and machine are persisted by chezmoi (~/.config/chezmoi/chezmoi.toml).
 EOF
 }
 
+# ==========================================================================
+# Setup - install homebrew + chezmoi.  
+#         chezmoi apply handles almost everything else
+#         run any other scripts that chezmoi can't handle cleanly
+# ==========================================================================
+
+
+do_setup() {
+    cd "${REPO_ROOT}"
+
+    printf "Checking Homebrew\n"
+    if ! command -v brew >/dev/null 2>&1; then
+        # No homebrew on the path
+        logger -t motherbox -p user.notice "motherbox: Homebrew not found on path"
+
+        if [[ ! -x /opt/homebrew/bin/brew ]]; then
+            # Homebrew is not installed at all; install it.
+            logger -t motherbox -p user.notice "motherbox: Homebrew not installed at all"
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
+
+        logger -t motherbox -p user.notice "motherbox: homebrew installed, add to path"
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    fi
+
+    printf "Checking chezmoi\n"
+    if ! command -v chezmoi >/dev/null 2>&1; then
+        logger -t motherbox -p user.notice "motherbox: no chezmoi, installing with Homebrew"
+        brew install chezmoi
+    fi
+
+    chezmoi init --source="${REPO_ROOT}/home"
+    # chezmoi apply
+
+    if [[ "$UNATTENDED" != "true" ]]; then
+        printf "Setting up things that need sudo access...\n"
+        "${REPO_ROOT}/scripts/utils/macos_prefs_sudo.sh"
+    fi
+}
+
+# ==========================================================================
+# Main — parse options, then dispatch on subcommand.  Options may appear in
+#        any position; the first non-option argument is the command.
+# ==========================================================================
+
+COMMAND=""
 for arg in "$@"; do
-    case $arg in
-    -h | --help)
+    case "$arg" in
+    -h)
         show_help
         exit 0
         ;;
-    --unattended) export UNATTENDED=true ;;
+    -u) UNATTENDED=true ;;
+    -*)
+        printf "Unknown option: %s\n\n" "$arg" >&2
+        show_help
+        exit 1
+        ;;
+    *) COMMAND="${COMMAND:-$arg}" ;;
     esac
 done
 
-# ==========================================================================
-# Bootstrap — the minimum needed before chezmoi can drive the layers.
-# ==========================================================================
-
-ensure_homebrew() {
-    if command -v brew >/dev/null 2>&1; then
-        mlog "[INFO] Homebrew present"
-        return 0
-    fi
-
-    if [[ -x /opt/homebrew/bin/brew ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-        mlog "[INFO] Homebrew installed; sourced into this shell"
-        return 0
-    fi
-
-    require_command curl
-    mlog "[INFO] Installing Homebrew"
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-}
-
-ensure_bootstrap_tools() {
-    # chezmoi drives the layers; the 1Password CLI resolves secret templates
-    # during `chezmoi apply`. Both must exist before we apply.
-    command -v chezmoi >/dev/null 2>&1 || brew install chezmoi
-    command -v op >/dev/null 2>&1 || brew install --cask 1password-cli
-}
-
-configure_chezmoi() {
-    require_command chezmoi
-    # Pass the resolved profile/machine so promptStringOnce doesn't re-prompt.
-    chezmoi init --source="${REPO_ROOT}/home" \
-        --promptString "profile=${PROFILE}" \
-        --promptString "machine=${MACHINE:-}"
-    mlog "[INFO] chezmoi configured (profile: ${PROFILE}, machine: ${MACHINE:-none})"
-}
-
-# ==========================================================================
-# Setup — the full layer-by-layer machine setup. Runs only on `setup`.
-# ==========================================================================
-
-do_setup() {
-    if [[ "$(pwd)" != "${REPO_ROOT}" ]]; then
-        cd "${REPO_ROOT}"
-    fi
-
-    determine_profile ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"} || exit 1
-    determine_machine ${ORIGINAL_ARGS[@]+"${ORIGINAL_ARGS[@]}"}
-
-    printf "\n===== Bootstrap =====\n"
-    ensure_homebrew
-    ensure_bootstrap_tools
-    configure_chezmoi
-
-    printf "\n===== Layers =====\n"
-    # chezmoi apply runs the run_onchange layer hooks (L1 brew today) and applies
-    # dotfiles. Hooks only re-run when their inputs change.
-    chezmoi apply
-
-    printf "\n===== Interactive / privileged =====\n"
-    # macOS defaults (incl. one sudo write) plus Dock/Finder restarts. These live in
-    # libexec/ — invoked by mother, never on $PATH — and run here, outside chezmoi, so
-    # a routine `chezmoi apply` never triggers password prompts or UI restarts. The
-    # script's sudo step self-skips under --unattended.
-    # Mac App Store apps install as part of L1 (mas entries in the Brewfile); the
-    # only manual prerequisite is signing in to App Store.app (mas 7.x has no CLI
-    # sign-in). The L1 hook skips mas entirely when --unattended.
-    # TODO: TCC signing belongs in this phase too (libexec/).
-    macos_args=(setup)
-    [[ "${UNATTENDED:-false}" == "true" ]] && macos_args+=(--unattended)
-    "${REPO_ROOT}/libexec/macos.sh" "${macos_args[@]}"
-
-    printf "\n===== Done =====\n"
-}
-
-# ==========================================================================
-# Main — dispatch on subcommand. No argument shows help.
-# ==========================================================================
-
-if [[ $# -eq 0 ]]; then
-    show_help
-    exit 0
-fi
-
-case "$1" in
+case "$COMMAND" in
 setup)
     do_setup
     ;;
-*)
+help)
     show_help
-    exit 0
+    ;;
+"")
+    printf "No command given.\n\n" >&2
+    show_help
+    exit 1
+    ;;
+*)
+    printf "Unknown command: %s\n\n" "$COMMAND" >&2
+    show_help
+    exit 1
     ;;
 esac

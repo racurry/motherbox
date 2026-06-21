@@ -47,8 +47,6 @@ precmd() { print -Pn "\e]2;%~\a" }
 if command -v direnv >/dev/null 2>&1; then
   eval "$(direnv hook zsh)"
 fi
-# The fuck
-eval $(thefuck --alias)
 
 # ============================================================================
 # ENVIRONMENT VARIABLES
