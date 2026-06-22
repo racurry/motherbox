@@ -1,25 +1,26 @@
 [tools]
 node = "24"
 python = "3.14"
+go = "1.26"
 pnpm = "10"
 uv = "latest"
 
-# Coding-agent CLIs — installed via the npm backend (runs on mise's node).
-# Codex/Gemini ship frequent releases, so track latest and `mise up` to bump.
-"npm:@openai/codex" = "latest"
+# Global tools - node
+#  Codex & Gemini would typically use homebrew; they ship new releases all the time.
+#  Brew releases lag too much, so we use node instead
+"npm:@openai/codex" = "latest" 
 "npm:@google/gemini-cli" = "latest"
 
-# Python global CLIs — installed via the pipx backend, which uses uv (uvx) as
-# the engine (see [settings.pipx]). Migrated from the old uv-tools manifest.
-"pipx:yt-dlp" = "latest"
+# Global tools - python
+# These would normally use homebrew, but they all pull in a brew python.  So, mise it is
 "pipx:yamllint" = "latest"
 "pipx:ocrmypdf" = "latest"
-"pipx:openai-whisper" = "latest"
 "pipx:mdformat" = { version = "latest", uvx_args = "--with mdformat-gfm --with mdformat-frontmatter" }
 
+[settings.python]
+uv_venv_auto = "create|source"
+
 [settings.pipx]
-# Use uv (uvx) to install pipx: tools. This is mise's default; set explicitly
-# because our whole Python-tool layer depends on uv being the engine.
 uvx = true
 
 [settings.npm]
