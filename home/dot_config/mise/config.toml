@@ -19,9 +19,12 @@ uv = "latest"
 
 [settings.python]
 uv_venv_auto = "create|source"
+github_attestations = false
 
 [settings.pipx]
 uvx = true
 
 [settings.npm]
 package_manager = "pnpm"
+
+
