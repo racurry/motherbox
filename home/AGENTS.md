@@ -21,6 +21,14 @@
 - **Shared env vars**: Non-secret environment variables that can be committed go in the repo-managed `.zshrc`
 - **Documenting secrets**: Tell users to add exports to `~/.zshenv`, never include actual values
 
+## Verifying claims
+
+- **Verify before asserting existence**: NEVER state that a file, directory, database, process, or resource exists or does not exist unless a tool call just confirmed it. Reasoning about how a system "should" behave is a hypothesis, not a finding — never report it as fact.
+- **Check named paths**: If a path or name appears anywhere you've read (script, config, log), check that exact path before concluding anything about it.
+- **Negative claims need proof too**: "X doesn't exist" / "the data was lost" demand the same verification as positive claims. Absence is a measurement, not a default.
+- **Separate verified from inferred**: State confirmed facts plainly; label guesses as guesses with low-confidence wording.
+- **Verify before consequential conclusions**: Before any conclusion that would change what the user does (delete, re-import, rebuild), verify it first — checking is cheap; acting on a wrong assumption isn't.
+
 ## Git rules
 
 - **Git commands**: Use `git` directly, not `git -C /path` - the working directory is already the repo root

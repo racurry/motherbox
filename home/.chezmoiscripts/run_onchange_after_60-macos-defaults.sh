@@ -1,10 +1,9 @@
 #!/bin/bash
-# macOS user defaults — all non-privileged, idempotent `defaults write` calls.
+# macOS user defaults — idempotent `defaults write` calls.
 #
 # Run by chezmoi during `chezmoi apply`. run_onchange re-runs only when this
 # file's content changes, so the killall lines below (which restart Dock/Finder)
-# don't fire on every apply. The one setting that needs root (ambient light
-# sensor, in /Library/Preferences) lives in scripts/setup/macos.sh instead.
+# don't fire on every apply.
 set -euo pipefail
 
 echo "==> macOS: global defaults"

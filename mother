@@ -7,6 +7,15 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 : "${UNATTENDED:=false}"
+: "${FORCE_BREW_BUNDLE:=false}"
+
+SUDO_KEEPALIVE_PID=""
+
+# Askpass helper scoped to the Homebrew steps below. brew adds `sudo -A` when
+# SUDO_ASKPASS is set, so its per-cask sudo pulls from 1Password instead of a
+# Touch ID prompt per cask. Everything else keeps using the up-front sudo
+# timestamp / pam_tid.
+SUDO_ASKPASS_HELPER="${REPO_ROOT}/scripts/utils/sudo_askpass_1password.sh"
 
 show_help() {
     cat <<EOF
@@ -17,6 +26,7 @@ COMMANDS:
   help              You know what help is
 
 OPTIONS:
+  -f                Run brew bundle explicitly after chezmoi apply
   -u                Skip operations requiring human interaction
 
 Profile and machine are persisted by chezmoi (~/.config/chezmoi/chezmoi.toml).
@@ -33,22 +43,19 @@ EOF
 do_setup() {
     cd -- "${REPO_ROOT}" || exit 1
 
-    /usr/bin/sudo -v || exit 1
+    start_sudo_session
 
-    while sleep 60; do
-        /usr/bin/sudo -n -v >/dev/null 2>&1 || break
-    done &
-    keeper=$!
-
-    cleanup() {
-        kill "$keeper" 2>/dev/null || :
-        wait "$keeper" 2>/dev/null || :
-    }
-
-    trap cleanup EXIT
+    trap stop_sudo_session EXIT
     trap 'exit 129' HUP
     trap 'exit 130' INT
     trap 'exit 143' TERM
+
+    # Enable Touch ID for sudo so the rest of setup (and future runs)
+    # authenticate with a fingerprint tap instead of a password.
+    "${REPO_ROOT}/scripts/utils/sudo_touchid.sh"
+
+    # Apply root-only macOS preferences while the sudo timestamp is fresh.
+    "${REPO_ROOT}/scripts/utils/macos_prefs_sudo.sh"
 
     printf "Checking Homebrew\n"
     if ! command -v brew >/dev/null 2>&1; then
@@ -73,13 +80,50 @@ do_setup() {
 
     printf "Applying chezmoi...\n"
     chezmoi init --source="${REPO_ROOT}/home"
-    chezmoi apply 
-
-    # Apply some preferences
-    "${REPO_ROOT}/scripts/utils/macos_prefs_sudo.sh"
+    # chezmoi runs the Homebrew bundle; give brew the askpass so its per-cask
+    # sudo uses 1Password instead of a Touch ID prompt per cask.
+    SUDO_ASKPASS="$SUDO_ASKPASS_HELPER" chezmoi apply
+    run_forced_brew_bundle
 
      # re-apply to skip the interactive bits
     printf "Setup complete!\n"
+}
+
+# ==========================================================================
+# Sudo session — authenticate once up front and keep the timestamp fresh so
+# scripts run during setup can call sudo without re-authenticating. With Touch
+# ID for sudo enabled (auth sufficient pam_tid.so in /etc/pam.d/sudo_local),
+# the initial prompt is a fingerprint tap and nested sudo calls fall through to
+# the cached timestamp.
+# ==========================================================================
+
+start_sudo_session() {
+    printf "Opening sudo session\n"
+    /usr/bin/sudo -v || exit 1
+
+    while sleep 30; do
+        /usr/bin/sudo -n -v >/dev/null 2>&1 || exit 0
+    done &
+    SUDO_KEEPALIVE_PID=$!
+}
+
+stop_sudo_session() {
+    [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] || return 0
+    kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || :
+    wait "$SUDO_KEEPALIVE_PID" 2>/dev/null || :
+}
+
+run_forced_brew_bundle() {
+    [[ "$FORCE_BREW_BUNDLE" == "true" ]] || return 0
+
+    local brewfile="${HOME}/.config/homebrew/Brewfile"
+    if [[ ! -f "$brewfile" ]]; then
+        printf "Brewfile not found: %s\n" "$brewfile" >&2
+        exit 1
+    fi
+
+    printf "Running brew bundle explicitly\n"
+    SUDO_ASKPASS="$SUDO_ASKPASS_HELPER" brew bundle --file="$brewfile"
 }
 
 # ==========================================================================
@@ -136,6 +180,7 @@ for arg in "$@"; do
         show_help
         exit 0
         ;;
+    -f) FORCE_BREW_BUNDLE=true ;;
     -u) UNATTENDED=true ;;
     -*)
         printf "Unknown option: %s\n\n" "$arg" >&2

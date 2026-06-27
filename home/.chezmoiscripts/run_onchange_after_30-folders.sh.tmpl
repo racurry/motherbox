@@ -3,9 +3,8 @@
 #
 # Run by chezmoi during `chezmoi apply`. The mkdir lines below are rendered from
 # that data (and the active profile), so run_onchange re-runs automatically
-# whenever the rendered set changes. Creating folders is idempotent and
-# non-privileged, so unlike macOS defaults it belongs in the apply flow rather
-# than ping's interactive phase. Removing a folder from the data does NOT delete
+# whenever the rendered set changes. Creating folders is idempotent, so it
+# belongs in the apply flow. Removing a folder from the data does NOT delete
 # it on disk — prune deliberately by hand.
 set -euo pipefail
 
