@@ -15,12 +15,6 @@
 - **Running scripts**: ALWAYS use local paths for execution (`./script.sh`); NEVER fully qualified paths (`/Users/user/path/to/script.sh`)
 - **Writing temporary files**: ALWAYS use a local `./.tmp` directory for temporary files; NEVER use system temp directories like `/tmp` or `/var/tmp`. Ensure `./.tmp` is gitignored.
 
-## Secrets and environment variables
-
-- **Secrets storage**: API tokens, passwords, and sensitive data go in `~/.zshenv` (loaded automatically by zsh, not tracked in git)
-- **Shared env vars**: Non-secret environment variables that can be committed go in the repo-managed `.zshrc`
-- **Documenting secrets**: Tell users to add exports to `~/.zshenv`, never include actual values
-
 ## Verifying claims
 
 - **Verify before asserting existence**: NEVER state that a file, directory, database, process, or resource exists or does not exist unless a tool call just confirmed it. Reasoning about how a system "should" behave is a hypothesis, not a finding — never report it as fact.

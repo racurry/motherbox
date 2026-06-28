@@ -1,0 +1,9 @@
+export code=~/code
+export me=~/code/me
+export mbox=$MOTHERBOX_ROOT
+export inbox=~/Documents/"000_Inbox"
+export iCloud=~/iCloud
+export icloud=~/iCloud # Both cases for convenience.
+export nlp=~/code/me/neat-little-package
+export memex=~/Notes/Memex
+export agents=~/ai_plaground

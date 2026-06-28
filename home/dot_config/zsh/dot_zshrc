@@ -1,0 +1,5 @@
+# Load zshrc fragments.
+for _motherbox_zsh_file in "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"/zshrc.d/*.zsh(N); do
+  source "$_motherbox_zsh_file"
+done
+unset _motherbox_zsh_file

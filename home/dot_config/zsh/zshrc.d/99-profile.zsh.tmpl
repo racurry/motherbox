@@ -1,0 +1,4 @@
+{{- $profile := index . "profile" | default "personal" -}}
+{{ if eq $profile "firsthand" }}
+{{ template "firsthand.zsh.tmpl" . }}
+{{ end }}
