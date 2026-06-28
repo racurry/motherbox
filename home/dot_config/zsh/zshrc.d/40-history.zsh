@@ -1,5 +1,5 @@
 HISTSIZE=50000
-HISTFILE=~/.zsh_history
+HISTFILE="${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/history"
 SAVEHIST=50000
 HISTDUP=erase # Erase duplicates in the history file.
 setopt appendhistory # Append history to the history file without overwriting.

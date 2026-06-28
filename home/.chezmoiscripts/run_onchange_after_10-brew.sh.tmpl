@@ -1,12 +1,5 @@
 #!/bin/bash
-# Layer 1 — Homebrew bundle.
-#
-# Run by chezmoi during `chezmoi apply`. The managed global Brewfile lives at
-# ~/.config/homebrew/Brewfile (source: dot_config/homebrew/Brewfile.tmpl). The
-# hash line below ties this run_onchange script to that Brewfile's source, so
-# `brew bundle` only re-runs when the Brewfile changes. Layer order is encoded
-# in the filename prefix (10-brew before 20-mise, ...).
-#
+
 # Brewfile source hash: {{ include "dot_config/homebrew/Brewfile.tmpl" | sha256sum }}
 set -euo pipefail
 
@@ -14,8 +7,6 @@ set -euo pipefail
 if ! command -v brew >/dev/null 2>&1; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
-
-
 
 # Bundle the managed global Brewfile by explicit path. This runs under
 # `chezmoi apply` (not an interactive shell), so it can't rely on XDG_CONFIG_HOME

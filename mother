@@ -55,7 +55,7 @@ do_setup() {
     "${REPO_ROOT}/scripts/utils/sudo_touchid.sh"
 
     # Apply root-only macOS preferences while the sudo timestamp is fresh.
-    "${REPO_ROOT}/scripts/utils/macos_prefs_sudo.sh"
+    "${REPO_ROOT}/scripts/utils/macos_prefs.sh"
 
     printf "Checking Homebrew\n"
     if ! command -v brew >/dev/null 2>&1; then
