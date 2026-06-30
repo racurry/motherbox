@@ -13,9 +13,27 @@ Get an API token
 4. Select which bases/workspaces the token can access
 5. Copy the token (shown only once)
 
+## Mail
+
+Copy a `message://` deep link to the selected email. Logic: `scripts/utils/copy-mail-link.applescript` (also wired as a Raycast command).
+
+Add a native right-click / Services entry via an Automator **Quick Action**:
+
+1. Automator > New > **Quick Action**.
+2. **Workflow receives** "no input" **in** Mail.app.
+3. Add **Run Shell Script** (shell `/bin/zsh`):
+
+   ```sh
+   osascript "$HOME/.config/motherbox/scripts/utils/copy-mail-link.applescript"
+   ```
+
+4. Save as **Copy Mail Link** → shows in Mail's right-click menu and Mail ▸ Services.
+
+Custom toolbar buttons aren't supported in Mail. For a hotkey, bind the Service via System Settings ▸ Keyboard ▸ Keyboard Shortcuts ▸ App Shortcuts.
+
 ## Mailmate
 
-Quit Mailmate.  Copy the custom keybindings file in.
+Quit Mailmate. Copy the custom keybindings file in.
 
 ```bash
 cp mailmate/Motherbox.plist /Applications/MailMate.app/Contents/Resources/KeyBindings/
@@ -33,7 +51,7 @@ ob sync-setup --vault {Vault name} --path ~/Notes/{Vault name}
 
 ## OpenSCAD
 
-Install with Homebrew.  Libraries live in `~/OpenSCAD/Libraries`, which is on `$OPENSCADPATH` from zsh config. Install BOSL2 there when needed:
+Install with Homebrew. Libraries live in `~/OpenSCAD/Libraries`, which is on `$OPENSCADPATH` from zsh config. Install BOSL2 there when needed:
 
 ```bash
 mkdir -p ~/OpenSCAD/Libraries
@@ -52,7 +70,7 @@ Unofficial "readwise-enhanced" API server adds more functionality than official 
 
 ## Shottr
 
-Make sure all of the default keyboard shortcuts are set up/turned off in macOS.  System Preferences > Keyboard > Shortcuts
+Make sure all of the default keyboard shortcuts are set up/turned off in macOS. System Preferences > Keyboard > Shortcuts
 
 ![Keyboard Shortcuts](assets/macos_screenshot_settings.png)
 
@@ -64,7 +82,7 @@ Make sure all of the default keyboard shortcuts are set up/turned off in macOS. 
 
 ## Stream deck
 
-Configuration needs to be set up manually.  Export from old, import to new.
+Configuration needs to be set up manually. Export from old, import to new.
 
 ## VS Code
 

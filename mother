@@ -14,8 +14,9 @@ SUDO_KEEPALIVE_PID=""
 # Askpass helper scoped to the Homebrew steps below. brew adds `sudo -A` when
 # SUDO_ASKPASS is set, so its per-cask sudo pulls from 1Password instead of a
 # Touch ID prompt per cask. Everything else keeps using the up-front sudo
-# timestamp / pam_tid.
-SUDO_ASKPASS_HELPER="${REPO_ROOT}/scripts/utils/sudo_askpass_1password.sh"
+# timestamp / pam_tid. chezmoi deploys this helper with the profile's correct
+# 1Password vault ref baked in.
+SUDO_ASKPASS_HELPER="${HOME}/.config/motherbox/sudo_askpass_1password.sh"
 
 show_help() {
     cat <<EOF
