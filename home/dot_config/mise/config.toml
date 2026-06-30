@@ -10,6 +10,7 @@ uv = "latest"
 #  Brew releases lag too much, so we use node instead
 "npm:@openai/codex" = "latest" 
 "npm:@google/gemini-cli" = "latest"
+"npm:skills" = "latest"
 
 # Global tools - python
 # These would normally use homebrew, but they all pull in a brew python.  So, mise it is
