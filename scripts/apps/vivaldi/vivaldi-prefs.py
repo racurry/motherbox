@@ -92,8 +92,7 @@ def abbreviate(value, limit: int = 100) -> str:
 # only accepts the enum's string name (raw numbers are silently refused).
 # The name<->number maps ship with the app in prefs_definitions.json.
 PREFS_DEFINITIONS_GLOB = (
-    "/Applications/Vivaldi.app/Contents/Frameworks/"
-    "Vivaldi Framework.framework/Versions/*/Resources/vivaldi/prefs_definitions.json"
+    "/Applications/Vivaldi.app/Contents/Frameworks/Vivaldi Framework.framework/Versions/*/Resources/vivaldi/prefs_definitions.json"
 )
 
 _enum_maps: dict | None = None
@@ -107,9 +106,9 @@ def enum_values(path: str) -> dict | None:
         matches = sorted(glob.glob(PREFS_DEFINITIONS_GLOB.replace("/*/", "/Current/")))
         matches = matches or sorted(glob.glob(PREFS_DEFINITIONS_GLOB))
         if not matches:
-            print("note: prefs_definitions.json not found in Vivaldi.app; "
-                  "enum prefs cannot be translated and will fail to set")
+            print("note: prefs_definitions.json not found in Vivaldi.app; enum prefs cannot be translated and will fail to set")
         else:
+
             def collect(node, prefix):
                 if not isinstance(node, dict):
                     return
@@ -189,9 +188,7 @@ def launch_vivaldi(extra_args: list[str]) -> None:
 
 
 def http_json(port: int, endpoint: str, timeout: float = 1.0):
-    with urllib.request.urlopen(
-        f"http://127.0.0.1:{port}/json/{endpoint}", timeout=timeout
-    ) as resp:
+    with urllib.request.urlopen(f"http://127.0.0.1:{port}/json/{endpoint}", timeout=timeout) as resp:
         return json.loads(resp.read())
 
 
@@ -204,11 +201,7 @@ def endpoint_up(port: int) -> bool:
 
 
 def find_ui_targets(port: int) -> list[str]:
-    return [
-        t["webSocketDebuggerUrl"]
-        for t in http_json(port, "list")
-        if t.get("url", "").endswith(("/window.html", "/browser.html"))
-    ]
+    return [t["webSocketDebuggerUrl"] for t in http_json(port, "list") if t.get("url", "").endswith(("/window.html", "/browser.html"))]
 
 
 def restart_with_debug_port(port: int, profile_name: str) -> None:
@@ -217,9 +210,7 @@ def restart_with_debug_port(port: int, profile_name: str) -> None:
         quit_vivaldi()
     else:
         print(f"Starting Vivaldi into profile {profile_name!r} with a temporary debug port ({port})...")
-    launch_vivaldi(
-        [f"--remote-debugging-port={port}", f"--profile-directory={profile_name}"]
-    )
+    launch_vivaldi([f"--remote-debugging-port={port}", f"--profile-directory={profile_name}"])
     deadline = time.monotonic() + 30
     while not endpoint_up(port):
         if time.monotonic() > deadline:
@@ -312,9 +303,7 @@ class CdpSession:
         result = reply["result"]
         if "exceptionDetails" in result:
             details = result["exceptionDetails"]
-            description = details.get("exception", {}).get(
-                "description", details.get("text", "unknown error")
-            )
+            description = details.get("exception", {}).get("description", details.get("text", "unknown error"))
             raise RuntimeError(description)
         return result["result"].get("value")
 
@@ -327,9 +316,7 @@ def set_pref(session: CdpSession, path: str, value):
         if not names:
             raise RuntimeError(f"{path}: {value} not a value of enum {enums}")
         api_value = names[0]
-    expr = SET_AND_GET_EXPR.format(
-        path_json=json.dumps(path), value_json=json.dumps(api_value)
-    )
+    expr = SET_AND_GET_EXPR.format(path_json=json.dumps(path), value_json=json.dumps(api_value))
     outcome = json.loads(session.evaluate(expr))
     got = outcome.get("value")
     if enums is not None and isinstance(got, str) and got in enums:
@@ -337,21 +324,16 @@ def set_pref(session: CdpSession, path: str, value):
     if outcome["missing"]:
         raise RuntimeError(f"{path}: pref unknown to vivaldi.prefs after set")
     if not outcome["hasValue"]:
-        raise RuntimeError(
-            f"{path}: browser did not store a user value (set silently refused)"
-        )
+        raise RuntimeError(f"{path}: browser did not store a user value (set silently refused)")
     if outcome["value"] != value:
-        raise RuntimeError(
-            f"{path}: readback mismatch — got {abbreviate(outcome['value'])}, "
-            f"want {abbreviate(value)}"
-        )
+        raise RuntimeError(f"{path}: readback mismatch — got {abbreviate(outcome['value'])}, want {abbreviate(value)}")
 
 
 # --- commands ---
 
 
 def cmd_dump(args) -> int:
-    existing = json.loads(args.file.read_text()) if args.file.exists() else {}
+    existing = load_values_optional(args.file)
     paths = sorted(set(existing) | set(args.paths))
     if not paths:
         die("no managed paths yet — list paths to dump, e.g. vivaldi.actions")
@@ -447,16 +429,16 @@ def pending_changes(values: dict, prefs: dict) -> dict:
 def cmd_diff(args) -> int:
     values = load_values(args.file)
     prefs = read_preferences(args.profile_dir)
-    pending = pending_changes(values, prefs)
+    differing = 0
     for path in sorted(values):
-        if path not in pending:
+        current = walk(prefs, path)
+        if current == values[path]:
             status = "equal"
-        elif walk(prefs, path) is MISSING:
-            status = "MISSING"
         else:
-            status = "DIFFERS"
+            differing += 1
+            status = "MISSING" if current is MISSING else "DIFFERS"
         print(f"{status:8}  {path}")
-    return 1 if pending else 0
+    return 1 if differing else 0
 
 
 def cmd_apply(args) -> int:
@@ -488,82 +470,49 @@ def cmd_apply(args) -> int:
         quit_vivaldi()
         # graceful quit commits prefs to disk; confirm before relaunching
         prefs = read_preferences(args.profile_dir)
+        still_pending = pending_changes(values, prefs)
         for path in sorted(pending):
-            if path not in pending_changes(values, prefs):
-                continue
-            failures += 1
-            print(f"NOT PERSISTED  {path}")
+            if path in still_pending:
+                failures += 1
+                print(f"NOT PERSISTED  {path}")
         launch_vivaldi([])
     return 1 if failures else 0
 
 
-def add_shared_options(parser: argparse.ArgumentParser, suppress_defaults: bool) -> None:
-    # Defined on the top-level parser (real defaults) AND on each subparser
-    # (SUPPRESS, so it doesn't clobber a value parsed at the top level) —
-    # accepted both before and after the subcommand.
-    def default(value):
-        return argparse.SUPPRESS if suppress_defaults else value
-
-    parser.add_argument(
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    shared = argparse.ArgumentParser(add_help=False)
+    shared.add_argument(
         "--file",
         type=Path,
-        default=default(DEFAULT_VALUES_PATH),
+        default=DEFAULT_VALUES_PATH,
         help=f"managed values file (default: {DEFAULT_VALUES_PATH})",
     )
-    parser.add_argument(
+    shared.add_argument(
         "--profile",
-        default=default("Default"),
+        default="Default",
         help='profile directory name under the Vivaldi user data dir, e.g. "Profile 1" (default: Default)',
     )
-    parser.add_argument(
-        "--profile-dir",
-        type=Path,
-        default=default(None),
-        help="full profile directory path (overrides --profile)",
-    )
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-    add_shared_options(parser, suppress_defaults=False)
-    shared = argparse.ArgumentParser(add_help=False)
-    add_shared_options(shared, suppress_defaults=True)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_dump = sub.add_parser(
-        "dump", parents=[shared], help="capture current values of managed paths"
-    )
+    p_dump = sub.add_parser("dump", parents=[shared], help="capture current values of managed paths")
     p_dump.add_argument("paths", nargs="*", help="pref paths to add, e.g. vivaldi.actions")
     p_dump.set_defaults(func=cmd_dump)
 
     p_diff = sub.add_parser("diff", parents=[shared], help="show managed paths that differ")
     p_diff.set_defaults(func=cmd_diff)
 
-    p_ls = sub.add_parser(
-        "ls", parents=[shared], help="explore pref paths in a profile's Preferences"
-    )
-    p_ls.add_argument(
-        "path", nargs="?", default=None, help="pref path to list (default: top level)"
-    )
+    p_ls = sub.add_parser("ls", parents=[shared], help="explore pref paths in a profile's Preferences")
+    p_ls.add_argument("path", nargs="?", default=None, help="pref path to list (default: top level)")
     p_ls.set_defaults(func=cmd_ls)
 
-    p_compare = sub.add_parser(
-        "compare", parents=[shared], help="show pref differences between two profiles"
-    )
+    p_compare = sub.add_parser("compare", parents=[shared], help="show pref differences between two profiles")
     p_compare.add_argument("other", help='other profile name, e.g. "Profile 1"')
-    p_compare.add_argument(
-        "path", nargs="?", default="vivaldi", help="subtree to compare (default: vivaldi)"
-    )
+    p_compare.add_argument("path", nargs="?", default="vivaldi", help="subtree to compare (default: vivaldi)")
     p_compare.set_defaults(func=cmd_compare)
 
-    p_apply = sub.add_parser(
-        "apply", parents=[shared], help="write differing values via the prefs API"
-    )
-    p_apply.add_argument(
-        "--port", type=int, default=DEFAULT_PORT, help=f"debug port (default: {DEFAULT_PORT})"
-    )
+    p_apply = sub.add_parser("apply", parents=[shared], help="write differing values via the prefs API")
+    p_apply.add_argument("--port", type=int, default=DEFAULT_PORT, help=f"debug port (default: {DEFAULT_PORT})")
     p_apply.add_argument(
         "--keep-debug-port",
         action="store_true",
@@ -572,8 +521,7 @@ def main() -> int:
     p_apply.set_defaults(func=cmd_apply)
 
     args = parser.parse_args()
-    if args.profile_dir is None:
-        args.profile_dir = VIVALDI_USER_DATA / args.profile
+    args.profile_dir = VIVALDI_USER_DATA / args.profile
     return args.func(args)
 
 
