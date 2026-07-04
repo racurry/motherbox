@@ -340,16 +340,14 @@
         "shortcuts": []
       },
       "COMMAND_MAIN_TOGGLE_TAB_BAR": {
-        "shortcuts": []
+        "shortcuts": [
+          "alt+meta+left"
+        ]
       },
       "COMMAND_MAIN_TOGGLE_UI": {
         "shortcuts": []
       },
-      "COMMAND_MAIN_TOGGLE_UI_AUTOHIDE": {
-        "shortcuts": [
-          "meta+f10"
-        ]
-      },
+      "COMMAND_MAIN_TOGGLE_UI_AUTOHIDE": {},
       "COMMAND_MAIN_ZOOM_DOUBLE": {
         "shortcuts": [
           "8",
@@ -502,26 +500,14 @@
           "shift+meta+b"
         ]
       },
-      "COMMAND_SHOW_BOOKMARK_PANEL": {
-        "shortcuts": [
-          "alt+meta+b"
-        ]
-      },
+      "COMMAND_SHOW_BOOKMARK_PANEL": {},
       "COMMAND_SHOW_CLEAR_PRIVATE_DATA": {
         "shortcuts": [
           "shift+meta+backspace"
         ]
       },
-      "COMMAND_SHOW_CONTACTS_PANEL": {
-        "shortcuts": [
-          "alt+meta+t"
-        ]
-      },
-      "COMMAND_SHOW_DOWNLOADS_PANEL": {
-        "shortcuts": [
-          "alt+meta+l"
-        ]
-      },
+      "COMMAND_SHOW_CONTACTS_PANEL": {},
+      "COMMAND_SHOW_DOWNLOADS_PANEL": {},
       "COMMAND_SHOW_EXTENSIONS": {
         "shortcuts": [
           "ctrl+meta+e"
@@ -537,11 +523,7 @@
           "meta+y"
         ]
       },
-      "COMMAND_SHOW_HISTORY_PANEL": {
-        "shortcuts": [
-          "alt+meta+y"
-        ]
-      },
+      "COMMAND_SHOW_HISTORY_PANEL": {},
       "COMMAND_SHOW_HOMEPAGE": {
         "shortcuts": [
           "shift+meta+h"
@@ -552,26 +534,10 @@
           "meta+f1"
         ]
       },
-      "COMMAND_SHOW_MAIL_PANEL": {
-        "shortcuts": [
-          "alt+meta+m"
-        ]
-      },
-      "COMMAND_SHOW_NEXT_PANEL": {
-        "shortcuts": [
-          "alt+meta+down"
-        ]
-      },
-      "COMMAND_SHOW_NOTES_PANEL": {
-        "shortcuts": [
-          "alt+meta+n"
-        ]
-      },
-      "COMMAND_SHOW_PREVIOUS_PANEL": {
-        "shortcuts": [
-          "alt+meta+up"
-        ]
-      },
+      "COMMAND_SHOW_MAIL_PANEL": {},
+      "COMMAND_SHOW_NEXT_PANEL": {},
+      "COMMAND_SHOW_NOTES_PANEL": {},
+      "COMMAND_SHOW_PREVIOUS_PANEL": {},
       "COMMAND_SHOW_QUICK_COMMANDS": {
         "shortcuts": [
           "meta+e",
@@ -713,7 +679,8 @@
       "COMMAND_TAB_SWITCH_BACK_SETTING": {
         "shortcuts": [
           "ctrl+shift+tab",
-          "alt+meta+left"
+          "ctrl+left",
+          "alt+left"
         ]
       },
       "COMMAND_TAB_SWITCH_FORWARD_HISTORY": {
@@ -731,7 +698,8 @@
       "COMMAND_TAB_SWITCH_FORWARD_SETTING": {
         "shortcuts": [
           "ctrl+tab",
-          "alt+meta+right"
+          "ctrl+right",
+          "alt+right"
         ]
       },
       "COMMAND_TAB_SWITCH_LAST": {
@@ -760,11 +728,7 @@
           "shift+f7"
         ]
       },
-      "COMMAND_TOGGLE_FOOTER": {
-        "shortcuts": [
-          "meta+/"
-        ]
-      },
+      "COMMAND_TOGGLE_FOOTER": {},
       "COMMAND_TOGGLE_FORCE_DARK_MODE": {
         "shortcuts": []
       },
@@ -776,10 +740,10 @@
       },
       "COMMAND_TOGGLE_PANEL": {
         "shortcuts": [
-          "alt+meta+p",
-          "f4"
+          "alt+meta+right"
         ]
       },
+      "COMMAND_TOGGLE_STARTPAGE_NAVIGATION": {},
       "COMMAND_WINDOW_MINIMIZE": {
         "shortcuts": [
           "meta+m"
@@ -877,7 +841,6 @@
   "vivaldi.tabs.stacking.dnd_delay": 250,
   "vivaldi.tabs.stacking.mode": 3,
   "vivaldi.tabs.unread": true,
-  "vivaldi.tabs.visible": true,
   "vivaldi.tabs.visual_switch.enable": true,
   "vivaldi.tabs.visual_switch.list_layout": true,
   "vivaldi.theme.dim_blurred": true,
