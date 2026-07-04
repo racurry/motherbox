@@ -54,7 +54,7 @@ from pathlib import Path
 
 from websockets.sync.client import connect
 
-DEFAULT_VALUES_PATH = Path.home() / ".config" / "motherbox" / "vivaldi-prefs.json"
+DEFAULT_VALUES_PATH = Path(__file__).resolve().parent / "vivaldi-prefs.json"
 VIVALDI_USER_DATA = Path.home() / "Library" / "Application Support" / "Vivaldi"
 DEFAULT_PORT = 9222
 
