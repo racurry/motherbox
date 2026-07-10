@@ -8,7 +8,7 @@ uv = "latest"
 # Global tools - node
 #  Codex & Gemini would typically use homebrew; they ship new releases all the time.
 #  Brew releases lag too much, so we use node instead
-"npm:@openai/codex" = "latest"
+"npm:@openai/codex" = { version = "latest", minimum_release_age = "7200s" }
 "npm:@google/gemini-cli" = "latest"
 "npm:skills" = "latest"
 "npm:@devcontainers/cli" = "latest"
