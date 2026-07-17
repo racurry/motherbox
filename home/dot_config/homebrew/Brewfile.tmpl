@@ -1,7 +1,7 @@
 {{- $profile := .profile | default "personal" -}}
 #
-# This is the `brew bundle --global` 
-#   
+# This is the `brew bundle --global`
+#
 # Intentionally not using https://www.chezmoi.io/user-guide/advanced/install-packages-declaratively/
 # This lets `brew bundle check/cleanup/list/edit --global` behave as expected
 #
@@ -103,7 +103,7 @@ mas "Contacts Sync", id: 451691288
 mas "Ground News", id: 1324203419
 mas "Highlights", id: 1498912833
 mas "Keynote", id: 409183694
-mas "Numbers", id: 409203825
+# mas "Numbers", id: 409203825 - failing for some reason, I dunno
 mas "Pages", id: 409201541
 mas "Rapidmg", id: 6451349778
 mas "Actions For Obsidian", id: 1659667937

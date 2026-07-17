@@ -34,6 +34,6 @@ Scripting:
 - This is a polygot repo.  Choose the most appropriate language for the task at hand. That means it is okay to ignore existing patterns and introduce new languages
 - Bash is very portable, but complexity and esoteric commands quickly become hard to manage.  Complex scripts generally should reach for a different language
 - Write the logic directly in the target language instead of generating code.  Eg, write Python directly instead of wrapping it as a string in a bash script
-- All scripts must include a help command or optionthat describes purpose and usage
+- All scripts must include a help command or option that describes purpose and usage
 - Non-bash scripts should be executable with appropriate shebang (#!/usr/bin/env python3, etc.)
 - ALWAYS run new scripts after creating them to verify they work!
