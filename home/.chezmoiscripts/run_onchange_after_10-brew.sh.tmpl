@@ -17,5 +17,16 @@ BREWFILE="${HOME}/.config/homebrew/Brewfile"
 # Entries that can't install without a human (Mac App Store apps, sudo/GUI
 # casks) are skipped via HOMEBREW_BUNDLE_*_SKIP, which `mother` sets in the
 # environment for unattended runs. This hook stays unaware of that policy.
+#
+# A few entries can fail on their own (flaky download, upstream-broken cask, an
+# MAS app that needs a human) without invalidating the rest of setup. `brew
+# bundle` still installs everything else but exits non-zero if any single entry
+# fails. Don't let that partial failure abort `chezmoi apply` and take the
+# remaining scripts (mise, folders, launchagents, macOS defaults) down with it.
+# Report loudly and keep going; fix the offenders and re-run by hand (or
+# `mother setup -f`).
 echo "==> Layer 1: brew bundle"
-brew bundle --file="${BREWFILE}"
+if ! brew bundle --file="${BREWFILE}"; then
+    echo "WARNING: brew bundle reported failures above; continuing setup." >&2
+    echo "         Fix them, then: brew bundle --file=\"${BREWFILE}\"" >&2
+fi
