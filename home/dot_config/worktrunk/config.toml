@@ -54,6 +54,10 @@
 # worktree-path = "{{ repo_path }}/../{{ branch | sanitize }}"
 #
 # `~` expands to the home directory. Relative paths resolve from `repo_path`.
+
+# .worktrees directory, up one dir from the repo  (`~/code/me/.worktrees/myproject.feature-auth`)
+worktree-path = "{{ repo_path }}/../.worktrees/{{ repo }}.{{ branch | sanitize }}"
+
 #
 # ## LLM commit messages
 #
@@ -63,6 +67,18 @@
 #
 # [commit.generation]
 # command = "MAX_THINKING_TOKENS=0 claude -p --no-session-persistence --model=haiku --tools='' --safe-mode --setting-sources='user' --system-prompt=''"
+
+# Claude Code, riding the Pro/Max subscription (no API key billing).
+# template-append matches the mr-sparkle:commit skill's message style.
+[commit.generation]
+command = "MAX_THINKING_TOKENS=0 claude -p --no-session-persistence --model=haiku --tools='' --safe-mode --setting-sources='user' --system-prompt=''"
+template-append = """
+- Single line only, no body — up to ~200 characters, ignore the 50-char subject limit
+- NO type prefixes (fix:, feat:, refactor:), NO emojis, NO attribution
+- Lowercase throughout, e.g. "prevent race condition in session cleanup"
+- Be specific about WHAT changed
+"""
+
 #
 # ### Codex
 #
@@ -222,6 +238,18 @@
 # exclude = []   # Additional excludes (e.g., [".cache/", ".turbo/"])
 #
 # Built-in excludes always apply: VCS metadata directories (`.bzr/`, `.hg/`, `.jj/`, `.pijul/`, `.sl/`, `.svn/`) and tool-state directories (`.conductor/`, `.entire/`, `.worktrees/`). User config and project config exclusions are combined.
+
+# Copy everything gitignored (installed deps, .env files) except what can't or
+# shouldn't move: venvs embed absolute paths (recreate via direnv/uv sync);
+# .tmp is scratch junk.
+[step.copy-ignored]
+exclude = [
+  ".venv/",
+  ".direnv/",
+  ".tmp/",
+  ".DS_Store",
+]
+
 #
 # ### Aliases
 #
@@ -390,3 +418,8 @@
 # ## Hooks
 #
 # See `wt hook` (https://worktrunk.dev/hook/) for hook types, execution order, template variables, and examples. User hooks apply to all projects; project hooks (https://worktrunk.dev/config/#project-configuration) apply only to that repository.
+
+# On worktree creation, copy gitignored files (deps, envs) from the main
+# worktree in the background. Excludes configured in [step.copy-ignored].
+[post-start]
+copy = "wt step copy-ignored"
