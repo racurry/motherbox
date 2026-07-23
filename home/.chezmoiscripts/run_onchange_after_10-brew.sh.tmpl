@@ -1,32 +1,20 @@
 #!/bin/bash
 
-# Brewfile source hash: {{ include "dot_config/homebrew/Brewfile.tmpl" | sha256sum }}
+# Rendered-Brewfile hash (fires on any *.Brewfile part or profile/machine change):
+# {{ includeTemplate "dot_config/homebrew/Brewfile.tmpl" . | sha256sum }}
 set -euo pipefail
 
-# brew may not be on PATH if apply runs outside an interactive shell.
-if ! command -v brew >/dev/null 2>&1; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
-
-# Bundle the managed global Brewfile by explicit path. This runs under
-# `chezmoi apply` (not an interactive shell), so it can't rely on XDG_CONFIG_HOME
-# being set; by-hand `brew bundle --global` resolves to this same file via
-# XDG_CONFIG_HOME from .zshrc.
-BREWFILE="${HOME}/.config/homebrew/Brewfile"
-
-# Entries that can't install without a human (Mac App Store apps, sudo/GUI
-# casks) are skipped via HOMEBREW_BUNDLE_*_SKIP, which `mother` sets in the
-# environment for unattended runs. This hook stays unaware of that policy.
-#
-# A few entries can fail on their own (flaky download, upstream-broken cask, an
-# MAS app that needs a human) without invalidating the rest of setup. `brew
-# bundle` still installs everything else but exits non-zero if any single entry
-# fails. Don't let that partial failure abort `chezmoi apply` and take the
-# remaining scripts (mise, folders, launchagents, macOS defaults) down with it.
-# Report loudly and keep going; fix the offenders and re-run by hand (or
+# Thin hook: the real logic lives in scripts/apps/brew/bundle.sh so it can
+# also be run by hand. This wrapper only decides chezmoi policy: a partial
+# `brew bundle` failure (flaky download, upstream-broken cask, an MAS app that
+# needs a human) must not abort `chezmoi apply` and take the remaining scripts
+# (mise, folders, launchagents, macOS defaults) down with it. Report loudly
+# and keep going; fix the offenders and re-run the script by hand (or
 # `mother setup -f`).
+BUNDLE="$CHEZMOI_WORKING_TREE/scripts/apps/brew/bundle.sh"
+
 echo "==> Layer 1: brew bundle"
-if ! brew bundle --file="${BREWFILE}"; then
+if ! "$BUNDLE"; then
     echo "WARNING: brew bundle reported failures above; continuing setup." >&2
-    echo "         Fix them, then: brew bundle --file=\"${BREWFILE}\"" >&2
+    echo "         Fix them, then re-run: $BUNDLE" >&2
 fi

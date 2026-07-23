@@ -1,6 +1,10 @@
 {{- $profile := .profile | default "personal" -}}
+{{- $machine := .machine | default "laptop" -}}
 #
 # This is the `brew bundle --global`
+#
+# Rendered by chezmoi from the *.Brewfile parts in .chezmoitemplates/brew/;
+# edit those, not this file.
 #
 # Intentionally not using https://www.chezmoi.io/user-guide/advanced/install-packages-declaratively/
 # This lets `brew bundle check/cleanup/list/edit --global` behave as expected
@@ -9,146 +13,16 @@
 # They live with their package manager — Python tools in uv (setup-stuff/uv),
 # Node tools in pnpm. Only standalone binaries (incl. ruff, biome) stay in brew.
 
-# --- Runtime managers (Layer 1 seeds Layer 2) ---
-brew "mise"
-
-# --- Shell & core CLI ---
-brew "chezmoi"
-brew "direnv"
-brew "fzf"
-brew "jq"
-brew "mas"
-brew "pure"
-brew "zsh"
-brew "zsh-autosuggestions"
-brew "zsh-syntax-highlighting"
-
-# --- CLI tools ---
-brew "bat"
-brew "bats-core"
-brew "biome"
-brew "diff-so-fancy"
-brew "entr"
-brew "eza"
-brew "ffmpeg"
-brew "fzf-tab"
-brew "gh"
-brew "ghostscript"
-brew "gifsicle"
-brew "git-lfs"
-brew "gnupg"
-brew "goreleaser"
-brew "hub"
-brew "imagemagick"
-brew "mkcert"
-brew "mole"
-brew "pandoc"
-brew "poppler"
-brew "qpdf"
-brew "ruff"
-brew "shellcheck"
-brew "shfmt"
-brew "tesseract"
-brew "tmux"
-brew "wget"
-brew "worktrunk"
-brew "zlib"
-
-# --- Applications (casks) ---
-cask "1password-cli"
-cask "antigravity"
-cask "arc"
-cask "chatgpt"
-cask "claude"
-cask "cmux"
-cask "codex-app"
-cask "cursor"
-cask "docker-desktop"
-cask "elgato-stream-deck"
-cask "flux-app"
-cask "ghostty"
-cask "google-chrome"
-cask "google-drive"
-cask "hazel"
-cask "insta360-link-controller"
-cask "karabiner-elements"
-cask "keycastr"
-cask "libreoffice"
-cask "logi-options+"
-cask "mutedeck"
-cask "notunes"
-cask "obsidian"
-cask "ollama-app"
-cask "renamer"
-cask "sf-symbols"
-cask "shottr"
-cask "slack"
-cask "spotify"
-cask "textbuddy"
-cask "the-unarchiver"
-cask "visual-studio-code"
-cask "zed"
-
-# --- Fonts ---
-cask "font-fira-code-nerd-font"
-cask "font-fira-mono-nerd-font"
-cask "font-hack-nerd-font"
-cask "font-monoid"
-
-# --- Mac App Store apps ---
-# Requires being signed in to the App Store
-mas "Amphetamine", id: 937984704
-mas "Barbee", id: 1548711022
-# mas "CARROTweather", id: 993487541  # requires Rosetta
-mas "Contacts Sync", id: 451691288
-mas "Ground News", id: 1324203419
-mas "Highlights", id: 1498912833
-mas "Keynote", id: 409183694
-# mas "Numbers", id: 409203825 - failing for some reason, I dunno
-mas "Pages", id: 409201541
-mas "Rapidmg", id: 6451349778
-mas "Actions For Obsidian", id: 1659667937
-
-{{ if eq $profile "personal" -}}
-# --- Personal profile ---
-cask "8bitdo-ultimate-software-v2"
-cask "bambu-studio"
-cask "mesh"
-cask "crossover"
-cask "daisydisk"
-cask "discord"
-cask "downie"
-cask "epic-games"
-cask "gimp"
-cask "handbrake-app"
-cask "heroic"
-cask "inkscape"
-cask "itsycal"
-cask "malwarebytes"
-cask "minecraft"
-cask "omnidisksweeper"
-cask "openscad@snapshot"
-cask "plex"
-cask "readwise-ibooks"
-cask "roblox"
-cask "script-debugger"
-cask "steam"
-cask "synologyassistant"
-cask "transmit"
-cask "vlc"
-cask "yacreader"
-cask "zotero"
-
-# Personal Mac App Store apps
-mas "Goodnotes", id: 1444383602
-mas "Health Auto Export", id: 1115567069
-mas "Home Assistant", id: 1099568401
-mas "Parachute", id: 6748614170
-mas "PhotoSweeper", id: 463362050
-mas "PocketTube", id: 1533703891
-mas "Pixelmator Pro", id: 1289583905
-mas "Shortery", id: 1594183810
-{{ end -}}
-{{ if eq $profile "firsthand" -}}
-# --- Firsthand profile ---
-{{ end -}}
+{{ includeTemplate "brew/global.Brewfile" . }}
+{{- if eq $profile "personal" }}
+{{ includeTemplate "brew/personal.Brewfile" . }}
+{{- if eq $machine "laptop" }}
+{{ includeTemplate "brew/personal.laptop.Brewfile" . }}
+{{- end }}
+{{- if eq $machine "mini" }}
+{{ includeTemplate "brew/personal.mini.Brewfile" . }}
+{{- end }}
+{{- end }}
+{{- if eq $profile "firsthand" }}
+{{ includeTemplate "brew/firsthand.Brewfile" . }}
+{{- end }}
