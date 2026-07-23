@@ -3,3 +3,5 @@ README.md
 **/__pycache__
 **/__pycache__/**
 **/*.pyc
+# Machine-local secrets; must stay ignored so exact_zshrc.d never deletes it.
+.config/zsh/zshrc.d/env.local.zsh
