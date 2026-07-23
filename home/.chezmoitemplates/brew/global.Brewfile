@@ -1,6 +1,6 @@
 # Global: every profile, every machine.
 
-# --- Runtime managers (Layer 1 seeds Layer 2) ---
+# --- Runtime managers ---
 brew "mise"
 
 # --- Shell & core CLI ---
