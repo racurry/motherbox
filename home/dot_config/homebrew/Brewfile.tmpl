@@ -15,14 +15,14 @@
 
 {{ includeTemplate "brew/global.Brewfile" . }}
 {{- if eq $profile "personal" }}
-{{ includeTemplate "brew/personal.Brewfile" . }}
-{{- if eq $machine "laptop" }}
-{{ includeTemplate "brew/personal.laptop.Brewfile" . }}
-{{- end }}
-{{- if eq $machine "mini" }}
-{{ includeTemplate "brew/personal.mini.Brewfile" . }}
-{{- end }}
+    {{- "\n" }}{{ includeTemplate "brew/personal.Brewfile" . }}
+    {{- if eq $machine "laptop" }}
+        {{- "\n" }}{{ includeTemplate "brew/personal.laptop.Brewfile" . }}
+    {{- end }}
+    {{- if eq $machine "mini" }}
+        {{- "\n" }}{{ includeTemplate "brew/personal.mini.Brewfile" . }}
+    {{- end }}
 {{- end }}
 {{- if eq $profile "firsthand" }}
-{{ includeTemplate "brew/firsthand.Brewfile" . }}
+    {{- "\n" }}{{ includeTemplate "brew/firsthand.Brewfile" . }}
 {{- end }}

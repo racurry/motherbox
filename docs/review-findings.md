@@ -81,8 +81,8 @@ Full-repo review, 2026-07-02. Grouped by priority; check off as addressed.
 - [ ] `scripts/bin/batch_rename` — unused `TEMPFILE` (line 7); unsorted `Dir.entries` makes "sequential" arbitrary; collisions clobber; `system("mv")` instead of `FileUtils.mv`.
 - [ ] `scripts/bin/iconify` — no `set -euo pipefail`, no ImageMagick check, hardcodes/leaves `icon.iconset` in cwd, deprecated `convert` entry point.
 - [ ] `scripts/bin/gh-pr:163,248` — double `2>&1` redirect; `summarize_checks` (146-148) can count a check as both passing and pending.
-- [ ] Brewfile: both `gh` and `hub` installed; everything uses `gh`. Drop `hub` unless something needs it.
-- [ ] Brewfile installs `zsh-autosuggestions` but no zshrc.d fragment sources it. Wire it up or drop it.
+- [x] Brewfile: both `gh` and `hub` installed; everything uses `gh`. Drop `hub` unless something needs it.
+- [x] Brewfile installs `zsh-autosuggestions` but no zshrc.d fragment sources it. Wire it up or drop it.
 - [ ] `80-path.zsh:5,10` — PATH entries for `bison` and `~/.opencode/bin`; neither installed by anything in the repo. Declare or delete.
 - [ ] `00-package-managers.zsh:6` — `BREW_PREFIX` duplicates `HOMEBREW_PREFIX` from `brew shellenv`.
 - [ ] `40-history.zsh:5-7` — `appendhistory` + `incappendhistory` redundant alongside `sharehistory`; keep `sharehistory`.
