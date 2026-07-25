@@ -23,6 +23,11 @@ See more details at @docs/tool-responsibility.md if needed.
 | apps that are on the app store but not in homebrew                          | mas cli                      |
 | everything else                                                             | homebrew                     |
 
+## Workflow
+
+- This is a single-user repo (no other contributors), with no CI and no code review
+- Do not open pull requests. When asked to push, commit and push directly to `main`
+
 ## Rules
 
 When renaming or moving files:
