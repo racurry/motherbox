@@ -74,7 +74,11 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 52 '
 </dict>'
 
 echo "Reloading symbolic hotkey settings"
-# Makes the hotkey change take effect without logging out.
+# Makes the hotkey change take effect without logging out. activateSettings is
+# part of a private Apple framework (SystemAdministration) with no public API
+# contract, so it may move or disappear in any macOS release. The `|| true`
+# keeps that from breaking the script; worst case the change waits for the
+# next logout/restart to apply.
 /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u 2>/dev/null || true
 
 echo "==> macOS: Dock and Spaces"
