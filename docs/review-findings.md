@@ -63,7 +63,7 @@ Full-repo review, 2026-07-02. Grouped by priority; check off as addressed.
 - [ ] `docs/project-tools.md:13` — references `eslint.config.js` without noting it lives in `phantom-zone/`.
 - [ ] `home/dot_config/homebrew/Brewfile.tmpl:9` — comment references nonexistent `setup-stuff/uv`; python tools actually live in mise pipx backend.
 - [ ] `home/dot_config/uv/uv.toml:5` — comment references nonexistent `GOAL.md`.
-- [ ] `scripts/utils/macos_prefs.sh:6` — usage says `macos_prefs_sudo.sh`; file is `macos_prefs.sh`.
+- [x] `scripts/utils/macos_prefs.sh:6` — usage says `macos_prefs_sudo.sh`; file is `macos_prefs.sh`.
 - [ ] `.gitignore:2,3,5,6,9` — `.todone`, `.meta`, `.claude/*.local.md`, `.out`, `.local.zshrc` match nothing anymore.
 - [ ] `home/.chezmoitemplates/claude/settings-base.json:117-122` — allowlisted skills look stale (`dmv:commit-push`, `dmv:git-workflow`, `box-factory:agent-design`, `box-factory:status-line`, `/mr-sparkle:lint-md`); verify against installed plugins before pruning. Line 97 `Bash(ruff check:*)` subsumed by `Bash(ruff:*)`.
 - [ ] `scripts/apps/airtable/airtable-extract-data.js` — orphan; usage strings reference pre-move path (lines 23-25, 280-284); writes exports into the repo tree (line 311). Fix or move to phantom-zone.
@@ -97,7 +97,7 @@ Full-repo review, 2026-07-02. Grouped by priority; check off as addressed.
 - Chezmoi script ordering (10→60); all template data keys defined; `{{ template ... . }}` passes dot correctly.
 - LaunchAgent label/filename/hook/plist coherence; `net.aaroncurry` prefix consistent.
 - `mother` sudo-keepalive + trap logic; SUDO_ASKPASS helper path matches chezmoi target.
-- `macos_prefs.sh` vs `60-macos-defaults.sh` — disjoint (root vs user), deliberate layering not duplication.
+- `macos_prefs.sh` — now holds all macOS prefs (root + user); the `60-macos-defaults` hook is a thin onchange trigger that just runs it.
 - phantom-zone cold-storage invariant holds (no live code depends on it).
 - README structure diagram matches layout; AGENTS.md tool table matches reality.
 - git config email `aaroncurry@gmail.com` matches actual commit history — not a bug.

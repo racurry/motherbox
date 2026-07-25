@@ -1,0 +1,11 @@
+#!/bin/bash
+# macOS preferences — thin hook: the real logic lives in
+# scripts/utils/macos_prefs.sh so it can also be run by hand (and by
+# `mother setup` while the sudo timestamp is fresh). This wrapper only gives
+# chezmoi something to watch: run_onchange re-fires when the hash below
+# changes, i.e. whenever the real script changes.
+#
+# Script hash: {{ include (joinPath .chezmoi.workingTree "scripts/utils/macos_prefs.sh") | sha256sum }}
+set -euo pipefail
+
+"$CHEZMOI_WORKING_TREE/scripts/utils/macos_prefs.sh"

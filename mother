@@ -55,7 +55,8 @@ do_setup() {
     # authenticate with a fingerprint tap instead of a password.
     "${REPO_ROOT}/scripts/utils/sudo_touchid.sh"
 
-    # Apply root-only macOS preferences while the sudo timestamp is fresh.
+    # Apply macOS preferences (root bits first) while the sudo timestamp is
+    # fresh. chezmoi's onchange hook re-runs this whenever the script changes.
     "${REPO_ROOT}/scripts/utils/macos_prefs.sh"
 
     printf "Checking Homebrew\n"
