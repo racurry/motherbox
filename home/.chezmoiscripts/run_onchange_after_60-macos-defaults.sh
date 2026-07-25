@@ -56,6 +56,27 @@ defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
 echo "Enabling text replacement globally"
 defaults write -g WebAutomaticTextReplacementEnabled -bool true
 
+echo "Disabling 'Turn Dock hiding on/off' shortcut (Option-Command-D)"
+# Symbolic hotkey 52 = "Turn Dock hiding on/off". Parameters are the default
+# binding (ascii 'd', keycode 2, Cmd+Opt modifiers); enabled=false turns it off.
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 52 '
+<dict>
+    <key>enabled</key><false/>
+    <key>value</key><dict>
+        <key>type</key><string>standard</string>
+        <key>parameters</key>
+        <array>
+            <integer>100</integer>
+            <integer>2</integer>
+            <integer>1572864</integer>
+        </array>
+    </dict>
+</dict>'
+
+echo "Reloading symbolic hotkey settings"
+# Makes the hotkey change take effect without logging out.
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u 2>/dev/null || true
+
 echo "==> macOS: Dock and Spaces"
 
 echo "Clearing persistent apps from Dock"
