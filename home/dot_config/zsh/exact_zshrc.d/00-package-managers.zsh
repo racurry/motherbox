@@ -5,9 +5,8 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 # Set Homebrew prefix for reuse throughout shell and exported for subprocesses.
 export BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 
-# Only auto-update Homebrew once per day (86400 seconds).
-export HOMEBREW_AUTO_UPDATE_SECS=86400
-export HOMEBREW_NO_ENV_HINTS=1
+# Homebrew's own behaviour is configured in ~/.config/homebrew/brew.env, which
+# bin/brew reads for unattended runs too. Don't add HOMEBREW_* exports here.
 
 # Activate mise.
 eval "$(mise activate zsh)"

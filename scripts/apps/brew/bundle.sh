@@ -4,6 +4,15 @@
 # by mother, or by the chezmoi onchange hook.
 set -euo pipefail
 
+# Settings live in $XDG_CONFIG_HOME/homebrew/brew.env. dot_zshenv sets that for
+# every zsh (zsh reads .zshenv on all invocations), but this script is bash and
+# bash never reads .zshenv — it only inherits. Any caller that isn't a zsh
+# descendant therefore arrives without it, e.g. a LaunchAgent, whose
+# ProgramArguments are exec'd directly with no shell in between.
+# HOMEBREW_XDG_CONFIG_HOME is bin/brew's documented fallback; it is checked
+# second, so an inherited XDG_CONFIG_HOME still wins and this stays inert.
+export HOMEBREW_XDG_CONFIG_HOME="$HOME/.config"
+
 # brew may not be on PATH when invoked outside an interactive shell.
 if ! command -v brew >/dev/null 2>&1; then
     eval "$(/opt/homebrew/bin/brew shellenv)"

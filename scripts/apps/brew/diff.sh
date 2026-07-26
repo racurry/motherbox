@@ -15,6 +15,19 @@
 # cleanup` (tacks on a full `brew cleanup` cache/old-version pass).
 set -euo pipefail
 
+# `bundle` is in brew's AUTO_UPDATE_COMMANDS list, so the `brew bundle list`
+# calls below trigger a formula-index refresh. That's pure latency here: this
+# script only reports, and a fresher index cannot change what it prints. Scoped
+# to this script rather than brew.env so install paths still auto-update.
+# (`brew list` and `brew leaves` don't trigger it.)
+export HOMEBREW_NO_AUTO_UPDATE=1
+
+# Settings live in $XDG_CONFIG_HOME/homebrew/brew.env. dot_zshenv sets that for
+# every zsh, but this script is bash and bash never reads .zshenv — it only
+# inherits. HOMEBREW_XDG_CONFIG_HOME is bin/brew's documented fallback; it is
+# checked second, so an inherited XDG_CONFIG_HOME still wins. See bundle.sh.
+export HOMEBREW_XDG_CONFIG_HOME="$HOME/.config"
+
 # brew may not be on PATH when invoked outside an interactive shell.
 if ! command -v brew >/dev/null 2>&1; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
