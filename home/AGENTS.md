@@ -22,6 +22,7 @@
 - **Negative claims need proof too**: "X doesn't exist" / "the data was lost" demand the same verification as positive claims. Absence is a measurement, not a default.
 - **Separate verified from inferred**: State confirmed facts plainly; label guesses as guesses with low-confidence wording.
 - **Verify before consequential conclusions**: Before any conclusion that would change what the user does (delete, re-import, rebuild), verify it first — checking is cheap; acting on a wrong assumption isn't.
+- **Verification is scoped to claims, not to tasks**: The rules above constrain assertions you make about the user's system. They are NOT a license to inventory it. When the request is "explain my options", "what's commonly used", "recommend a config", or otherwise asks for knowledge rather than a diagnosis, answer from documentation. Read the project's own files freely; do not probe installed software, system state, or anything outside the repo to build up context first. Prefer official docs or authoritative upstream source over inspecting the local install. If an answer genuinely depends on current machine state, name the command that would settle it and ask before running it.
 
 ## Git rules
 
