@@ -1,25 +1,13 @@
 #!/bin/bash
-# Folder structure — the declarative list lives in .chezmoidata/folders.toml.
+# Folder structure — thin hook: the real logic (and the declarative list) lives
+# in scripts/utils/folders.sh so it can also be run by hand.
 #
-# Run by chezmoi during `chezmoi apply`. The mkdir lines below are rendered from
-# that data (and the active profile), so run_onchange re-runs automatically
-# whenever the rendered set changes. Creating folders is idempotent, so it
-# belongs in the apply flow. Removing a folder from the data does NOT delete
-# it on disk — prune deliberately by hand.
+# Run by chezmoi during `chezmoi apply`. run_onchange re-fires whenever the
+# script changes, or the machine switches profile (the firsthand folders are
+# profile-gated).
+#
+# Script hash: {{ include (joinPath .chezmoi.workingTree "scripts/utils/folders.sh") | sha256sum }}
+# Profile: {{ index . "profile" | default "personal" }}
 set -euo pipefail
 
-echo "==> Folders: ensure structure"
-{{ range .folders.code }}
-mkdir -p "${HOME}/code/{{ . }}"
-{{- end }}
-{{- if eq .profile "firsthand" }}
-{{- range .folders.code_firsthand }}
-mkdir -p "${HOME}/code/{{ . }}"
-{{- end }}
-{{- end }}
-{{- range .folders.documents }}
-mkdir -p "${HOME}/Documents/{{ . }}"
-{{- end }}
-{{- range .folders.home }}
-mkdir -p "${HOME}/{{ . }}"
-{{- end }}
+"$CHEZMOI_WORKING_TREE/scripts/utils/folders.sh"

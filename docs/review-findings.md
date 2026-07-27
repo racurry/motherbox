@@ -44,9 +44,9 @@ Full-repo review, 2026-07-02. Grouped by priority; check off as addressed.
 - [ ] `home/.chezmoi.toml.tmpl:7` — `diff.command` is a bare name; unresolvable before first apply or outside login shells. Use an absolute path. Also reconsider: repo-wide diff override exists to serve one JSON file whose modify-script already handles semantic equality — still worth it?
 - [ ] `home/dot_config/motherbox/symlink_bin.tmpl:1` — hardcodes `~/code/me/motherbox`; the LaunchAgent plist derives repo root via `{{ .chezmoi.sourceDir | dir }}`. Use that here too. Same constant hardcoded a third time in `30-env.zsh:16` (`MOTHERBOX_ROOT`).
 - [ ] `home/dot_zshrc` — empty/whitespace-only; renders as either a removal of `~/.zshrc` or a junk one-byte file. Make intent explicit: `.chezmoiremove`, `empty_` prefix, or delete.
-- [ ] `home/.chezmoiscripts/run_once_after_40-claude-code.sh.tmpl` — `.tmpl` suffix, zero template directives. Drop the suffix.
+- [x] `home/.chezmoiscripts/run_once_after_40-claude-code.sh.tmpl` — `.tmpl` suffix, zero template directives. Drop the suffix.
 - [ ] `home/dot_config/zsh/zshrc.d/99-profile.zsh.tmpl` — renders a no-op file on personal machines; idiom is a `.chezmoiignore` conditional instead of shipping empty files.
-- [ ] Template access style inconsistent: `30-folders` uses bare `.profile`; five templates use `index . "profile" | default "personal"`. `promptStringOnce` guarantees the key — pick one style (the guards mask typos under strict mode).
+- [x] Template access style inconsistent: `30-folders` uses bare `.profile`; five templates use `index . "profile" | default "personal"`. `promptStringOnce` guarantees the key — pick one style (the guards mask typos under strict mode).
 - [ ] `home/dot_config/karabiner/karabiner.json` — fully chezmoi-owned but Karabiner rewrites it at runtime (per-device entries); applies will fight the app. Consider `modify_` merge or document the accepted churn.
 - [ ] `home/dot_claude/hooks/executable_enforce-local-tmp.sh:7` + `hooks.json` matcher `""` — guard runs for every tool and greps the entire input JSON, so an Edit/Write whose *content* merely mentions a system temp path is blocked (writing this very findings doc tripped it), while actual usage in forms like `cd /tmp;` or `TMPDIR=/tmp/x` slips past the pattern. Scope the matcher to Bash and match `tool_input.command` only.
 

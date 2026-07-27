@@ -1,21 +1,14 @@
 #!/bin/bash
 # launchd agents — (re)load on change.
 #
-# Run by chezmoi during `chezmoi apply`. chezmoi writes the launchd plist under
-# ~/Library/LaunchAgents, but writing the file does not load it — only
-# `launchctl bootstrap` does. This hook reloads the agent whenever the plist
-# source changes. The agent runs on every machine; maintenance.sh branches on
-# the machine name the plist passes it.
+# Run by chezmoi during `chezmoi apply`. Thin hook: the real logic lives in
+# scripts/utils/launchagents.sh so it can also be run by hand. chezmoi writes
+# the launchd plist under ~/Library/LaunchAgents, but writing the file does not
+# load it — only `launchctl bootstrap` does. run_onchange re-fires whenever the
+# plist source or the script changes.
 #
 # Plist source hash: {{ include "Library/LaunchAgents/net.aaroncurry.motherbox.nightly-maintenance.plist.tmpl" | sha256sum }}
+# Script hash: {{ include (joinPath .chezmoi.workingTree "scripts/utils/launchagents.sh") | sha256sum }}
 set -euo pipefail
 
-label="net.aaroncurry.motherbox.nightly-maintenance"
-plist="${HOME}/Library/LaunchAgents/${label}.plist"
-
-# The plist writes stdout/stderr here; the dir must exist before bootstrap.
-mkdir -p "${HOME}/.config/motherbox/logs"
-
-echo "==> launchd: reloading ${label}"
-launchctl bootout "gui/$(id -u)/${label}" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "${plist}"
+"$CHEZMOI_WORKING_TREE/scripts/utils/launchagents.sh"
