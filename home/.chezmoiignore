@@ -5,3 +5,6 @@ README.md
 **/*.pyc
 # Machine-local secrets; must stay ignored so exact_zshrc.d never deletes it.
 .config/zsh/zshrc.d/env.local.zsh
+
+# Machine-local secrets, sourced by ~/.zshenv
+.config/zsh/env.local.zsh

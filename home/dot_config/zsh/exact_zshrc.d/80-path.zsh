@@ -9,5 +9,3 @@ export PATH="$PATH:$HOME/.antigravity/antigravity/bin"
 
 export PATH="$HOME/.opencode/bin:$PATH"
 
-# Remove duplicates from PATH.
-typeset -U PATH

@@ -1,0 +1,5 @@
+# Targets chezmoi removes on every apply.
+
+# ~/.zshenv is the only zsh file allowed in $HOME; other files
+# got stuffed in there by installers
+.zshrc

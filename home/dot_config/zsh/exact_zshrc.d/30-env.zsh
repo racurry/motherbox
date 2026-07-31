@@ -11,6 +11,7 @@ export HF_HOME="$HOME/.cache/huggingface"
 # OpenSCAD custom library path avoids cluttering ~/Documents.
 export OPENSCADPATH="$HOME/OpenSCAD/Libraries"
 
-# Local secrets live in ~/.config/zsh/env.local.zsh, which .zshenv loads before
-# this file. Non-secret shared environment belongs in this managed zsh config.
+# Local secrets live in ~/.config/zsh/env.local.zsh, which .zshenv sources
+# before this file. Non-secret shared environment belongs in this managed zsh
+# config.
 export MOTHERBOX_ROOT="$HOME/code/me/motherbox"
