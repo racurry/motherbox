@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-alt-1": "agent::FocusAgent",
+      "cmd-alt-2": "workspace::FocusCenterPane"
+    }
+  }
+]
