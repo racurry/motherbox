@@ -1,0 +1,75 @@
+#!/bin/bash
+# Check what this repo manages for drift and cache a summary for the shell.
+# A clean check writes an empty cache, so a healthy machine stays silent.
+#
+# Usage: motherbox-status [--quiet]
+set -euo pipefail
+
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/motherbox"
+CACHE="$CACHE_DIR/status"
+MAX_PATHS=5
+
+show_help() {
+    cat <<'EOF'
+Usage: motherbox-status [--quiet] [--help]
+
+Check managed state for drift and cache a summary at
+$XDG_CACHE_HOME/motherbox/status for the shell to print at startup.
+
+  --quiet   Refresh the cache without printing.
+
+With no arguments, refreshes the cache and prints the result.
+EOF
+}
+
+QUIET=false
+case "${1:-}" in
+-h | --help | help)
+    show_help
+    exit 0
+    ;;
+-q | --quiet)
+    QUIET=true
+    ;;
+"") ;;
+*)
+    printf "Unknown option: %s\n\n" "$1" >&2
+    show_help
+    exit 1
+    ;;
+esac
+
+# Scripts are excluded: a pending run_onchange script is work waiting to happen,
+# not a file that disagrees with its source.
+check_chezmoi() {
+    local status count
+    command -v chezmoi >/dev/null 2>&1 || return 0
+    status="$(chezmoi status --exclude=scripts 2>/dev/null)" || return 0
+    [[ -n "$status" ]] || return 0
+
+    count="$(printf '%s\n' "$status" | wc -l | tr -d ' ')"
+    printf 'motherbox: chezmoi drift (%s) — chezmoi diff\n' "$count"
+    printf '%s\n' "$status" | head -n "$MAX_PATHS" | sed 's/^/  /'
+    if ((count > MAX_PATHS)); then
+        printf '  … and %s more\n' "$((count - MAX_PATHS))"
+    fi
+}
+
+mkdir -p "$CACHE_DIR"
+
+# Write and rename so the shell never cats a half-written cache.
+tmp="$(mktemp "${CACHE}.XXXXXX")"
+trap 'rm -f "$tmp"' EXIT
+
+check_chezmoi >>"$tmp"
+
+mv "$tmp" "$CACHE"
+trap - EXIT
+
+if [[ "$QUIET" == "false" ]]; then
+    if [[ -s "$CACHE" ]]; then
+        cat "$CACHE"
+    else
+        printf 'motherbox: no drift\n'
+    fi
+fi

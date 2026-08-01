@@ -32,9 +32,6 @@ if [[ $# -gt 0 ]]; then
     LABELS=("$@")
 fi
 
-# The plists write stdout/stderr here; the dir must exist before bootstrap.
-mkdir -p "$HOME/.config/motherbox/logs"
-
 uid=$(id -u)
 for label in "${LABELS[@]}"; do
     plist="$HOME/Library/LaunchAgents/${label}.plist"

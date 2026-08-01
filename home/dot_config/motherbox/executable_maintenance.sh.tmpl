@@ -1,0 +1,44 @@
+#!/bin/bash
+# Scheduled maintenance. Steps are composed by chezmoi per machine and profile.
+#
+# Usage: maintenance.sh --nightly
+
+# No -e: a failing step must not cancel the steps after it.
+set -uo pipefail
+
+REPO="{{ .chezmoi.workingTree }}"
+
+run_nightly() {
+    "$REPO/scripts/bin/motherbox-status" --quiet
+{{ if and (eq .profile "personal") (eq .machine "mini") }}
+    "$REPO/scripts/apps/obsidian/sync.sh"
+    "$REPO/scripts/apps/claude-desktop/restart.sh"
+{{ end }}
+}
+
+show_help() {
+    cat <<'EOF'
+Usage: maintenance.sh <cadence> [--help]
+
+CADENCES:
+  --nightly
+EOF
+}
+
+case "${1:-}" in
+--nightly)
+    run_nightly
+    ;;
+-h | --help | help)
+    show_help
+    exit 0
+    ;;
+"")
+    exit 0
+    ;;
+*)
+    printf "Unknown cadence: %s\n\n" "$1" >&2
+    show_help
+    exit 1
+    ;;
+esac

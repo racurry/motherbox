@@ -7,8 +7,8 @@
 
 	<key>ProgramArguments</key>
 	<array>
-		<string>{{ .chezmoi.sourceDir | dir }}/scripts/utils/maintenance.sh</string>
-		<string>{{ .machine }}</string>
+		<string>{{ .chezmoi.homeDir }}/.config/motherbox/maintenance.sh</string>
+		<string>--nightly</string>
 	</array>
 
 	<key>EnvironmentVariables</key>
@@ -25,9 +25,5 @@
 		<integer>0</integer>
 	</dict>
 
-	<key>StandardOutPath</key>
-	<string>{{ .chezmoi.homeDir }}/.config/motherbox/logs/nightly-maintenance.log</string>
-	<key>StandardErrorPath</key>
-	<string>{{ .chezmoi.homeDir }}/.config/motherbox/logs/nightly-maintenance.log</string>
 </dict>
 </plist>

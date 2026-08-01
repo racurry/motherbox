@@ -13,6 +13,7 @@ uv = "latest"
 "npm:skills" = "latest"
 "npm:@devcontainers/cli" = "latest"
 "npm:@agentclientprotocol/claude-agent-acp" = "latest"
+"npm:obsidian-headless" = "latest"
 
 # Global tools - python
 # These would normally use homebrew, but they all pull in a brew python.  So, mise it is
