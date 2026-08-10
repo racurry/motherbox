@@ -4,7 +4,7 @@
 sourceDir = {{ .chezmoi.sourceDir | quote }}
 
 [diff]
-    command = "chezmoi-diff-ignore-json-key-order"
+    command = "chezmoi-diff-better"
     args = [{{ "{{ .Destination }}" | quote }}, {{ "{{ .Target }}" | quote }}]
 
 [data]

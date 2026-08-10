@@ -5,8 +5,8 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 # Set Homebrew prefix for reuse throughout shell and exported for subprocesses.
 export BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 
-# Homebrew's own behaviour is configured in ~/.config/homebrew/brew.env, which
-# bin/brew reads for unattended runs too. Don't add HOMEBREW_* exports here.
-
 # Activate mise.
 eval "$(mise activate zsh)"
+
+# Activate Cargo
+. "$HOME/.cargo/env"

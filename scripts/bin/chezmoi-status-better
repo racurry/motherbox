@@ -1,0 +1,179 @@
+#!/bin/bash
+# Translate `chezmoi status` two-letter codes into plain English.
+#
+# Usage: chezmoi-status [chezmoi status flags...]
+set -euo pipefail
+
+show_help() {
+    cat <<'EOF'
+Usage: chezmoi-status [flags passed through to `chezmoi status`]
+
+Run `chezmoi status` and translate its two-letter codes into words.
+
+  HOME DRIFT   what changed in your home directory since the last apply
+  ON APPLY     what `chezmoi apply` would do about it
+
+Examples:
+  chezmoi-status
+  chezmoi-status --exclude=scripts
+EOF
+}
+
+case "${1:-}" in
+-h | --help | help)
+    show_help
+    exit 0
+    ;;
+esac
+
+home_word() {
+    case "$1" in
+    A) printf 'added in home' ;;
+    D) printf 'deleted from home' ;;
+    M) printf 'edited in home' ;;
+    *) printf 'unchanged' ;;
+    esac
+}
+
+apply_word() {
+    case "$1" in
+    A) printf 'creates it' ;;
+    D) printf 'deletes it' ;;
+    M) printf 'updates it' ;;
+    R) printf 'runs it (script)' ;;
+    *) printf 'does nothing' ;;
+    esac
+}
+
+output="$(chezmoi status "$@")"
+
+if [[ -z "$output" ]]; then
+    printf 'No diffs\n'
+    exit 0
+fi
+
+translate() {
+    case "$1" in
+    ' A') printf 'chezmoi will create it in your home directory' ;;
+    ' D') printf 'chezmoi will delete it from your home directory' ;;
+    ' M') printf 'source changed; chezmoi will update it' ;;
+    ' R') printf 'script; chezmoi will run it' ;;
+    'A ') printf 'you added it; source already matches' ;;
+    'D ') printf 'you deleted it; source already matches' ;;
+    'M ') printf 'you edited it; source already matches' ;;
+    'AM') printf 'you added it; chezmoi will rewrite it' ;;
+    'AD') printf 'you added it; chezmoi will delete it' ;;
+    'DM') printf 'you deleted it; chezmoi will restore it' ;;
+    'DA') printf 'you deleted it; chezmoi will re-create it' ;;
+    'MM') printf 'you edited it; chezmoi will overwrite your edits' ;;
+    'MD') printf 'you edited it; chezmoi will delete it' ;;
+    '  ') printf 'no change' ;;
+    *) printf 'unrecognized status (%s)' "$1" ;;
+    esac
+}
+
+# table="$(
+#     {
+#         printf 'target\tsource\n'
+#         while IFS= read -r line; do
+#             c1=${line:0:1}
+#             c2=${line:1:1}
+#             path=${line:3}
+#             note=''
+#             if [[ "$c1" == 'M' && "$c2" == 'M' ]]; then
+#                 note='   ⚠ overwrites your local edits'
+#             fi
+#             printf '%s\t%s\t%s%s\n' "$(home_word "$c1")" "$(apply_word "$c2")" "$path" "$note"
+#         done <<<"$output"
+#     } | column -t -s $'\t'
+# )"
+#
+# width=0
+# while IFS= read -r row; do
+#     if ((${#row} > width)); then
+#         width=${#row}
+#     fi
+# done <<<"$table"
+# printf -v rule '%*s' "$width" ''
+#
+# printf '%s\n' "${table%%$'\n'*}"
+# printf '%s\n' "${rule// /-}"
+# printf '%s\n' "${table#*$'\n'}"
+
+paths=()
+statuses=()
+notes=()
+status_width=0
+
+# while IFS= read -r line; do
+#     c1=${line:0:1}
+#     c2=${line:1:1}
+#     note=''
+#     if [[ "$c1" == 'M' && "$c2" == 'M' ]]; then
+#         note='⚠ overwrites your local edits'
+#     fi
+#     status="$(home_word "$c1"), $(apply_word "$c2")"
+#     paths+=("${line:3}")
+#     statuses+=("$status")
+#     notes+=("$note")
+#     if ((${#status} > status_width)); then
+#         status_width=${#status}
+#     fi
+# done <<<"$output"
+
+while IFS= read -r line; do
+    codes=${line:0:2}
+    status="$(translate "$codes")"
+    note=''
+    if [[ "$codes" == 'MM' || "$codes" == 'MD' ]]; then
+        note='⚠ overwrites your local edits'
+    fi
+    paths+=("${line:3}")
+    statuses+=("$status")
+    notes+=("$note")
+    if ((${#status} > status_width)); then
+        status_width=${#status}
+    fi
+done <<<"$output"
+
+if [[ -n "${COLUMNS:-}" ]]; then
+    term_width=$COLUMNS
+elif [[ -t 1 ]]; then
+    term_width="$(tput cols 2>/dev/null || printf '80')"
+else
+    term_width=80
+fi
+
+path_width=$((term_width - status_width - 2))
+if ((path_width < 20)); then
+    path_width=20
+fi
+cont_width=$((path_width - 4))
+
+table="$(
+    printf '%-*s  %s\n' "$path_width" 'file' 'status'
+    for i in "${!paths[@]}"; do
+        path=${paths[i]}
+        printf '%-*s  %s\n' "$path_width" "${path:0:$path_width}" "${statuses[i]}"
+        rest=${path:$path_width}
+        while [[ -n "$rest" ]]; do
+            printf '    %s\n' "${rest:0:$cont_width}"
+            rest=${rest:$cont_width}
+        done
+        if [[ -n "${notes[i]}" ]]; then
+            printf '    %s\n' "${notes[i]}"
+        fi
+    done
+)"
+
+width=0
+while IFS= read -r row; do
+    if ((${#row} > width)); then
+        width=${#row}
+    fi
+done <<<"$table"
+printf -v rule '%*s' "$width" ''
+
+printf '%s\n' "${table%%$'\n'*}"
+printf '%s\n' "${rule// /-}"
+printf '%s\n' "${table#*$'\n'}"

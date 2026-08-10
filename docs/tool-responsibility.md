@@ -2,10 +2,10 @@
 
 **`Homebrew`** is the de facto owner of apps, libraries, system wide tools, and global CLIs.  If a tool can be installed with `brew`, use `brew`.  Except:
 
-- **`mise`**: use `mise` when a tool would pull in a language runtime or I need the most-up-to-date possible version.
+- **`mise`**: use `mise` when a tool would pull in a language runtime, or when it lacks a native installer and I need the most-up-to-date possible version.
 	- `brew` managed runtimes will conflict with my intentionally installed runtimes - keep them out of brew.  Eg, `yamllint` pulls in a brew managed python, so it goes in `mise`.
-	- Some tools ship updates multiple times a day.  Eg codex, gemini.  Using brew introduces lag in staying up to date.  Use `mise` for these.
-- **native installs**: some things just need a native install.  Script if possible, manual download if not.  Eg, `brew` itself, `claude`.
+	- Some tools ship updates multiple times a day.  Eg, `gemini`.  Using brew introduces lag in staying up to date, so use `mise` when there is no first-party installer.
+- **native installs**: use a first-party installer when it owns installation and updates without pulling in a managed runtime. Script if possible, manual download if not. Eg, `brew` itself, `claude`, `codex`.
 
 `Mise` is the default owner of runtimes, language versions, language toolchains, and tools that execute or compile project code.  Use `mise` for everything, except for:
 

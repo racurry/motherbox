@@ -17,8 +17,8 @@ See more details at @docs/tool-responsibility.md if needed.
 | node packages                                                               | pnpm                         |
 | runtime versions - node, python, ruby, go                                   | mise                         |
 | rust                                                                        | rustup                       |
-| claude, brew                                                                | native installer             |
-| coding agent clis - codex, gemini                                           | mise-configured global tools |
+| claude, codex, brew                                                         | native installer             |
+| coding agent clis without native installers - gemini                        | mise-configured global tools |
 | global clis that if installed with brew would drag in language dependencies | mise-configured global tools |
 | apps that are on the app store but not in homebrew                          | mas cli                      |
 | everything else                                                             | homebrew                     |
