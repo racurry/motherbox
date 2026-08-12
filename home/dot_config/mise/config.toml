@@ -21,6 +21,7 @@ uv = "latest"
 "pipx:yamllint" = "latest"
 "pipx:ocrmypdf" = "latest"
 "pipx:mdformat" = { version = "latest", uvx_args = "--with mdformat-gfm --with mdformat-frontmatter" }
+"pipx:llm" = { version = "latest", uvx_args = "--with llm-cmd --with llm-gemini" }
 
 [settings.python]
 uv_venv_auto = "create|source"

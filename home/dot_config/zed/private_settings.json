@@ -20,7 +20,7 @@
       "type": "registry"
     }
   },
-  "default_open_behavior": "new_window",
+  "default_open_behavior": "existing_window",
   "project_panel": {
     "dock": "right"
   },
