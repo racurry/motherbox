@@ -2,7 +2,7 @@
 node = "24"
 python = "3.14"
 go = "1.26"
-pnpm = "10"
+pnpm = "11"
 uv = "latest"
 
 # Global tools - node
@@ -12,7 +12,9 @@ uv = "latest"
 "npm:skills" = "latest"
 "npm:@devcontainers/cli" = "latest"
 "npm:@agentclientprotocol/claude-agent-acp" = "latest"
-"npm:obsidian-headless" = "latest"
+# better-sqlite3 is a native module; pnpm blocks build scripts by default, so
+# whitelist its build to get the compiled binding (needs pnpm >= 10.4.0).
+"npm:obsidian-headless" = { version = "latest", allow_builds = ["better-sqlite3"] }
 
 # Global tools - python
 # These would normally use homebrew, but they all pull in a brew python.  So, mise it is
