@@ -61,7 +61,7 @@ Full-repo review, 2026-07-02. Grouped by priority; check off as addressed.
 - [ ] `docs/apps-notes.md:65` — "Rayccast" typo.
 - [ ] `docs/project-tools.md:1` — garbled heading "# Project helper things ESLint".
 - [ ] `docs/project-tools.md:13` — references `eslint.config.js` without noting it lives in `phantom-zone/`.
-- [ ] `home/dot_config/homebrew/Brewfile.tmpl:9` — comment references nonexistent `setup-stuff/uv`; python tools actually live in mise pipx backend.
+- [x] `home/dot_config/homebrew/Brewfile.tmpl:9` — comment references nonexistent `setup-stuff/uv`; python tools actually live in mise pipx backend.
 - [ ] `home/dot_config/uv/uv.toml:5` — comment references nonexistent `GOAL.md`.
 - [x] `scripts/utils/macos_prefs.sh:6` — usage says `macos_prefs_sudo.sh`; file is `macos_prefs.sh`.
 - [ ] `.gitignore:2,3,5,6,9` — `.todone`, `.meta`, `.claude/*.local.md`, `.out`, `.local.zshrc` match nothing anymore.

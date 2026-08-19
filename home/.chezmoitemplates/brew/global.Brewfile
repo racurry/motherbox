@@ -1,9 +1,9 @@
+
+
 # Global: every profile, every machine.
 
-# --- Runtime managers ---
+## Formulae
 brew "mise"
-
-# --- Shell & core CLI ---
 brew "chezmoi"
 brew "direnv"
 brew "fzf"
@@ -11,8 +11,6 @@ brew "jq"
 brew "mas"
 brew "pure"
 brew "zsh-syntax-highlighting"
-
-# --- CLI tools ---
 brew "bat"
 brew "diff-so-fancy"
 brew "entr"
@@ -22,6 +20,7 @@ brew "fzf-tab"
 brew "gh"
 brew "gifsicle"
 brew "git-lfs"
+brew "hunk"
 brew "imagemagick"
 brew "mkcert"
 brew "mole"

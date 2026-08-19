@@ -1,17 +1,9 @@
 {{- $profile := .profile | default "personal" -}}
 {{- $machine := .machine | default "laptop" -}}
-#
-# This is the `brew bundle --global`
-#
-# Rendered by chezmoi from the *.Brewfile parts in .chezmoitemplates/brew/;
-# edit those, not this file.
-#
-# Intentionally not using https://www.chezmoi.io/user-guide/advanced/install-packages-declaratively/
-# This lets `brew bundle check/cleanup/list/edit --global` behave as expected
-#
-# LAYERING RULE: language-ecosystem CLIs that drag a runtime do NOT belong here.
-# They live with their package manager — Python tools in uv (setup-stuff/uv),
-# Node tools in pnpm. Only standalone binaries (incl. ruff, biome) stay in brew.
+
+# Chezmoi supports declarative package management:
+#    https://www.chezmoi.io/user-guide/advanced/install-packages-declaratively/
+# I am specifically NOT doing that.  This lets `brew` reference a full Brewfile
 
 {{ includeTemplate "brew/global.Brewfile" . }}
 {{- if eq $profile "personal" }}

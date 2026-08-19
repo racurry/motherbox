@@ -1,0 +1,13 @@
+#!/bin/bash
+# Layer 1 — first-party CLI installers (Claude Code, Codex, Atuin).
+#
+# Run by chezmoi during `chezmoi apply`, after 10-brew/20-mise. Thin hook: the
+# real logic lives in scripts/utils/native-installs.sh so it can also be run by
+# hand. run_onchange re-fires when that script changes; each installer either
+# skips when its CLI is already present or updates in place.
+#
+# Script hash: {{ include (joinPath .chezmoi.workingTree "scripts/utils/native-installs.sh") | sha256sum }}
+set -euo pipefail
+
+echo "==> Layer 1: native CLI installers"
+"$CHEZMOI_WORKING_TREE/scripts/utils/native-installs.sh"
