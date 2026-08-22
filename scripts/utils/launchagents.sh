@@ -14,7 +14,7 @@ Usage: launchagents.sh [LABEL...] [--help]
 
 Reload launchd user agents: bootout (ignoring "not loaded") then bootstrap the
 matching plist in ~/Library/LaunchAgents. With no arguments, reloads every
-agent managed by this repo. Idempotent.
+agent managed by this repo that applies to this machine. Idempotent.
 EOF
 }
 
@@ -25,9 +25,12 @@ case "${1:-}" in
     ;;
 esac
 
-# The agents this repo manages. Each runs on every machine; the job itself
-# branches on the machine name the plist passes it.
+# Machine-specific plists are excluded by chezmoi where they do not apply.
 LABELS=(net.aaroncurry.motherbox.nightly-maintenance)
+obsidian_label="net.aaroncurry.motherbox.obsidian-sync"
+if [[ -f "$HOME/Library/LaunchAgents/${obsidian_label}.plist" ]]; then
+    LABELS+=("$obsidian_label")
+fi
 if [[ $# -gt 0 ]]; then
     LABELS=("$@")
 fi

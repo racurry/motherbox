@@ -41,13 +41,22 @@ cp mailmate/Motherbox.plist /Applications/MailMate.app/Contents/Resources/KeyBin
 
 ## Obsidian
 
-Set up headless sync:
+`obsidian-headless` is installed through the managed mise config. On the
+personal Mac mini, it is the only process that connects `~/Notes/Memex` to
+Obsidian Sync. The first Motherbox apply installs the CLI and loads the
+LaunchAgent; it will retry until you complete the one-time login and vault
+setup:
 
 ```bash
-npm install -g obsidian-headless
-ob login
-ob sync-setup --vault {Vault name} --path ~/Notes/{Vault name}
+mise exec -- ob login
+mise exec -- ob sync-setup --vault Memex --path ~/Notes/Memex
 ```
+
+Motherbox starts `ob sync --continuous` at login and launchd keeps it running.
+The runner enforces bidirectional sync with configuration sync disabled. Obsidian
+Desktop may open the same folder, but disconnect its remote vault and keep its
+Sync core plugin disabled on the Mini so only Headless Sync talks to the remote
+vault.
 
 ## OpenSCAD
 

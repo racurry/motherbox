@@ -8,10 +8,24 @@ set -uo pipefail
 
 REPO="{{ .chezmoi.workingTree }}"
 
+{{ if and (eq .profile "personal") (eq .machine "mini") }}
+ensure_obsidian_sync_loaded() {
+    local label="net.aaroncurry.motherbox.obsidian-sync"
+    local service="gui/${UID}/${label}"
+
+    if launchctl print "$service" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    echo "==> Obsidian Headless Sync is not loaded; reloading it"
+    "$REPO/scripts/utils/launchagents.sh" "$label"
+}
+{{ end }}
+
 run_nightly() {
     "$REPO/scripts/bin/motherbox-status" --quiet
 {{ if and (eq .profile "personal") (eq .machine "mini") }}
-    "$REPO/scripts/apps/obsidian/sync.sh"
+    ensure_obsidian_sync_loaded
     "$REPO/scripts/apps/claude-desktop/restart.sh"
 {{ end }}
 }

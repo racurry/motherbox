@@ -7,7 +7,9 @@
 # load it — only `launchctl bootstrap` does. run_onchange re-fires whenever the
 # plist source or the script changes.
 #
-# Plist source hash: {{ include "Library/LaunchAgents/net.aaroncurry.motherbox.nightly-maintenance.plist.tmpl" | sha256sum }}
+# Nightly plist hash: {{ includeTemplate "Library/LaunchAgents/net.aaroncurry.motherbox.nightly-maintenance.plist.tmpl" . | sha256sum }}
+# Obsidian Sync plist hash: {{ includeTemplate "Library/LaunchAgents/net.aaroncurry.motherbox.obsidian-sync.plist.tmpl" . | sha256sum }}
+# Obsidian Sync runner hash: {{ include (joinPath .chezmoi.workingTree "scripts/apps/obsidian/sync.sh") | sha256sum }}
 # Script hash: {{ include (joinPath .chezmoi.workingTree "scripts/utils/launchagents.sh") | sha256sum }}
 set -euo pipefail
 
