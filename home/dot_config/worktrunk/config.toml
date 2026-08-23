@@ -255,7 +255,14 @@ exclude = [
 #
 # Command templates that run as `wt <name>`. See the Extending Worktrunk guide (https://worktrunk.dev/extending/#aliases) for usage and flags.
 #
-# [aliases]
+[aliases]
+cleanup = '''
+wt --config-set 'list.json-schema=2' list --format=json \
+  | jq -r '.items[] | select(.display.state == "integrated" or .display.state == "empty") | .branch // empty' \
+  | xargs -r wt remove --foreground {{ args }}
+'''
+
+# Examples:
 # greet = "echo Hello from {{ branch }}"
 # url = "echo http://localhost:{{ branch | hash_port }}"
 #

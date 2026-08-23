@@ -53,8 +53,8 @@ Full-repo review, 2026-07-02. Grouped by priority; check off as addressed.
 ## P2 — stale docs & leftovers
 
 - [ ] `README.md:32` — says run `./mother`; that exits 1. Should be `./mother setup` (or make setup the default command).
-- [ ] `scripts/README.md:3-4,51-57` — describes deleted `run/sync.sh`/`run/setup.sh` and the old `~/.config/motherbox/scripts` symlink; reality is `symlink_bin.tmpl` + `80-path.zsh`. Rewrite.
-- [ ] `scripts/README.md:13` — lists nonexistent `asdf-uninstall`; omits `claude-to-agents` and `tcc-sign.sh`.
+- [x] `scripts/README.md:3-4,51-57` — describes deleted `run/sync.sh`/`run/setup.sh` and the old `~/.config/motherbox/scripts` symlink; reality is `symlink_bin.tmpl` + `80-path.zsh`. Rewrite.
+- [x] `scripts/README.md:13` — lists nonexistent `asdf-uninstall`; omits `claude-to-agents` and `tcc-sign.sh`.
 - [ ] `docs/apps-notes.md:75,80,81` — image links use `assets/`; directory is `_assets/`. All three screenshots broken.
 - [ ] `docs/apps-notes.md:39` — `cp mailmate/Motherbox.plist` → actual path `phantom-zone/mailmate/MotherBox.plist` (dir + case).
 - [ ] `docs/apps-notes.md:47` + `scripts/utils/maintenance.sh:19-20` — `npm install -g obsidian-headless` violates ownership table; node globals go via pnpm/mise (like codex/gemini).
