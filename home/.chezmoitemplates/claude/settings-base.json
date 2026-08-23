@@ -16,7 +16,6 @@
       "mcp__ide__getDiagnostics",
       "Read(//Users/aaron/.claude/tmp/**)",
       "Edit(//Users/aaron/.claude/tmp/**)",
-      "Write(//Users/aaron/.claude/tmp/**)",
       "Bash(git add:*)",
       "Bash(git blame:*)",
       "Bash(git branch:*)",
