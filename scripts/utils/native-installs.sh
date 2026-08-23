@@ -5,20 +5,24 @@
 # chezmoi onchange hook.
 set -euo pipefail
 
-ALL_APPS=(claude-code codex atuin)
+ALL_APPS=(claude-code codex atuin rustup)
 
 show_help() {
     cat <<'EOF'
 Usage: native-installs.sh [APP...] [--help]
 
 Run the official installer for each APP. With no APP, runs all of them:
-claude-code, codex, atuin.
+claude-code, codex, atuin, rustup.
 
   claude-code   No-op when `claude` is present — the CLI self-updates.
   codex         Installs or updates; the installer owns ~/.codex and
                 exposes the binary at ~/.local/bin/codex.
   atuin         No-op when `atuin` is present. Installs to ~/.atuin/bin;
                 shell init comes from the managed zshrc.d fragment.
+  rustup        No-op when `rustup` is present — `rustup update` owns
+                updates. Installs rustup, cargo, and the stable toolchain
+                to ~/.cargo; shell init comes from the managed
+                zshrc.d fragment.
 EOF
 }
 
@@ -54,6 +58,18 @@ install_atuin() {
     curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh -s -- --non-interactive
 }
 
+install_rustup() {
+    if installed rustup || [[ -x "$HOME/.cargo/bin/rustup" ]]; then
+        echo "==> rustup already installed; skipping"
+        return 0
+    fi
+
+    # --no-modify-path keeps rustup out of ~/.zshenv, which chezmoi owns. It
+    # still writes ~/.cargo/env, which the zshrc.d fragment sources.
+    echo "==> Installing rustup"
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+}
+
 case "${1:-}" in
 -h | --help | help)
     show_help
@@ -71,6 +87,7 @@ for app in "${apps[@]}"; do
     claude-code) install_claude_code ;;
     codex) install_codex ;;
     atuin) install_atuin ;;
+    rustup) install_rustup ;;
     *)
         printf "Unknown app: %s\n\n" "$app" >&2
         show_help >&2
