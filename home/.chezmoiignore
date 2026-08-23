@@ -9,6 +9,7 @@ README.md
 # Machine-local secrets, sourced by ~/.zshenv
 .config/zsh/env.local.zsh
 
+# Continuous Obsidian Sync runs only on the personal Mac mini.
 {{ if not (and (eq .profile "personal") (eq .machine "mini")) }}
 Library/LaunchAgents/net.aaroncurry.motherbox.obsidian-sync.plist
 {{ end }}

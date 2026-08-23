@@ -38,15 +38,14 @@ if [[ ! -d "$VAULT/.obsidian" ]]; then
     exit 1
 fi
 
-if ! command -v mise >/dev/null 2>&1; then
-    printf 'mise is required to run the managed obsidian-headless CLI\n' >&2
+if ! command -v ob >/dev/null 2>&1; then
+    printf 'The managed obsidian-headless CLI was not found on PATH\n' >&2
     exit 1
 fi
 
-mise exec -- ob sync-config \
+ob sync-config \
     --path "$VAULT" \
     --mode bidirectional \
-    --configs "" \
-    --device-name "Motherbox headless"
+    --configs ""
 
-exec mise exec -- ob sync --path "$VAULT" --continuous
+exec ob sync --path "$VAULT" --continuous

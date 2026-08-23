@@ -8,8 +8,10 @@
 # plist source or the script changes.
 #
 # Nightly plist hash: {{ includeTemplate "Library/LaunchAgents/net.aaroncurry.motherbox.nightly-maintenance.plist.tmpl" . | sha256sum }}
+{{ if and (eq .profile "personal") (eq .machine "mini") }}
 # Obsidian Sync plist hash: {{ includeTemplate "Library/LaunchAgents/net.aaroncurry.motherbox.obsidian-sync.plist.tmpl" . | sha256sum }}
 # Obsidian Sync runner hash: {{ include (joinPath .chezmoi.workingTree "scripts/apps/obsidian/sync.sh") | sha256sum }}
+{{ end }}
 # Script hash: {{ include (joinPath .chezmoi.workingTree "scripts/utils/launchagents.sh") | sha256sum }}
 set -euo pipefail
 
