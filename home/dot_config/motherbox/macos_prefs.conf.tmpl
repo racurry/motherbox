@@ -1,0 +1,8 @@
+# Dock preferences consumed by scripts/utils/macos_prefs.sh.
+{{ if eq .machine "mini" -}}
+dock_position="right"
+dock_autohide="false"
+{{ else -}}
+dock_position="left"
+dock_autohide="true"
+{{ end -}}

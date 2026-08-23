@@ -8,18 +8,86 @@ set -euo pipefail
 
 show_help() {
     cat <<'EOF'
-Usage: macos_prefs.sh [--help]
+Usage: macos_prefs.sh [OPTIONS]
 
 Apply macOS preferences: system-level settings that require root, then
 user-level defaults (global, keyboard, Dock, Finder, screenshots, etc.).
 Idempotent; restarts Dock/Finder/SystemUIServer to apply changes.
+
+Dock defaults are read from
+$XDG_CONFIG_HOME/motherbox/macos_prefs.conf (or
+~/.config/motherbox/macos_prefs.conf) when that file exists. Command-line
+options override the managed configuration.
+
+OPTIONS:
+  --dock-position POSITION  Set Dock position: left, bottom, or right
+  --dock-autohide BOOLEAN   Turn Dock hiding on or off: true or false
+  -h, --help                Show this help
 EOF
 }
 
-case "${1:-}" in
--h | --help | help)
-    show_help
-    exit 0
+dock_position="left"
+dock_autohide="true"
+dock_config="${XDG_CONFIG_HOME:-${HOME}/.config}/motherbox/macos_prefs.conf"
+
+if [[ -f "$dock_config" ]]; then
+    # This is a chezmoi-managed shell fragment containing only Dock defaults.
+    # shellcheck source=/dev/null
+    source "$dock_config"
+fi
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --dock-position)
+        [[ $# -ge 2 ]] || {
+            echo "Missing value for --dock-position" >&2
+            exit 1
+        }
+        dock_position="$2"
+        shift 2
+        ;;
+    --dock-position=*)
+        dock_position="${1#*=}"
+        shift
+        ;;
+    --dock-autohide)
+        [[ $# -ge 2 ]] || {
+            echo "Missing value for --dock-autohide" >&2
+            exit 1
+        }
+        dock_autohide="$2"
+        shift 2
+        ;;
+    --dock-autohide=*)
+        dock_autohide="${1#*=}"
+        shift
+        ;;
+    -h | --help | help)
+        show_help
+        exit 0
+        ;;
+    *)
+        echo "Unknown option: $1" >&2
+        echo >&2
+        show_help >&2
+        exit 1
+        ;;
+    esac
+done
+
+case "$dock_position" in
+left | bottom | right) ;;
+*)
+    echo "Invalid Dock position: $dock_position (expected left, bottom, or right)" >&2
+    exit 1
+    ;;
+esac
+
+case "$dock_autohide" in
+true | false) ;;
+*)
+    echo "Invalid Dock autohide value: $dock_autohide (expected true or false)" >&2
+    exit 1
     ;;
 esac
 
@@ -121,11 +189,11 @@ defaults write com.apple.dock persistent-apps -array
 echo "Show only open applications in Dock"
 defaults write com.apple.dock static-only -bool true
 
-echo "Automatically hide Dock"
-defaults write com.apple.dock autohide -bool true
+echo "Set Dock autohide to $dock_autohide"
+defaults write com.apple.dock autohide -bool "$dock_autohide"
 
-echo "Position Dock on left"
-defaults write com.apple.dock orientation -string "left"
+echo "Position Dock on $dock_position"
+defaults write com.apple.dock orientation -string "$dock_position"
 
 echo "Setting Dock icon size"
 defaults write com.apple.dock tilesize -int 36
