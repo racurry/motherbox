@@ -10,11 +10,11 @@ set -euo pipefail
 
 show_help() {
     cat <<'EOF'
-Usage: launchagents.sh [LABEL...] [--help]
+Usage: launchagents.sh LABEL... [--help]
 
 Reload launchd user agents: bootout (ignoring "not loaded") then bootstrap the
-matching plist in ~/Library/LaunchAgents. With no arguments, reloads every
-agent managed by this repo. Idempotent.
+matching plists in ~/Library/LaunchAgents. Labels are selected by the calling
+chezmoi hook. Idempotent.
 EOF
 }
 
@@ -25,12 +25,12 @@ case "${1:-}" in
     ;;
 esac
 
-# The agents this repo manages. Each runs on every machine; the job itself
-# branches on the machine name the plist passes it.
-LABELS=(net.aaroncurry.motherbox.nightly-maintenance)
-if [[ $# -gt 0 ]]; then
-    LABELS=("$@")
+if [[ $# -eq 0 ]]; then
+    show_help >&2
+    exit 1
 fi
+
+LABELS=("$@")
 
 uid=$(id -u)
 for label in "${LABELS[@]}"; do

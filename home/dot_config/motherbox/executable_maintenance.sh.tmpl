@@ -8,10 +8,23 @@ set -uo pipefail
 
 REPO="{{ .chezmoi.workingTree }}"
 
+ensure_launchagents_loaded() {
+    local label service
+    for label in "$@"; do
+        service="gui/${UID}/${label}"
+        if launchctl print "$service" >/dev/null 2>&1; then
+            continue
+        fi
+
+        echo "==> launchd: $label is not loaded; reloading it"
+        "$REPO/scripts/utils/launchagents.sh" "$label"
+    done
+}
+
 run_nightly() {
     "$REPO/scripts/bin/motherbox-status" --quiet
 {{ if and (eq .profile "personal") (eq .machine "mini") }}
-    "$REPO/scripts/apps/obsidian/sync.sh"
+    ensure_launchagents_loaded net.aaroncurry.motherbox.obsidian-sync
     "$REPO/scripts/apps/claude-desktop/restart.sh"
 {{ end }}
 }
