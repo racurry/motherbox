@@ -1,44 +1,35 @@
-# AGENTS.md
+# mother box - agent overview
 
-## Project Overview
+**mother box** is a collection of scripts and tools that keep consistent, standardized tooling across multiple macOS systems.  It is a collection of tools that cover many needs; it isn't just a dotfiles, scripts, or set up repo.  It is an overall computer-experience-management tool
 
-**Mother Box** is a collection of scripts and tools to enable the user to use consistent and standardized tooling across multiple macOS systems.  It is built around an idempotent setup using scripting and chezmoi.  It is also a bunch of helper files and documentation snippets.
+## One User
 
-Read the @README.md at the project root for goals and structure of the repo.
+`mother box` built for exactly one person, on current macOS, with current tool versions. All work should optimize for that expectation.  There are no multi-user options, no cross-platform branches, no OS version shims, no backwards compatibility, no review process. Changes are immediately applied across computers - there is never an older version to support.
 
-## Tool ownership & responsibility
+## Project Structure
 
-See more details at @docs/tool-responsibility.md if needed.
+```text
+.
+├── mother          # single base script for managing motherbox
+├── docs/           # info, instructions, references - reference as the source of truth, keep up to date
+├── home/           # chezmoi managed files - all app configs live here
+└── scripts/        # home for all scripts - any script you write lives here
+    ├── _lib/       # library code shared by other scripts, separated by language
+    ├── apps/       # app-specific scripts - write any app-management scripts here
+    ├── bin/        # global utility scripts symlinked onto PATH - reserve for standalone, broadly useful scripts
+    └── utils/      # broadly applical scripts, not global utilities - ask for clarification if needed
+└── phantom-zone/   # deprecated cold storage; ignore it entirely
+```
 
-| Thing                                                                       | Tool                         |
-| --------------------------------------------------------------------------- | ---------------------------- |
-| configurations & configuration orchestration scripts                        | chezmoi                      |
-| python packages                                                             | uv                           |
-| node packages                                                               | pnpm                         |
-| runtime versions - node, python, ruby, go                                   | mise                         |
-| rust                                                                        | rustup                       |
-| claude, codex, brew                                                         | native installer             |
-| coding agent clis without native installers - gemini                        | mise-configured global tools |
-| global clis that if installed with brew would drag in language dependencies | mise-configured global tools |
-| apps that are on the app store but not in homebrew                          | mas cli                      |
-| everything else                                                             | homebrew                     |
+`./scripts` - **What to do when writing scripts**
 
-## Workflow
+- This is a polyglot repo - choose script language by capability and task needs. Bash works for simple tasks, reach for Python or TypeScript as complexity ramps or the library tools are more appropriate.
+- There is no house style, shared framework, or established pattern to conform to.  No need to survey `scripts/` for similar scripts or patterns to follow.
+- Write scripts in their primary language directly.  Bash scripts that are just thin wrappers around a multiline python string are hard to reason about and maintain.
+- All scripts should have a `-h`/`--help` describing purpose and usage. Run it once after writing it to prove the script works.
 
-- This is a single-user repo (no other contributors), with no CI and no code review
-- Do not open pull requests. When asked to push, commit and push directly to `main`
+`./home` - **How to manage Chezmoi**
 
-## Rules
-
-When renaming or moving files:
-
-- Search the codebase for references to those files and update them accordingly
-
-Scripting:
-
-- This is a polygot repo.  Choose the most appropriate language for the task at hand. That means it is okay to ignore existing patterns and introduce new languages
-- Bash is very portable, but complexity and esoteric commands quickly become hard to manage.  Complex scripts generally should reach for a different language
-- Write the logic directly in the target language instead of generating code.  Eg, write Python directly instead of wrapping it as a string in a bash script
-- All scripts must include a help command or option that describes purpose and usage
-- Non-bash scripts should be executable with appropriate shebang (#!/usr/bin/env python3, etc.)
-- ALWAYS run new scripts after creating them to verify they work!
+- Files under `home/` are our definitive source state. 
+- Only apply changes with `chezmoi apply`; Never edit the target in `~` directly or copy a file into place.
+- Only apply changes with User approval
