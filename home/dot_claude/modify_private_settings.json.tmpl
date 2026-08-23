@@ -10,6 +10,9 @@ MANAGED_SETTINGS = json.loads(r'''{{ template "claude/settings-base.json" . }}''
 MANAGED_HOOKS = json.loads(r'''{{ template "claude/hooks.json" . }}''')
 
 
+PERMISSION_LISTS = ("allow", "deny", "ask")
+
+
 def deep_merge(base, overlay):
     for key, value in overlay.items():
         if isinstance(value, dict) and isinstance(base.get(key), dict):
@@ -17,6 +20,29 @@ def deep_merge(base, overlay):
         else:
             base[key] = copy.deepcopy(value)
     return base
+
+
+def readd_user_permissions(settings, previous):
+    """deep_merge replaces lists wholesale, which would discard rules added
+    interactively via /permissions. Managed rules keep their canonical order;
+    anything else the user had is appended back."""
+    previous_perms = previous.get("permissions")
+    if not isinstance(previous_perms, dict):
+        return
+
+    perms = settings.get("permissions")
+    if not isinstance(perms, dict):
+        return
+
+    for key in PERMISSION_LISTS:
+        user_rules = previous_perms.get(key)
+        if not isinstance(user_rules, list):
+            continue
+
+        merged = perms.get(key)
+        merged = list(merged) if isinstance(merged, list) else []
+        merged.extend(rule for rule in user_rules if rule not in merged)
+        perms[key] = merged
 
 
 def add_hook_once(settings, event, entry):
@@ -40,6 +66,7 @@ if not isinstance(current, dict):
     current = {}
 
 updated = deep_merge(copy.deepcopy(current), MANAGED_SETTINGS)
+readd_user_permissions(updated, current)
 
 for event, entries in MANAGED_HOOKS.items():
     for entry in reversed(entries):

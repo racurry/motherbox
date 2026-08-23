@@ -1,6 +1,9 @@
 {
   "alwaysThinkingEnabled": true,
   "enableAllProjectMcpServers": true,
+  "env": {
+    "CLAUDE_CODE_TMPDIR": "/Users/aaron/.claude/tmp"
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statuslines/statusline.py",
@@ -11,6 +14,9 @@
     "allow": [
       "WebSearch",
       "mcp__ide__getDiagnostics",
+      "Read(//Users/aaron/.claude/tmp/**)",
+      "Edit(//Users/aaron/.claude/tmp/**)",
+      "Write(//Users/aaron/.claude/tmp/**)",
       "Bash(git add:*)",
       "Bash(git blame:*)",
       "Bash(git branch:*)",
