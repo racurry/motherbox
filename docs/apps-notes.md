@@ -53,10 +53,9 @@ ob sync-setup --vault Memex --path ~/Notes/Memex
 ```
 
 Motherbox starts `ob sync --continuous` at login and launchd keeps it running.
-The runner enforces bidirectional sync with configuration sync disabled. Obsidian
-Desktop may open the same folder, but disconnect its remote vault and keep its
-Sync core plugin disabled on the Mini so only Headless Sync talks to the remote
-vault.
+Obsidian Desktop may open the same folder, but disconnect its remote vault and
+keep its Sync core plugin disabled on the Mini so only Headless Sync talks to
+the remote vault.
 
 ## OpenSCAD
 

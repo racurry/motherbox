@@ -13,9 +13,8 @@ show_help() {
 Usage: sync.sh [--help]
 
 Run continuous bidirectional Obsidian Headless Sync for ~/Notes/Memex.
-Configuration sync is disabled so Obsidian Desktop can use the same local
-folder without Headless Sync changing its plugins or settings. Desktop's Sync
-core plugin must remain disabled wherever this runner is active.
+Obsidian Desktop's Sync core plugin must remain disabled wherever this runner
+is active.
 EOF
 }
 
@@ -42,10 +41,5 @@ if ! command -v ob >/dev/null 2>&1; then
     printf 'The managed obsidian-headless CLI was not found on PATH\n' >&2
     exit 1
 fi
-
-ob sync-config \
-    --path "$VAULT" \
-    --mode bidirectional \
-    --configs ""
 
 exec ob sync --path "$VAULT" --continuous
