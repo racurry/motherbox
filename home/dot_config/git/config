@@ -107,8 +107,12 @@
   wipe = !git reset --hard && git clean -fd
 
 [core]
-  pager = "hunk diff"
+  pager = less
   editor = "code --wait"
+
+[pager]
+  # `hunk pager` reads the diff off stdin; `hunk diff` re-runs its own diff and ignores it
+  diff = hunk pager
 
 [diff]
   # Show renames/moves as such
