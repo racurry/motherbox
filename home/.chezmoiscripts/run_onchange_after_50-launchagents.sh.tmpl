@@ -13,4 +13,9 @@
 # Script hash: {{ include (joinPath .chezmoi.workingTree "scripts/utils/launchagents.sh") | sha256sum }}
 set -euo pipefail
 
-"$CHEZMOI_WORKING_TREE/scripts/utils/launchagents.sh"
+labels=(net.aaroncurry.motherbox.nightly-maintenance)
+{{ if and (eq .profile "personal") (eq .machine "mini") }}
+labels+=(net.aaroncurry.motherbox.obsidian-sync)
+{{ end }}
+
+"$CHEZMOI_WORKING_TREE/scripts/utils/launchagents.sh" "${labels[@]}"

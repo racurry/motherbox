@@ -10,11 +10,11 @@ set -euo pipefail
 
 show_help() {
     cat <<'EOF'
-Usage: launchagents.sh [LABEL...] [--help]
+Usage: launchagents.sh LABEL... [--help]
 
 Reload launchd user agents: bootout (ignoring "not loaded") then bootstrap the
-matching plist in ~/Library/LaunchAgents. With no arguments, reloads every
-agent managed by this repo that applies to this machine. Idempotent.
+matching plists in ~/Library/LaunchAgents. Labels are selected by the calling
+chezmoi hook. Idempotent.
 EOF
 }
 
@@ -25,15 +25,12 @@ case "${1:-}" in
     ;;
 esac
 
-# Machine-specific plists are excluded by chezmoi where they do not apply.
-LABELS=(net.aaroncurry.motherbox.nightly-maintenance)
-obsidian_label="net.aaroncurry.motherbox.obsidian-sync"
-if [[ -f "$HOME/Library/LaunchAgents/${obsidian_label}.plist" ]]; then
-    LABELS+=("$obsidian_label")
+if [[ $# -eq 0 ]]; then
+    show_help >&2
+    exit 1
 fi
-if [[ $# -gt 0 ]]; then
-    LABELS=("$@")
-fi
+
+LABELS=("$@")
 
 uid=$(id -u)
 for label in "${LABELS[@]}"; do

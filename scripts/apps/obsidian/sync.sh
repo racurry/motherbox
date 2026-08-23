@@ -1,7 +1,7 @@
 #!/bin/bash
 # Keep the Memex vault synchronized with Obsidian Sync.
 #
-# Requires one-time setup on the Mac mini:
+# Requires one-time setup:
 #   ob login
 #   ob sync-setup --vault Memex --path ~/Notes/Memex
 set -euo pipefail
@@ -15,7 +15,7 @@ Usage: sync.sh [--help]
 Run continuous bidirectional Obsidian Headless Sync for ~/Notes/Memex.
 Configuration sync is disabled so Obsidian Desktop can use the same local
 folder without Headless Sync changing its plugins or settings. Desktop's Sync
-core plugin must remain disabled on this Mac.
+core plugin must remain disabled wherever this runner is active.
 EOF
 }
 
@@ -34,7 +34,7 @@ esac
 
 if [[ ! -d "$VAULT/.obsidian" ]]; then
     printf 'Obsidian vault is not configured at %s\n' "$VAULT" >&2
-    printf 'Run: mise exec -- ob sync-setup --vault Memex --path %s\n' "$VAULT" >&2
+    printf 'Run: ob sync-setup --vault Memex --path %s\n' "$VAULT" >&2
     exit 1
 fi
 
@@ -47,6 +47,6 @@ mise exec -- ob sync-config \
     --path "$VAULT" \
     --mode bidirectional \
     --configs "" \
-    --device-name "Mac mini headless"
+    --device-name "Motherbox headless"
 
 exec mise exec -- ob sync --path "$VAULT" --continuous

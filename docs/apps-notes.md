@@ -48,8 +48,8 @@ LaunchAgent; it will retry until you complete the one-time login and vault
 setup:
 
 ```bash
-mise exec -- ob login
-mise exec -- ob sync-setup --vault Memex --path ~/Notes/Memex
+ob login
+ob sync-setup --vault Memex --path ~/Notes/Memex
 ```
 
 Motherbox starts `ob sync --continuous` at login and launchd keeps it running.
