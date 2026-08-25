@@ -15,6 +15,7 @@ export PYTHON_HISTORY="$XDG_STATE_HOME/python_history"
 # Ensure PATH is unique.
 typeset -U path PATH
 
+# Load any local settings that don't get committed
 if [ -r "$ZDOTDIR/env.local.zsh" ]; then
   source "$ZDOTDIR/env.local.zsh"
 fi
