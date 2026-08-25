@@ -1,7 +1,16 @@
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+
+# Keep tools out of $HOME. These live here, not in zshrc.d, so non-interactive
+# shells see them too — otherwise these tools recreate their $HOME defaults.
+export CARGO_HOME="$XDG_DATA_HOME/cargo"
+export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
+export GOPATH="$XDG_DATA_HOME/go"
+export NPM_CONFIG_CACHE="$XDG_CACHE_HOME/npm"
+export PYTHON_HISTORY="$XDG_STATE_HOME/python_history"
 
 # Ensure PATH is unique.
 typeset -U path PATH

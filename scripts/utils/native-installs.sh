@@ -21,8 +21,8 @@ claude-code, codex, atuin, rustup.
                 shell init comes from the managed zshrc.d fragment.
   rustup        No-op when `rustup` is present — `rustup update` owns
                 updates. Installs rustup, cargo, and the stable toolchain
-                to ~/.cargo; shell init comes from the managed
-                zshrc.d fragment.
+                into $CARGO_HOME and $RUSTUP_HOME; shell init comes from
+                the managed zshrc.d fragment.
 EOF
 }
 
@@ -59,13 +59,18 @@ install_atuin() {
 }
 
 install_rustup() {
-    if installed rustup || [[ -x "$HOME/.cargo/bin/rustup" ]]; then
+    # Bash never reads ~/.zshenv, so mirror the XDG locations it exports.
+    local xdg_data="${XDG_DATA_HOME:-$HOME/.local/share}"
+    export CARGO_HOME="${CARGO_HOME:-$xdg_data/cargo}"
+    export RUSTUP_HOME="${RUSTUP_HOME:-$xdg_data/rustup}"
+
+    if installed rustup || [[ -x "$CARGO_HOME/bin/rustup" ]]; then
         echo "==> rustup already installed; skipping"
         return 0
     fi
 
-    # --no-modify-path keeps rustup out of ~/.zshenv, which chezmoi owns. It
-    # still writes ~/.cargo/env, which the zshrc.d fragment sources.
+    # --no-modify-path keeps rustup out of ~/.zshenv, which chezmoi owns; the
+    # managed zshrc.d fragment puts $CARGO_HOME/bin on PATH instead.
     echo "==> Installing rustup"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 }

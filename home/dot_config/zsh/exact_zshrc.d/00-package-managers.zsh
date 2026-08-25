@@ -7,6 +7,3 @@ export BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 
 # Activate mise.
 eval "$(mise activate zsh)"
-
-# Activate Cargo
-. "$HOME/.cargo/env"
