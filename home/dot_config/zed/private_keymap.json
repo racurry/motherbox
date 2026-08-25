@@ -2,44 +2,76 @@
   {
     "context": "Workspace",
     "bindings": {
-      "cmd-alt-1": "agent::FocusAgent",
-      "cmd-alt-2": "workspace::FocusCenterPane"
+      "cmd-alt-1": [
+        "action::Sequence",
+        [
+          "workspace::UseAgenticLayout",
+          "multi_workspace::FocusWorkspaceSidebar",
+          "workspace::CloseAllDocks",
+          "agent::FocusAgent"
+        ]
+      ],
+      "cmd-alt-2": [
+        "action::Sequence",
+        [
+          "workspace::UseAgenticLayout",
+          "multi_workspace::FocusWorkspaceSidebar",
+          "workspace::CloseAllDocks",
+          "project_panel::ToggleFocus",
+          "workspace::FocusCenterPane"
+        ]
+      ],
+      "cmd-alt-3": [
+        "action::Sequence",
+        [
+          "workspace::UseAgenticLayout",
+          "multi_workspace::FocusWorkspaceSidebar",
+          "workspace::CloseAllDocks",
+          "terminal_panel::ToggleFocus",
+          "workspace::ToggleZoom"
+        ]
+      ],
+      "cmd-alt-4": [
+        "action::Sequence",
+        [
+          "workspace::UseAgenticLayout",
+          "multi_workspace::FocusWorkspaceSidebar",
+          "workspace::CloseAllDocks",
+          "git_panel::ToggleFocus",
+          "git::ViewUncommittedChanges"
+        ]
+      ],
+      "cmd-j": "terminal_panel::ToggleFocus",
+      "ctrl-`": "terminal_panel::ToggleFocus",
+      "cmd-shift-j": "workspace::NewTerminal",
+      "cmd-; s": "task::Spawn",
+      "cmd-; r": "task::Spawn"
     }
   },
   {
     "context": "Editor",
-    "unbind": {
-      "cmd-|": "editor::MoveToEnclosingBracket"
+    "bindings": {
+      "cmd-|": "pane::SplitRight",
+      "cmd-_": "pane::SplitDown",
+      "cmd-alt-r": "editor::RevealInFileManager"
     }
   },
   {
     "context": "Pane",
     "bindings": {
-      "cmd-|": "pane::SplitRight"
+      "cmd-alt-w": [
+        "pane::CloseOtherItems",
+        {
+          "close_pinned": false
+        }
+      ]
     }
   },
   {
-    "context": "Pane",
-    "unbind": {
-      "cmd-k right": "pane::SplitRight"
-    }
-  },
-  {
-    "context": "Editor",
+    "context": "Terminal",
     "bindings": {
-      "cmd-| cmd-|": "pane::SplitRight"
-    }
-  },
-  {
-    "context": "Editor",
-    "unbind": {
-      "cmd-\\": "pane::SplitRight"
-    }
-  },
-  {
-    "context": "Editor",
-    "unbind": {
-      "ctrl-m": "editor::MoveToEnclosingBracket"
+      "cmd-enter": ["terminal::SendText", "\\\r"],
+      "shift-enter": ["terminal::SendText", "\\\r"]
     }
   }
 ]

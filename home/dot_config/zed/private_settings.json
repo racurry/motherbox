@@ -10,10 +10,19 @@
   "icon_theme": "Catppuccin Mocha",
   "cli_default_open_behavior": "existing_window",
   "file_types": {
-    "Ruby": ["Brewfile", "*.Brewfile"]
+    "Python": ["modify_*.json.tmpl"],
+    "Ruby": ["Brewfile", "*.Brewfile", "Brewfile.tmpl", "*.Brewfile.tmpl"],
+    "Shell Script": ["*.sh.tmpl", "*.zsh.tmpl", "*.env.tmpl", "*.conf.tmpl"],
+    "SSH Config": ["private_config.tmpl"],
+    "TOML": ["*.toml.tmpl"],
+    "XML": ["*.plist.tmpl", "*.xml.tmpl"],
+    "YAML": ["*.yaml.tmpl", "*.yml.tmpl"]
   },
   "agent_servers": {
     "codex-acp": {
+      "favorite_config_option_values": {
+        "mode": ["agent"]
+      },
       "type": "registry"
     },
     "claude-acp": {
@@ -33,16 +42,53 @@
   "agent": {
     "default_model": {
       "provider": "openai-subscribed",
-      "model": "gpt-5.5",
+      "model": "gpt-5.6-sol",
       "enable_thinking": true,
-      "effort": "medium"
+      "effort": "high"
     },
     "terminal_init_command": "",
     "play_sound_when_agent_done": "when_hidden",
     "notify_when_agent_waiting": "all_screens",
     "button": true,
     "dock": "left",
-    "favorite_models": [],
+    "favorite_models": [
+      {
+        "provider": "openai-subscribed",
+        "model": "gpt-5.6-sol",
+        "enable_thinking": true,
+        "effort": "high"
+      }
+    ],
+    "sandbox_permissions": {
+      "network_hosts": [
+        "zed.dev",
+        "worktrunk.dev",
+        "docs.anthropic.com",
+        "code.claude.com",
+        "raw.githubusercontent.com"
+      ]
+    },
+    "tool_permissions": {
+      "tools": {
+        "fetch": {
+          "always_allow": [
+            {
+              "pattern": "^https?://zed\\.dev"
+            }
+          ]
+        },
+        "terminal": {
+          "always_allow": [
+            {
+              "pattern": "^printf\\s+n---(\\s|$)"
+            },
+            {
+              "pattern": "^ls\\b"
+            }
+          ]
+        }
+      }
+    },
     "model_parameters": []
   },
   "git_panel": {
