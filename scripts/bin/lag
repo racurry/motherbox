@@ -1,0 +1,47 @@
+#!/bin/bash
+# Record a performance incident in macOS unified logging for correlation with Mac Performance Monitor.
+
+set -euo pipefail
+
+show_help() {
+    cat <<'EOF'
+Usage: lag
+
+Record the current time as a performance incident in macOS unified logging.
+Run this command while a slowdown is happening, then review Mac Performance
+Monitor around the recorded time.
+
+View recent incidents:
+  log show --last 1h --style compact \
+    --predicate 'eventMessage == "motherbox: performance incident"'
+
+Options:
+  -h, --help  Show this help message.
+EOF
+}
+
+case "${1:-}" in
+-h | --help)
+    if (( $# != 1 )); then
+        printf 'Usage: lag\n' >&2
+        exit 1
+    fi
+    show_help
+    exit 0
+    ;;
+"")
+    if (( $# != 0 )); then
+        printf 'Usage: lag\n' >&2
+        exit 1
+    fi
+    ;;
+*)
+    printf 'Unknown argument: %s\n\n' "$1" >&2
+    show_help >&2
+    exit 1
+    ;;
+esac
+
+timestamp="$(/bin/date -Iseconds)"
+/usr/bin/logger -t motherbox -p user.notice "motherbox: performance incident"
+printf 'Performance incident recorded at %s\n' "$timestamp"
