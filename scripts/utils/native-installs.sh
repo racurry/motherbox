@@ -5,18 +5,20 @@
 # chezmoi onchange hook.
 set -euo pipefail
 
-ALL_APPS=(claude-code codex atuin rustup)
+ALL_APPS=(claude-code codex antigravity atuin rustup)
 
 show_help() {
     cat <<'EOF'
 Usage: native-installs.sh [APP...] [--help]
 
 Run the official installer for each APP. With no APP, runs all of them:
-claude-code, codex, atuin, rustup.
+claude-code, codex, antigravity, atuin, rustup.
 
   claude-code   No-op when `claude` is present — the CLI self-updates.
   codex         Installs or updates; the installer owns ~/.codex and
                 exposes the binary at ~/.local/bin/codex.
+  antigravity   No-op when `agy` is present — the CLI self-updates in the
+                background. Installs to ~/.local/bin/agy.
   atuin         No-op when `atuin` is present. Installs to ~/.atuin/bin;
                 shell init comes from the managed zshrc.d fragment.
   rustup        No-op when `rustup` is present — `rustup update` owns
@@ -43,6 +45,20 @@ install_claude_code() {
 install_codex() {
     echo "==> Installing/updating Codex CLI"
     curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
+}
+
+install_antigravity() {
+    if installed agy || [[ -x "$HOME/.local/bin/agy" ]]; then
+        echo "==> Antigravity CLI already installed; skipping"
+        return 0
+    fi
+
+    # The installer's last step runs `agy install`, which appends a PATH export
+    # to ~/.zprofile and ~/.profile. Both are inert here — ZDOTDIR moves zsh's
+    # profile to $ZDOTDIR/.zprofile, and the managed zshrc.d fragment already
+    # puts ~/.local/bin on PATH.
+    echo "==> Installing Antigravity CLI"
+    curl -fsSL https://antigravity.google/cli/install.sh | bash
 }
 
 install_atuin() {
@@ -91,6 +107,7 @@ for app in "${apps[@]}"; do
     case "$app" in
     claude-code) install_claude_code ;;
     codex) install_codex ;;
+    antigravity) install_antigravity ;;
     atuin) install_atuin ;;
     rustup) install_rustup ;;
     *)

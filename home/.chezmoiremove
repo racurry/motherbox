@@ -3,3 +3,7 @@
 # ~/.zshenv is the only zsh file allowed in $HOME; other files
 # got stuffed in there by installers
 .zshrc
+.zprofile
+
+# Nothing sources ~/.profile here. Reappearing means an installer wrote to it.
+.profile
