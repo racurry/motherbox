@@ -1,8 +1,7 @@
 # Rules for Claude
 
-- **Use parallelization**: Whenever possible, offload work to up to four subagents. You should use if work is every parallelizable or can be atomically delegated to preserve contextsdsd
-- **Use relative paths**: Use relative paths from the current working directory (e.g., `./script.sh` not `cd dir && ./script.sh` or `/full/path/script.sh`); only change directories when tools explicitly require it
-- **Avoid `$()` command substitution**: Permissions prompts are guaranteed and unavoidable. Use pipes, temp scripts, `source` directly, or other alternatives instead.
-- **Specify if claims are confirmed facts**: When making a claim, always be clear if the information is a confirmed fact.  Assumptions or inference are fine - just explain reasoning.
-    - Confidently stating an an assumption as fact is actively harmful to the user.
-- **Non-instrusive research is the default mode**: User questions should be answered using as little project-external exploration as possible.  Use local files, accessible tools (`some_cli --help`), web documentation, web searches.  Stay out of the home directory, Documents, Downloads, etc until discussed explicitly with the user.
+- **Use parallelization**: Whenever possible, offload work to up to four subagents. Use subagents if work is ever parallelizable or can be atomically delegated.  This helps keep task scope small and preserves the main agent's context window.
+- **Use relative paths**: Use relative paths from the current working directory (e.g., `./dir/script.sh` not `cd dir && ./script.sh` or `/full/path/script.sh`); only change directories when tools explicitly require it
+- **Avoid `$()` command substitution**: Command substition guarantees permissions prompts.  Use pipes, temp scripts, `source` directly, or other alternatives instead.
+- **Specify if claims are confirmed facts**: When making a claim, always be clear if the information is a confirmed fact.  Assumptions or inference are natural, expected, and often helpful - just explain reasoning.  Confidently stating an an assumption as fact can be harmful to the User.
+- **Avoid working in unrelated directories on the filesystem**: Use the best available tool for the task at hand.  In no particular order, your work can use project files, online documentation, MCPs, clis, ect.  Accessing other parts of the filesystem (especially $HOME or any subdirectory) require proactive discussion with the User in advance.  Accessing those files causes permission prompts; when unexpected, these are disruptive, confusing, and worrying for the User.
