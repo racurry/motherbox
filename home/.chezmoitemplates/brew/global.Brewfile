@@ -5,7 +5,6 @@
 ## Formulae
 brew "mise"
 brew "chezmoi"
-brew "direnv"
 brew "fzf"
 brew "jq"
 brew "mas"
@@ -33,12 +32,11 @@ brew "tesseract"
 brew "wget"
 brew "worktrunk"
 
-# Global
+## Casks
 cask "1password-cli"
 cask "antigravity"
 cask "chatgpt"
 cask "claude"
-cask "flux-app"
 cask "ghostty"
 cask "google-chrome"
 cask "google-drive"
@@ -46,7 +44,6 @@ cask "hazel"
 cask "karabiner-elements"
 cask "keycastr"
 cask "libreoffice"
-cask "mos"
 cask "mutedeck"
 cask "notunes"
 cask "obsidian"
@@ -54,8 +51,6 @@ cask "ollama-app"
 cask "raycast"
 cask "sf-symbols"
 cask "shottr"
-cask "slack"
-cask "superhuman"
 cask "textbuddy"
 cask "the-unarchiver"
 cask "visual-studio-code"
@@ -63,8 +58,13 @@ cask "zed"
 cask "vivaldi"
 cask "zoom"
 
-# fonts
+## Fonts
 cask "font-fira-code-nerd-font"
 cask "font-fira-mono-nerd-font"
 cask "font-hack-nerd-font"
 cask "font-monoid"
+
+## Mac store apps
+mas "Numbers", id: 361304891
+mas "Keynote", id: 409183694
+mas "Pages", id: 409201541
