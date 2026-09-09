@@ -13,6 +13,38 @@ Get an API token
 4. Select which bases/workspaces the token can access
 5. Copy the token (shown only once)
 
+## Game Mode
+
+Motherbox forces Game Mode off at login using
+`xcrun gamepolicyctl game-mode set off`. The user LaunchAgent
+`net.aaroncurry.motherbox.game-mode-off` also runs when loaded by the chezmoi
+hook. It retries failed commands no more often than every 30 seconds and
+exits after success. Nightly maintenance reloads the job if it is missing
+from launchd.
+
+This requires full Xcode to be installed and selected with `xcode-select`.
+Check the effective state and policy with:
+
+```sh
+xcrun gamepolicyctl game-mode status
+launchctl print "gui/$(id -u)/net.aaroncurry.motherbox.game-mode-off"
+```
+
+Expect Game Mode to be off with a forced-off policy. A successful login job
+has a last exit code of `0`; it does not need to remain running. Output and
+errors are saved in `~/Library/Logs/motherbox-game-mode-off.log` and
+`~/Library/Logs/motherbox-game-mode-off.error.log`.
+
+The override is reported to reset at logout, which is why it is reapplied at
+each login. This job does not poll for policy changes after a successful run.
+To restore automatic policy for the current session:
+
+```sh
+xcrun gamepolicyctl game-mode set auto
+```
+
+The next login or explicit reload of the job will force it off again.
+
 ## Mail
 
 Copy a `message://` deep link to the selected email. Logic: `scripts/utils/copy-mail-link.applescript` (also wired as a Raycast command).

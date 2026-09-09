@@ -23,6 +23,7 @@ ensure_launchagents_loaded() {
 
 run_nightly() {
     "$REPO/scripts/bin/motherbox-status" --quiet
+    ensure_launchagents_loaded net.aaroncurry.motherbox.game-mode-off
 {{ if and (eq .profile "personal") (eq .machine "mini") }}
     ensure_launchagents_loaded net.aaroncurry.motherbox.obsidian-sync
     "$REPO/scripts/apps/claude-desktop/restart.sh"
