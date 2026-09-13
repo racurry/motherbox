@@ -3,3 +3,4 @@
 ## Casks
 
 cask "fujitsu-scansnap-home"
+cask "lm-studio"
