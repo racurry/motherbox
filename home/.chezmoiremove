@@ -7,3 +7,14 @@
 
 # Nothing sources ~/.profile here. Reappearing means an installer wrote to it.
 .profile
+
+# Keep lint and formatter policy project-local. Archived presets live in
+# phantom-zone/global-lint-configs; remove these global configs on every apply.
+.prettierrc.json5
+.prettierignore
+.editorconfig
+.mdformat.toml
+.markdownlint-cli2.jsonc
+.config/ruff/ruff.toml
+.config/yamllint/config
+.config/shellcheckrc
