@@ -62,5 +62,5 @@ cask "font-monoid"
 
 ## Mac store apps
 mas "Numbers", id: 361304891
-mas "Keynote", id: 409183694
-mas "Pages", id: 409201541
+mas "Keynote", id: 361285480
+mas "Pages", id: 361309726

@@ -42,5 +42,25 @@ for label in "${LABELS[@]}"; do
 
     echo "==> launchd: reloading $label"
     launchctl bootout "gui/${uid}/${label}" 2>/dev/null || true
-    launchctl bootstrap "gui/${uid}" "$plist"
+
+    # bootout is not synchronous: a KeepAlive agent's old process can still be
+    # tearing down when we get here, and bootstrap-ing while that's in flight
+    # fails with a cryptic "Input/output error: 5". Poll until launchd
+    # actually forgets the service before trying to load the new one.
+    for _ in $(seq 1 20); do
+        launchctl print "gui/${uid}/${label}" >/dev/null 2>&1 || break
+        sleep 0.25
+    done
+
+    # Even after that, bootstrap can still lose a race with launchd's
+    # internal bookkeeping, so retry a few times with backoff before giving up.
+    attempt=1
+    while ! launchctl bootstrap "gui/${uid}" "$plist"; do
+        if [[ $attempt -ge 5 ]]; then
+            echo "Failed to bootstrap $label after $attempt attempts" >&2
+            exit 1
+        fi
+        sleep "$attempt"
+        attempt=$((attempt + 1))
+    done
 done
