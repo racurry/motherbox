@@ -7,7 +7,7 @@
 set -euo pipefail
 
 show_help() {
-    cat <<'EOF'
+	cat <<'EOF'
 Usage: macos_prefs.sh [OPTIONS]
 
 Apply macOS preferences: system-level settings that require root, then
@@ -31,64 +31,64 @@ dock_autohide="true"
 dock_config="${XDG_CONFIG_HOME:-${HOME}/.config}/motherbox/macos_prefs.conf"
 
 if [[ -f "$dock_config" ]]; then
-    # This is a chezmoi-managed shell fragment containing only Dock defaults.
-    # shellcheck source=/dev/null
-    source "$dock_config"
+	# This is a chezmoi-managed shell fragment containing only Dock defaults.
+	# shellcheck source=/dev/null
+	source "$dock_config"
 fi
 
 while [[ $# -gt 0 ]]; do
-    case "$1" in
-    --dock-position)
-        [[ $# -ge 2 ]] || {
-            echo "Missing value for --dock-position" >&2
-            exit 1
-        }
-        dock_position="$2"
-        shift 2
-        ;;
-    --dock-position=*)
-        dock_position="${1#*=}"
-        shift
-        ;;
-    --dock-autohide)
-        [[ $# -ge 2 ]] || {
-            echo "Missing value for --dock-autohide" >&2
-            exit 1
-        }
-        dock_autohide="$2"
-        shift 2
-        ;;
-    --dock-autohide=*)
-        dock_autohide="${1#*=}"
-        shift
-        ;;
-    -h | --help | help)
-        show_help
-        exit 0
-        ;;
-    *)
-        echo "Unknown option: $1" >&2
-        echo >&2
-        show_help >&2
-        exit 1
-        ;;
-    esac
+	case "$1" in
+	--dock-position)
+		[[ $# -ge 2 ]] || {
+			echo "Missing value for --dock-position" >&2
+			exit 1
+		}
+		dock_position="$2"
+		shift 2
+		;;
+	--dock-position=*)
+		dock_position="${1#*=}"
+		shift
+		;;
+	--dock-autohide)
+		[[ $# -ge 2 ]] || {
+			echo "Missing value for --dock-autohide" >&2
+			exit 1
+		}
+		dock_autohide="$2"
+		shift 2
+		;;
+	--dock-autohide=*)
+		dock_autohide="${1#*=}"
+		shift
+		;;
+	-h | --help | help)
+		show_help
+		exit 0
+		;;
+	*)
+		echo "Unknown option: $1" >&2
+		echo >&2
+		show_help >&2
+		exit 1
+		;;
+	esac
 done
 
 case "$dock_position" in
 left | bottom | right) ;;
 *)
-    echo "Invalid Dock position: $dock_position (expected left, bottom, or right)" >&2
-    exit 1
-    ;;
+	echo "Invalid Dock position: $dock_position (expected left, bottom, or right)" >&2
+	exit 1
+	;;
 esac
 
 case "$dock_autohide" in
 true | false) ;;
 *)
-    echo "Invalid Dock autohide value: $dock_autohide (expected true or false)" >&2
-    exit 1
-    ;;
+	echo "Invalid Dock autohide value: $dock_autohide (expected true or false)" >&2
+	exit 1
+	;;
 esac
 
 # ==========================================================================
@@ -266,9 +266,9 @@ defaults write com.apple.screencapture type -string "png"
 
 echo "Set screensaver"
 defaults -currentHost write com.apple.screensaver moduleDict -dict \
-    path -string "/System/Library/Screen Savers/Flurry.saver" \
-    moduleName -string "Flurry" \
-    type -int 0
+	path -string "/System/Library/Screen Savers/Flurry.saver" \
+	moduleName -string "Flurry" \
+	type -int 0
 
 echo "Disable screensaver idle timeout"
 defaults -currentHost write com.apple.screensaver idleTime -int 0
@@ -278,6 +278,9 @@ defaults write .GlobalPreferences com.apple.sound.beep.sound "/System/Library/So
 
 echo "Show battery percentage"
 defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
+
+echo "Default TextEdit to plain text"
+defaults write com.apple.TextEdit RichText -int 0
 
 echo "Refresh settings"
 killall "SystemUIServer" 2>/dev/null || true
