@@ -6,6 +6,11 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
 [diff]
     pager = "hunk pager"
 
+# Refresh the shell's cached drift summary so it reflects this apply, not last night's check
+[hooks.apply.post]
+    command = {{ joinPath .chezmoi.workingTree "scripts/bin/motherbox-status" | quote }}
+    args = ["--quiet"]
+
 [[textconv]]
     pattern = "**/*.json"
     command = "jq"
