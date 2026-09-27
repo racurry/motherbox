@@ -426,7 +426,8 @@ wt --config-set 'list.json-schema=2' list --format=json \
 #
 # See `wt hook` (https://worktrunk.dev/hook/) for hook types, execution order, template variables, and examples. User hooks apply to all projects; project hooks (https://worktrunk.dev/config/#project-configuration) apply only to that repository.
 
-# On worktree creation, copy gitignored files (deps, envs) from the main
-# worktree in the background. Excludes configured in [step.copy-ignored].
-[post-start]
+# Copy missing gitignored files from the primary worktree before project
+# pre-start hooks and --execute run. Project hooks can then generate their own
+# settings. Existing destination files are preserved; exclusions are above.
+[pre-start]
 copy = "wt step copy-ignored"

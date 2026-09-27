@@ -6,5 +6,10 @@ export PATH="$PATH:$HOME/.antigravity/antigravity/bin"
 
 export PATH="$HOME/.opencode/bin:$PATH"
 
+export PATH="$HOME/.grok/bin:$PATH"
+
+# LM Studio CLI - lms.
+export PATH="$PATH:$HOME/.lmstudio/bin"
+
 # Rust toolchain shims. Prepended so they win over a system rustc.
 export PATH="$CARGO_HOME/bin:$PATH"

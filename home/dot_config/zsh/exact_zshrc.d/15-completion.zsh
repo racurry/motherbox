@@ -1,4 +1,8 @@
 autoload -Uz add-zsh-hook
+
+# fpath additions must precede compinit.
+fpath=("$HOME/.grok/completions/zsh" $fpath)
+
 autoload -Uz compinit
 compinit -C
 

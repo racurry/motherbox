@@ -4,8 +4,17 @@
 sourceDir = {{ .chezmoi.sourceDir | quote }}
 
 [diff]
-    command = "chezmoi-diff-better"
-    args = [{{ "{{ .Destination }}" | quote }}, {{ "{{ .Target }}" | quote }}]
+    pager = "hunk pager"
+
+[[textconv]]
+    pattern = "**/*.json"
+    command = "jq"
+    args = ["-S", "."]
+
+# JSONC with comments; jq would fail on it
+[[textconv]]
+    pattern = "**/.config/zed/settings.json"
+    command = "cat"
 
 [data]
     profile = {{ $profile | quote }}
