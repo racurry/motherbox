@@ -1,8 +1,8 @@
-# Project helper things ESLint
+# Project tooling
 
 ## General rules
 
-- devcontainers are the default for any project.  If they can be used reasonably, use them.  Run them on Orbstack for personal projects, colima for work.
+- Devcontainers are the default for any project.  If they can be used reasonably, use them.  Run them on Orbstack for personal projects, Colima for work.
 - Dependencies are declared in the standard files for each language, and lock files are committed to the repository to ensure reproducibility.  Eg:
   - pyproject.toml with uv.lock for Python
   - package.json with pnpm-lock.yaml for Node

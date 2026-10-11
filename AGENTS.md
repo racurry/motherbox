@@ -33,3 +33,10 @@
 - Files under `home/` are our definitive source state. 
 - Only apply changes with `chezmoi apply`; Never edit the target in `~` directly or copy a file into place.
 - Only apply changes with User approval
+
+## Using worktrees
+
+Chezmoi's installed global configuration defines where its source files live: the primary checkout location for the repo. That means:
+
+- You cannot use chezmoi tooling to verify the outcome; it doesn't look at a worktree's changeset.
+- You must not try to apply changes directly; do a reasonable self-review of changes and tell the user to apply once the tree is merged.
