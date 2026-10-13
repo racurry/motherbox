@@ -8,10 +8,8 @@ uv = "latest"
 # Global tools - node
 # These would otherwise pull a Homebrew-managed Node runtime, or need fresher
 # releases than Homebrew provides and do not have a first-party installer.
-"npm:@google/gemini-cli" = "latest"
 "npm:skills" = "latest"
 "npm:@devcontainers/cli" = "latest"
-"npm:@tobilu/qmd" = { version = "2.8.3", allow_builds = ["better-sqlite3", "node-llama-cpp"] }
 "npm:@agentclientprotocol/claude-agent-acp" = "latest"
 # better-sqlite3 is a native module; pnpm blocks build scripts by default, so
 # whitelist its build to get the compiled binding (needs pnpm >= 10.4.0).
