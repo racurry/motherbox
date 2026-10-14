@@ -28,8 +28,8 @@ Utility drawer for managing my computers. It includes scripts, notes, configurat
    - Accept the automated config from 1Password.
    - Check "Integrate with 1Password CLI".
 4. Sign into the Mac App Store app
-5. Clone: `git clone git@github.com:racurry/motherbox.git ~/code/me/motherbox`
-6. Run: `cd ~/code/me/motherbox && ./mother`
+5. Clone: `git clone git@github.com:racurry/motherbox.git ~/dev/apps/motherbox`
+6. Run: `cd ~/dev/apps/motherbox && ./mother`
 
 ## words
 

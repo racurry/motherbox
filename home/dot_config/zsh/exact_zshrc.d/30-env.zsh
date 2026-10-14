@@ -14,4 +14,4 @@ export OPENSCADPATH="$HOME/OpenSCAD/Libraries"
 # Local secrets live in ~/.config/zsh/env.local.zsh, which .zshenv sources
 # before this file. Non-secret shared environment belongs in this managed zsh
 # config.
-export MOTHERBOX_ROOT="$HOME/code/me/motherbox"
+export MOTHERBOX_ROOT="$HOME/dev/apps/motherbox"
