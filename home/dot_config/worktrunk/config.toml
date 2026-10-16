@@ -55,7 +55,7 @@
 #
 # `~` expands to the home directory. Relative paths resolve from `repo_path`.
 
-# .worktrees directory, up one dir from the repo  (`~/code/me/.worktrees/myproject.feature-auth`)
+# .worktrees directory, up one dir from the repo  (`~/dev/.worktrees/myproject.feature-auth`)
 worktree-path = "{{ repo_path }}/../.worktrees/{{ repo }}.{{ branch | sanitize }}"
 
 #

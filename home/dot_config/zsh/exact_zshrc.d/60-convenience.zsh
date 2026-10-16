@@ -1,11 +1,10 @@
 # Directory shortcuts, as zsh named directories
-hash -d code=~/code
-hash -d me=~/code/me
+hash -d dev=~/dev
 hash -d mbox=$MOTHERBOX_ROOT
 hash -d inbox=~/Documents/000_Inbox
 hash -d icloud=~/iCloud
 hash -d iCloud=~/iCloud # Both cases for convenience.
-hash -d nlp=~/code/me/neat-little-package
+hash -d nlp=~/dev/neat-little-package
 hash -d memex=~/Notes/Memex
 
 # Shell convenience.

@@ -12,8 +12,8 @@ show_help() {
     cat <<'EOF'
 Usage: folders.sh [--help]
 
-Create the standard folder structure under ~, ~/code and ~/Documents. The
-firsthand set is created only when the active profile is "firsthand". The
+Create the standard folder structure under ~, ~/dev and ~/Documents. The
+firsthand set (~/fh) is created only when the active profile is "firsthand". The
 profile comes from chezmoi's config (~/.config/chezmoi/chezmoi.toml) and can be
 overridden with MOTHERBOX_PROFILE. Idempotent; never deletes anything.
 EOF
@@ -30,19 +30,14 @@ esac
 # The declarative list. Paths are relative to the base dir each array names.
 # ==========================================================================
 
-# ~/code (every profile)
-CODE=(
-    me
-    me/_archive
-    me/_scratch
+# ~/dev — personal projects (every profile)
+DEV=(
     vendor
 )
 
-# ~/code (profile "firsthand" only)
-CODE_FIRSTHAND=(
-    firsthand
-    firsthand/_archive
-    firsthand/_scratch
+# ~ (profile "firsthand" only)
+HOME_DIRS_FIRSTHAND=(
+    fh
 )
 
 # ~/Documents
@@ -95,9 +90,9 @@ make_dirs() {
 
 echo "==> Folders: ensure structure (profile: ${profile})"
 
-make_dirs "$HOME/code" "${CODE[@]}"
+make_dirs "$HOME/dev" "${DEV[@]}"
 if [[ "$profile" == "firsthand" ]]; then
-    make_dirs "$HOME/code" "${CODE_FIRSTHAND[@]}"
+    make_dirs "$HOME" "${HOME_DIRS_FIRSTHAND[@]}"
 fi
 make_dirs "$HOME/Documents" "${DOCUMENTS[@]}"
 make_dirs "$HOME" "${HOME_DIRS[@]}"
