@@ -149,6 +149,13 @@ resize_pane_right = "super+ctrl+right"
 # width = "80%"
 # height = "80%"
 
+# prefix+e is herdr's default edit_scrollback, so TTT takes prefix+shift+e.
+[[keys.command]]
+key = "prefix+shift+e"
+type = "shell"
+command = "herdr plugin pane open --plugin ttt.editor --entrypoint editor"
+description = "open TTT editor"
+
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]

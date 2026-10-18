@@ -103,6 +103,10 @@ keybind = ghostty/cmd+ctrl+arrow_down=resize_split:down,10
 keybind = ghostty/cmd+ctrl+arrow_left=resize_split:left,10
 keybind = ghostty/cmd+ctrl+arrow_right=resize_split:right,10
 
+# Command palette (cmd+shift+p) entries for choosing who owns the keys above.
+command-palette-entry = title:Shortcuts: Ghostty,description:Ghostty handles tab and split shortcuts in this terminal.,action:activate_key_table:ghostty
+command-palette-entry = title:Shortcuts: herdr,description:herdr receives tab and split shortcuts in this terminal.,action:deactivate_all_key_tables
+
 
 ##### THEME #####
 
