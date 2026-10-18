@@ -55,8 +55,8 @@
 #
 # `~` expands to the home directory. Relative paths resolve from `repo_path`.
 
-# .worktrees directory, up one dir from the repo  (`~/dev/.worktrees/myproject.feature-auth`)
-worktree-path = "{{ repo_path }}/../.worktrees/{{ repo }}.{{ branch | sanitize }}"
+# Worktrees grouped by repository under ~/.worktrees.
+worktree-path = "~/.worktrees/{{ repo }}/{{ branch | sanitize }}"
 
 #
 # ## LLM commit messages

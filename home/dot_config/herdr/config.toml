@@ -169,8 +169,8 @@ description = "open TTT editor"
 # headless_cols = 120
 # headless_rows = 40
 
-# [worktrees]
-# directory = "~/.herdr/worktrees"
+[worktrees]
+directory = "~/.worktrees"
 
 [ui]
 # Sidebar width (auto-scaled based on workspace names, this sets the default)

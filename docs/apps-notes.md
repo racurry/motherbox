@@ -13,6 +13,22 @@ Get an API token
 4. Select which bases/workspaces the token can access
 5. Copy the token (shown only once)
 
+## Codex
+
+After installing the Codex CLI, configure its worktree directory from the
+Motherbox checkout:
+
+```sh
+python3 scripts/apps/codex/configure-worktrees.py
+```
+
+This sets the desktop app's worktree root to `~/.worktrees/codex`. The script
+uses Codex's [configuration API](https://learn.chatgpt.com/docs/app-server#config-rpc-examples-for-app-settings)
+to update only `desktop.git-worktree-root`; Codex retains control of the rest
+of `~/.codex/config.toml`. It is safe to rerun.
+
+
+
 ## Game Mode
 
 Motherbox forces Game Mode off at login using
@@ -99,6 +115,22 @@ git clone https://github.com/BelfrySCAD/BOSL2.git ~/OpenSCAD/Libraries/BOSL2
 
 git -C ~/OpenSCAD/Libraries/BOSL2 pull # update BOSL2
 ```
+
+## Orca
+
+In **Settings → General → Workspace**:
+
+- Set **Workspace Directory** to the absolute path of `~/.worktrees`
+  (for example, `/Users/aaron/.worktrees`).
+- Enable **Nest Workspaces**.
+
+New worktrees use `~/.worktrees/<repo>/<workspace-name>`. Leave per-project
+worktree location overrides empty to inherit the global directory.
+
+The CLI's `orca project setup-update --worktree-base-path` sets a
+per-project host setup override; it does not set the global default.
+
+
 
 ## Rayccast
 
