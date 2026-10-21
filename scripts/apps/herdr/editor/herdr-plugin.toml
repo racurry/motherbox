@@ -1,0 +1,18 @@
+id = "motherbox.ttt"
+name = "Motherbox TTT"
+version = "0.1.0"
+min_herdr_version = "0.9.5"
+description = "Open TTT with right-click forwarding"
+platforms = ["macos"]
+
+[[actions]]
+id = "open"
+title = "Open TTT"
+contexts = ["workspace"]
+command = ["sh", "-c", 'exec "$HERDR_BIN_PATH" plugin pane open --plugin motherbox.ttt --entrypoint editor --env "MOTHERBOX_TTT_CONTEXT=$HERDR_PLUGIN_CONTEXT_JSON" --focus']
+
+[[panes]]
+id = "editor"
+title = "TTT"
+placement = "tab"
+command = ["sh", "-c", 'exec python3 "$HERDR_PLUGIN_ROOT/editor.py"']

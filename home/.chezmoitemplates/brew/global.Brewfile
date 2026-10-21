@@ -3,6 +3,8 @@
 # Global: every profile, every machine.
 
 ## Formulae
+tap "eugenioenko/ttt"
+brew "eugenioenko/ttt/ttt"
 brew "mise"
 brew "chezmoi"
 brew "fzf"

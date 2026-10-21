@@ -1,0 +1,10 @@
+#!/bin/bash
+# Register Herdr plugins after brew, mise, and native CLI installation.
+# Checkout: {{ .chezmoi.workingTree }}
+# Setup: {{ include (joinPath .chezmoi.workingTree "scripts/apps/herdr/setup.sh") | sha256sum }}
+# Plugin: {{ include (joinPath .chezmoi.workingTree "scripts/apps/herdr/editor/herdr-plugin.toml") | sha256sum }}
+# Launcher: {{ include (joinPath .chezmoi.workingTree "scripts/apps/herdr/editor/editor.py") | sha256sum }}
+# Config: {{ include "dot_config/herdr/config.toml" | sha256sum }}
+set -euo pipefail
+
+"$CHEZMOI_WORKING_TREE/scripts/apps/herdr/setup.sh"

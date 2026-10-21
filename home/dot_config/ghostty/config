@@ -34,6 +34,8 @@ shell-integration = detect
 # Tabs, splits, and pane navigation belong to herdr (home/dot_config/herdr/config.toml).
 # Unbinding passes these chords through to herdr instead of making Ghostty tabs/splits.
 keybind = cmd+t=unbind
+# Forward Cmd+K to herdr's command palette.
+keybind = cmd+k=csi:107;9u
 keybind = cmd+w=unbind
 keybind = cmd+alt+w=unbind
 keybind = cmd+shift+[=unbind
@@ -57,6 +59,9 @@ keybind = cmd+8=unbind
 keybind = cmd+9=unbind
 keybind = cmd+d=unbind
 keybind = cmd+shift+d=unbind
+# Explicitly forward Cmd+Shift+\ so macOS's tab overview cannot consume it.
+# Kitty keyboard protocol: backslash (92), Shift + Super + 1 (10).
+keybind = cmd+shift+backslash=csi:92;10u
 keybind = cmd+[=unbind
 keybind = cmd+]=unbind
 keybind = cmd+shift+enter=unbind
@@ -74,6 +79,7 @@ keybind = cmd+ctrl+arrow_right=unbind
 keybind = cmd+shift+semicolon=activate_key_table:ghostty
 keybind = ghostty/cmd+shift+semicolon=deactivate_key_table
 keybind = ghostty/cmd+t=new_tab
+keybind = ghostty/cmd+k=clear_screen
 keybind = ghostty/cmd+w=close_surface
 keybind = ghostty/cmd+alt+w=close_tab:this
 keybind = ghostty/cmd+shift+[=previous_tab

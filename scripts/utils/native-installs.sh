@@ -5,14 +5,14 @@
 # chezmoi onchange hook.
 set -euo pipefail
 
-ALL_APPS=(claude-code codex antigravity atuin rustup)
+ALL_APPS=(claude-code codex antigravity atuin rustup herdr)
 
 show_help() {
     cat <<'EOF'
 Usage: native-installs.sh [APP...] [--help]
 
 Run the official installer for each APP. With no APP, runs all of them:
-claude-code, codex, antigravity, atuin, rustup.
+claude-code, codex, antigravity, atuin, rustup, herdr.
 
   claude-code   No-op when `claude` is present — the CLI self-updates.
   codex         Installs or updates; the installer owns ~/.codex and
@@ -25,6 +25,8 @@ claude-code, codex, antigravity, atuin, rustup.
                 updates. Installs rustup, cargo, and the stable toolchain
                 into $CARGO_HOME and $RUSTUP_HOME; shell init comes from
                 the managed zshrc.d fragment.
+  herdr         Installs to ~/.local/bin with Herdr's official installer.
+                No-op when that binary exists; `herdr update` owns updates.
 EOF
 }
 
@@ -74,6 +76,16 @@ install_atuin() {
     curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh -s -- --non-interactive
 }
 
+install_herdr() {
+    if [[ -x "$HOME/.local/bin/herdr" ]]; then
+        echo "==> Herdr already installed; skipping"
+        return 0
+    fi
+
+    echo "==> Installing Herdr"
+    curl -fsSL https://herdr.dev/install.sh | HERDR_INSTALL_DIR="$HOME/.local/bin" sh
+}
+
 install_rustup() {
     # Bash never reads ~/.zshenv, so mirror the XDG locations it exports.
     local xdg_data="${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -110,6 +122,7 @@ for app in "${apps[@]}"; do
     antigravity) install_antigravity ;;
     atuin) install_atuin ;;
     rustup) install_rustup ;;
+    herdr) install_herdr ;;
     *)
         printf "Unknown app: %s\n\n" "$app" >&2
         show_help >&2

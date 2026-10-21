@@ -1,5 +1,5 @@
 # Personal scripts and tools.
-export PATH="$PATH:$HOME/.config/motherbox/bin:$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH:$HOME/.config/motherbox/bin"
 
 # Google's Antigravity - agry.
 export PATH="$PATH:$HOME/.antigravity/antigravity/bin"
