@@ -431,3 +431,11 @@ wt --config-set 'list.json-schema=2' list --format=json \
 # settings. Existing destination files are preserved; exclusions are above.
 [pre-start]
 copy = "wt step copy-ignored"
+
+# Inside Herdr, show the destination worktree as a grouped workspace and focus it.
+[post-switch]
+herdr = '"$MOTHERBOX_ROOT/scripts/apps/herdr/worktrees/worktrees.sh" open {{ worktree_path }}'
+
+# Close the worktree's Herdr workspace before its directory disappears.
+[pre-remove]
+herdr = '"$MOTHERBOX_ROOT/scripts/apps/herdr/worktrees/worktrees.sh" close {{ worktree_path }}'

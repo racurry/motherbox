@@ -1,0 +1,23 @@
+id = "motherbox.worktrees"
+name = "Motherbox Worktrees"
+version = "0.1.0"
+min_herdr_version = "0.9.5"
+description = "Run worktrunk setup for new worktrees and keep them in the sidebar"
+platforms = ["macos"]
+
+# Herdr's "New worktree" only runs git; hand setup to worktrunk's hooks.
+[[events]]
+on = "worktree.created"
+command = ["bash", "worktrees.sh", "created"]
+
+[[actions]]
+id = "sync"
+title = "Worktrees: open all in sidebar"
+contexts = ["workspace"]
+command = ["bash", "worktrees.sh", "sync"]
+
+[[panes]]
+id = "setup"
+title = "worktree setup"
+placement = "tab"
+command = ["sh", "-c", 'exec bash "$HERDR_PLUGIN_ROOT/worktrees.sh" setup']

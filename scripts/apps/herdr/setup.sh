@@ -7,9 +7,9 @@ case "${1:-}" in
         cat <<'EOF'
 Usage: setup.sh [--help]
 
-Link Motherbox's TTT plugin and install the configured Herdr Palette revision
-when missing or different. Register the TTT plugin and reload running sessions.
-Requires Herdr's native install, TTT, Python 3, jq, Git, and Rust/Cargo.
+Link Motherbox's TTT and worktree plugins and install the configured Herdr
+Palette revision when missing or different, then reload running sessions.
+Requires Herdr's native install, TTT, worktrunk, Python 3, jq, Git, and Rust/Cargo.
 Run after chezmoi has applied the configs and installed those dependencies.
 Does not start, stop, or restart Herdr sessions.
 EOF
@@ -19,13 +19,13 @@ EOF
     *) echo "Unknown argument: $1" >&2; exit 2 ;;
 esac
 
-plugin_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/editor" && pwd)"
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 export CARGO_HOME="${CARGO_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/cargo}"
 export RUSTUP_HOME="${RUSTUP_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/rustup}"
 # chezmoi scripts do not load interactive zsh's PATH or mise activation.
 export PATH="$HOME/.local/bin:$CARGO_HOME/bin:${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims:/opt/homebrew/bin:$PATH"
 
-for tool in herdr ttt python3 jq git cargo; do
+for tool in herdr ttt wt python3 jq git cargo; do
     if ! command -v "$tool" >/dev/null 2>&1; then
         echo "Missing $tool; complete the brew, mise, and native installer steps first." >&2
         exit 1
@@ -42,7 +42,9 @@ if ! jq -e --arg ref "$palette_ref" '
 ' <<< "$palette" >/dev/null; then
     herdr plugin install ramarivera/herdr-palette --ref "$palette_ref" --yes
 fi
-herdr plugin link "$plugin_dir" --enabled
+for plugin in editor worktrees; do
+    herdr plugin link "$script_dir/$plugin" --enabled
+done
 herdr config check
 
 # Reload only existing servers. An empty session list is normal on a new Mac.
