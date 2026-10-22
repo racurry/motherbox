@@ -2,7 +2,8 @@
   "alwaysThinkingEnabled": true,
   "enableAllProjectMcpServers": true,
   "env": {
-    "CLAUDE_CODE_TMPDIR": "/Users/aaron/.claude/tmp"
+    "CLAUDE_CODE_TMPDIR": "/Users/aaron/.claude/tmp",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "statusLine": {
     "type": "command",
