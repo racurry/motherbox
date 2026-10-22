@@ -11,7 +11,7 @@
     "padding": 1
   },
   "permissions": {
-    "defaultMode": "acceptEdits",
+    "defaultMode": "auto",
     "allow": [
       "WebSearch",
       "mcp__ide__getDiagnostics",
@@ -129,6 +129,7 @@
     ],
     "deny": [],
     "ask": [
+      "Bash(dangerouslyDisableSandbox:true)",
       "Bash(git branch -d:*)",
       "Bash(git branch -D:*)",
       "Bash(npm install -g:*)",
@@ -138,6 +139,32 @@
       "Bash(uv tool install:*)",
       "Bash(uv tool uninstall:*)"
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": true,
+    "enableWeakerNetworkIsolation": true,
+    "filesystem": {
+      "allowWrite": [
+        "~/.worktrees"
+      ]
+    },
+    "network": {
+      "allowUnixSockets": [
+        "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+      ],
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "lfs.github.com",
+        "*.githubusercontent.com",
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org"
+      ]
+    }
   },
   "attribution": {
     "commit": "",

@@ -429,8 +429,13 @@ wt --config-set 'list.json-schema=2' list --format=json \
 # Copy missing gitignored files from the primary worktree before project
 # pre-start hooks and --execute run. Project hooks can then generate their own
 # settings. Existing destination files are preserved; exclusions are above.
+#
+# Track origin/<branch> up front so `git push` from a sandboxed agent session
+# in the worktree publishes it with an upstream; the Claude Code sandbox blocks
+# worktree sessions from writing .git/config, so `git push -u` can't set it.
 [pre-start]
 copy = "wt step copy-ignored"
+upstream = 'git remote get-url origin >/dev/null 2>&1 || exit 0; git config --get branch.{{ branch }}.remote >/dev/null || { git config branch.{{ branch }}.remote origin && git config branch.{{ branch }}.merge refs/heads/{{ branch }}; }'
 
 # Inside Herdr, show the destination worktree as a grouped workspace and focus it.
 [post-switch]
