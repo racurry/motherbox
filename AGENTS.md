@@ -40,3 +40,28 @@ Chezmoi's installed global configuration defines where its source files live: th
 
 - You cannot use chezmoi tooling to verify the outcome; it doesn't look at a worktree's changeset.
 - You must not try to apply changes directly; do a reasonable self-review of changes and tell the user to apply once the tree is merged.
+
+## Cursor Cloud specific instructions
+
+Cloud agents run Ubuntu on x86_64. `./mother setup` is the Mac setup (Touch ID sudo, Homebrew at `/opt/homebrew`, `chezmoi apply`, LaunchAgents, `defaults`). Run that on a Mac.
+
+The cloud image has `shellcheck`, `jq`, `lsof`, Ruby, current `chezmoi`, and `uv` on `PATH`. There is no dev server to start.
+
+Checks that run here:
+
+- `./mother help`
+- `scripts/utils/folders.sh` creates the standard directories under `$HOME`. `MOTHERBOX_PROFILE=firsthand` also creates `~/fh`. It does not need chezmoi.
+- `bash -n` on shell scripts. Skip `*.tmpl` files; they contain chezmoi actions.
+- `shellcheck -S warning` is clean on the raw bash scripts. Plain `shellcheck` still reports existing info and style findings.
+- `uv run scripts/bin/whats-on-port <port>` and `ruby scripts/bin/swap_extension`.
+- Render a chezmoi template without applying it:
+
+```bash
+chezmoi execute-template \
+  --source="$PWD/home" \
+  --working-tree="$PWD" \
+  --override-data '{"profile":"personal","machine":"cloud"}' \
+  --file home/.chezmoiscripts/run_onchange_after_50-launchagents.sh.tmpl
+```
+
+Use `machine=mini` to include the mini-only branches. `--promptString` does not fill `promptStringOnce` in this chezmoi version; `--override-data` does. Do not `chezmoi apply` from a cloud agent. The apply hooks call macOS scripts. `chezmoi doctor` reports a missing source dir until chezmoi is initialized, which this environment does not do.
