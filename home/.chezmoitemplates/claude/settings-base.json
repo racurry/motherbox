@@ -1,5 +1,6 @@
 {
   "alwaysThinkingEnabled": true,
+  "autoMemoryEnabled": false,
   "enableAllProjectMcpServers": true,
   "env": {
     "CLAUDE_CODE_TMPDIR": "/Users/aaron/.claude/tmp",
