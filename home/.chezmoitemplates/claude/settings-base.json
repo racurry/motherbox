@@ -1,6 +1,12 @@
 {
   "alwaysThinkingEnabled": true,
   "autoMemoryEnabled": false,
+  "disableArtifact": true,
+  "disableBundledSkills": true,
+  "disableClaudeAiConnectors": true,
+  "disableRemoteControl": true,
+  "disableWorkflows": true,
+  "syncClaudeAiSkills": false,
   "enableAllProjectMcpServers": true,
   "env": {
     "CLAUDE_CODE_TMPDIR": "/Users/aaron/.claude/tmp",
@@ -128,7 +134,19 @@
       "Skill(box-factory:status-line)",
       "SlashCommand(/mr-sparkle:lint-md:*)"
     ],
-    "deny": [],
+    "deny": [
+      "EnterPlanMode",
+      "DesignSync",
+      "NotebookEdit",
+      "ScheduleWakeup",
+      "CronCreate",
+      "CronDelete",
+      "CronList",
+      "RemoteTrigger",
+      "PushNotification",
+      "ListAgents",
+      "ReadNotifications"
+    ],
     "ask": [
       "Bash(dangerouslyDisableSandbox:true)",
       "Bash(git branch -d:*)",
