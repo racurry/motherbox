@@ -1,7 +1,7 @@
 {
   "version": 1,
   "appearance": {
-    "icons": "none",
+    "icons": "nerd-font",
     "chevrons": {
       "collapsed": "▶",
       "expanded": "▼"
@@ -29,7 +29,7 @@
     "focusOnOpen": false,
     "gutterStyle": "compact",
     "borderStyle": "default",
-    "bracketPairColorization": false,
+    "bracketPairColorization": true,
     "transparentBackground": false
   },
   "search": {
