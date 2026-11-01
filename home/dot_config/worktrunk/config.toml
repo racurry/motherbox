@@ -257,7 +257,7 @@ exclude = [
 #
 [aliases]
 cleanup = '''
-wt --config-set 'list.json-schema=2' list --format=json \
+wt --config-set 'list.json-schema=2' list --branches --format=json \
   | jq -r '.items[] | select(.display.state == "integrated" or .display.state == "empty") | .branch // empty' \
   | xargs -r wt remove --foreground {{ args }}
 '''
@@ -456,6 +456,7 @@ upstream = 'git remote get-url origin >/dev/null 2>&1 || exit 0; git config --ge
 [post-switch]
 herdr = '"$MOTHERBOX_ROOT/scripts/apps/herdr/worktrees/worktrees.sh" open {{ worktree_path }}'
 
-# Close the worktree's Herdr workspace before its directory disappears.
-[pre-remove]
+# Close the worktree's Herdr workspace once it's removed. Runs after removal so
+# closing the pane can't interrupt `wt merge`/`wt remove` run from inside it.
+[post-remove]
 herdr = '"$MOTHERBOX_ROOT/scripts/apps/herdr/worktrees/worktrees.sh" close {{ worktree_path }}'

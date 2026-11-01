@@ -10,7 +10,8 @@ Keep Herdr's sidebar and worktrunk's setup in step for git worktrees.
 
 Commands:
   open PATH   Open PATH as a workspace grouped under its repo, and focus it.
-  close PATH  Close the Herdr workspace open on PATH, if any.
+  close PATH  Close the Herdr workspace for worktree PATH, if any. PATH may
+              already be deleted.
   sync [DIR]  Open every worktree of DIR's repo that Herdr does not show yet.
   created     (plugin event) Open a setup tab in a worktree Herdr just created.
   setup       (plugin pane) Run worktrunk's pre-start and post-start hooks here.
@@ -52,13 +53,18 @@ cmd_open() {
     open_worktree "$1" --focus
 }
 
+# PATH is usually already deleted: Herdr keeps the workspace and its recorded
+# checkout_path after the directory is gone, so match on that.
 cmd_close() {
     in_herdr || return 0
-    local workspace_id
-    workspace_id="$(worktree_entry "$1" \
-        | jq -r 'select(.is_linked_worktree) | .open_workspace_id // empty')"
-    [[ -n "$workspace_id" ]] && herdr workspace close "$workspace_id" >/dev/null
-    return 0
+    local path="${1%/}" workspace_id
+    [[ -e "$path" ]] && path="$(realpath "$path")"
+    herdr workspace list | jq -r --arg path "$path" '.result.workspaces[]
+        | select(.worktree.is_linked_worktree and .worktree.checkout_path == $path)
+        | .workspace_id' \
+    | while IFS= read -r workspace_id; do
+        herdr workspace close "$workspace_id" >/dev/null
+    done
 }
 
 cmd_sync() {
@@ -98,8 +104,7 @@ cmd_setup() {
 
 case "${1:-}" in
     open|close) [[ $# -eq 2 ]] || { usage >&2; exit 2; }; "cmd_$1" "$2" ;;
-    sync) cmd_sync "${2:-}" ;;
-    created|setup) "cmd_$1" ;;
+    sync) cmd_sync "${2:-}" ;;    created|setup) "cmd_$1" ;;
     -h|--help) usage ;;
     *) usage >&2; exit 2 ;;
 esac

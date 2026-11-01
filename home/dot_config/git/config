@@ -95,10 +95,10 @@
   # ─────────────────────────────────────────────────────────────
   # Delete local branches that have been merged
   cleanup-merged = !git branch --merged | grep -v -e $(git default-branch) -e '\\*' | xargs -n 1 git branch -d 2>/dev/null || true
-  # Delete local branches whose remotes are gone
-  cleanup-gone = !git branch --format='%(refname:short) %(upstream:track)' | grep '\\[gone\\]' | awk '{print $1}' | xargs -r git branch -D
-  # Run both cleanups and prune remotes
-  cleanup = !git cleanup-merged && git cleanup-gone && git remote prune origin
+  # Remove worktrees and branches whose changes are already in the default
+  # branch, squash merges included. Never touches unmerged or dirty work.
+  # Worktrees go first: git won't delete a branch that's checked out.
+  cleanup = "!{ ! command -v wt >/dev/null || wt cleanup; } && git cleanup-merged && git remote prune origin"
 
   # ─────────────────────────────────────────────────────────────
   # Nuclear Options
