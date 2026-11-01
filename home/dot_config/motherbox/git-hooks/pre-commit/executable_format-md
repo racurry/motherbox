@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# pre-commit hook: format staged Markdown with markdownlint-cli2.
+#
+# Fully staged files are formatted and restaged. Files that also have unstaged
+# changes are formatted in the working tree only; the commit stops so you can
+# review and stage them.
+#
+# Uses ~/.config/motherbox/formatters/markdownlint-cli2.jsonc as the base
+# config. A markdownlint config inside the repo takes precedence.
+# Enable per repo with: git addhook format-md
+set -euo pipefail
+
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+  sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
+  exit 0
+fi
+
+config="$HOME/.config/motherbox/formatters/markdownlint-cli2.jsonc"
+
+if ! command -v markdownlint-cli2 >/dev/null; then
+  echo "format-md: markdownlint-cli2 is not on PATH (install it with mise)." >&2
+  exit 1
+fi
+
+files=()
+declare -A partial
+while IFS= read -r -d '' f; do
+  [[ -f $f ]] || continue
+  files+=("$f")
+  git --literal-pathspecs diff --quiet -- "$f" || partial[$f]=1
+done < <(git diff --cached --name-only --diff-filter=ACMR -z -- '*.md' '*.markdown')
+
+((${#files[@]})) || exit 0
+
+declare -A before
+for f in "${files[@]}"; do before[$f]=$(git hash-object -- "$f"); done
+
+# Leading ":" makes markdownlint-cli2 treat each argument as a literal path.
+status=0
+output=$(markdownlint-cli2 --fix --config "$config" "${files[@]/#/:}" 2>&1) || status=$?
+# Exit 1 means unfixable lint findings remain; only formatting matters here.
+if ((status > 1)); then
+  echo "$output" >&2
+  echo "format-md: markdownlint-cli2 failed." >&2
+  exit 1
+fi
+
+blocked=()
+for f in "${files[@]}"; do
+  [[ $(git hash-object -- "$f") == "${before[$f]}" ]] && continue
+  if [[ -n ${partial[$f]:-} ]]; then
+    blocked+=("$f")
+  else
+    git --literal-pathspecs add -- "$f"
+    echo "format-md: formatted $f"
+  fi
+done
+
+if ((${#blocked[@]})); then
+  echo "format-md: formatted files that also have unstaged changes:" >&2
+  printf '  %s\n' "${blocked[@]}" >&2
+  echo "Review and stage them, then commit again." >&2
+  exit 1
+fi

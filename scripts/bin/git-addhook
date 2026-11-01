@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# git addhook - turn motherbox git hooks on or off in the current repo.
+set -euo pipefail
+
+hooks_dir="$HOME/.config/motherbox/git-hooks"
+
+usage() {
+  cat <<EOF
+Usage: git addhook [<name>]
+       git addhook --remove <name>
+
+Turn motherbox git hooks on or off for the current repo. The setting goes in
+the repo's .git/config, so it is never committed and every worktree shares it.
+
+  git addhook                  list available hooks and which are on here
+  git addhook <name>           turn a hook on
+  git addhook --remove <name>  turn a hook off
+
+Hooks live in $hooks_dir/<event>/<name>.
+They run alongside any other hooks the repo has. To see everything that runs
+for an event: git hook list pre-commit
+EOF
+}
+
+# Prints "<event> <path>" for the hook called $1.
+find_hook() {
+  local matches=("$hooks_dir"/*/"$1")
+  [[ -x ${matches[0]} ]] || { echo "git addhook: no hook named '$1' (run 'git addhook' to list)" >&2; exit 1; }
+  ((${#matches[@]} == 1)) || { echo "git addhook: '$1' exists for more than one event" >&2; exit 1; }
+  echo "$(basename "$(dirname "${matches[0]}")") ${matches[0]}"
+}
+
+key() { echo "hook.motherbox-$1"; }
+
+list() {
+  local in_repo=0 path event name state
+  git rev-parse --git-dir >/dev/null 2>&1 && in_repo=1
+  shopt -s nullglob
+  for path in "$hooks_dir"/*/*; do
+    [[ -x $path ]] || continue
+    event=$(basename "$(dirname "$path")") name=$(basename "$path") state=""
+    if ((in_repo)) && git config get --local "$(key "$name").command" >/dev/null 2>&1; then
+      state="on"
+    fi
+    printf '%-16s %-12s %s\n' "$name" "$event" "$state"
+  done
+}
+
+case ${1:-} in
+  -h | --help) usage ;;
+  "") list ;;
+  --remove)
+    name=${2:?$(usage)}
+    git rev-parse --git-dir >/dev/null
+    if git config remove-section --local "$(key "$name")" 2>/dev/null; then
+      echo "Turned off $name in this repo."
+    else
+      echo "$name is not on in this repo."
+    fi
+    ;;
+  -*) usage >&2; exit 1 ;;
+  *)
+    name=$1
+    git rev-parse --git-dir >/dev/null
+    found=$(find_hook "$name")
+    read -r event path <<<"$found"
+    git config set --local "$(key "$name").command" "$path"
+    git config set --local "$(key "$name").event" "$event"
+    echo "Turned on $name ($event) in this repo."
+    ;;
+esac

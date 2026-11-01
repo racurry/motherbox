@@ -7,7 +7,6 @@ Utility drawer for managing my computers. It includes scripts, notes, configurat
 ## structure
 
 ```text
-.
 |-- mother        # script for managing motherbox
 |-- docs/         # info, instructions, references
 |-- home/         # chezmoi managed files
