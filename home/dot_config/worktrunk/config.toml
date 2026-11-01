@@ -261,6 +261,21 @@ wt --config-set 'list.json-schema=2' list --format=json \
   | jq -r '.items[] | select(.display.state == "integrated" or .display.state == "empty") | .branch // empty' \
   | xargs -r wt remove --foreground {{ args }}
 '''
+# wt go BRANCH [switch flags]: switch to BRANCH's worktree, creating the branch
+# if it doesn't exist locally or on origin. The shell stays put; in Herdr the
+# post-switch hook opens the worktree as a nested space.
+go = '''
+{% if args | length == 0 %}
+wt switch --no-cd
+{% else %}
+if git rev-parse --verify --quiet refs/heads/{{ args[0] }} >/dev/null \
+  || git rev-parse --verify --quiet refs/remotes/origin/{{ args[0] }} >/dev/null; then
+  wt switch --no-cd {{ args }}
+else
+  wt switch --create --no-cd {{ args }}
+fi
+{% endif %}
+'''
 
 # Examples:
 # greet = "echo Hello from {{ branch }}"
