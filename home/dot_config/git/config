@@ -139,7 +139,10 @@
 	new = green bold
 	whitespace = red reverse
 [push]
+	default = current
 	followTags = true
+[remote]
+	pushDefault = origin
 [pull]
 	rebase = true
 [fetch]

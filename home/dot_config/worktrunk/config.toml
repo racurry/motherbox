@@ -450,7 +450,7 @@ fi
 # worktree sessions from writing .git/config, so `git push -u` can't set it.
 [pre-start]
 # copy = "wt step copy-ignored"
-upstream = 'git remote get-url origin >/dev/null 2>&1 || exit 0; git config --get branch.{{ branch }}.remote >/dev/null || { git config branch.{{ branch }}.remote origin && git config branch.{{ branch }}.merge refs/heads/{{ branch }}; }'
+upstream = 'git config branch.{{ branch }}.remote origin && git config branch.{{ branch }}.merge refs/heads/{{ branch }}'
 
 # Inside Herdr, show the destination worktree as a grouped workspace and focus it.
 [post-switch]
