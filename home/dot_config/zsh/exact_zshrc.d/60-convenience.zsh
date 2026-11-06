@@ -25,10 +25,12 @@ else
 	alias ls='ls -aG'
 fi
 
-cd() {
-	builtin cd "$@" || return
-	ls
+# List the new directory after every directory change, except inside $(...).
+_ls_on_chpwd() {
+	[[ -o interactive && $ZSH_SUBSHELL -eq 0 ]] && ls
 }
+autoload -Uz add-zsh-hook
+add-zsh-hook chpwd _ls_on_chpwd
 
 # Slightly more user-friendly man pages.
 tldr() {
