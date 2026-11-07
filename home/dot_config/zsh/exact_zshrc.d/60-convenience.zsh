@@ -19,7 +19,7 @@ motherbox() {
 # Enhanced tool defaults.
 command -v bat >/dev/null 2>&1 && alias cat='bat'
 if command -v eza >/dev/null 2>&1; then
-	alias ls='eza -la --no-permissions --no-user --icons=auto --total-size --time-style=relative'
+	alias ls='eza -la --no-permissions --no-user --no-filesize --icons=auto --time-style=relative'
 	alias tree='eza --tree --icons=auto'
 else
 	alias ls='ls -aG'
