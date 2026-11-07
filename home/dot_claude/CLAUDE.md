@@ -8,7 +8,7 @@
 ## Building UIs
 
 - **Users don't care about technical details or historical changes**
-  - User-facing copy should help today's user _do things_.
+  - User-facing copy should help today's user *do things*.
   - Every UI element has to earn its place.  Don't fill space or tell the story of what you did.
   - Do not add UI elements or copy describing an implementation decision.
   - Do not add UI elements or copy that describe what you changed, what things used to do, or what they don't do anymore.
@@ -27,8 +27,11 @@
 - **Use my default stack when adding new codebases:** I use **mise**. For languages, **Python** with **uv**, or **TypeScript** with **pnpm**.
   - For new projects, or for existing projects with no existing dev ecosystem, use my stack.
   - If a project already has a dev ecosystem, use what is in there.
-- **Keep project dependencies contained and portable:**
-  - Keep configurations, tools, and dependencies project scoped. No global installs. Use idiomatic config files: `config.toml`, `pyproject.toml`, `package.json`, etc.
+- **On my Macs, keep project dependencies contained and portable:**
+  - I run dozens of projects on each Mac, and they must not contaminate each other. Keep configurations, tools, and dependencies project scoped. No global installs. Use idiomatic config files: `config.toml`, `pyproject.toml`, `package.json`, etc.
+- **Disposable environments are different:**
+  - Cloud agent VMs (Claude Code cloud, Codex cloud, Cursor cloud), CI runners, containers, and devcontainers exist for one project and get thrown away. Install tools globally, use system package managers, write to `$HOME`, and set global config freely there. Do whatever is simplest and most reliable.
+  - Don't bend the project's own files to keep these machines pristine. Environment setup belongs in the environment's setup script or image, not in workarounds inside the repo.
 - **No open source boilerplate**
   - I work in personal or work codebases. Never add open source info, licenses, community, contributing guides, attribution, or other such detritus.
 - **Keep the repo worktree friendly**
