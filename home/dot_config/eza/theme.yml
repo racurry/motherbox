@@ -1,0 +1,18 @@
+# Overrides eza's default styles. Unset keys and attributes (like bold) keep their defaults.
+# Colors: names (Black, DarkGray, ...) or "#RRGGBB".
+
+size:
+  major: {foreground: 61, is_bold: false}
+  minor: {foreground: 61, is_bold: false}
+  number_byte: {foreground: 61, is_bold: false}
+  number_kilo: {foreground: 61, is_bold: false}
+  number_mega: {foreground: 61, is_bold: false}
+  number_giga: {foreground: 61, is_bold: false}
+  number_huge: {foreground: 61, is_bold: false}
+  unit_byte: {foreground: 61, is_bold: false}
+  unit_kilo: {foreground: 61, is_bold: false}
+  unit_mega: {foreground: 61, is_bold: false}
+  unit_giga: {foreground: 61, is_bold: false}
+  unit_huge: {foreground: 61, is_bold: false}
+
+date: {foreground: DarkGray, is_bold: false}

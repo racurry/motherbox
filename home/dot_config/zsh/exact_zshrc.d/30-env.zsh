@@ -15,3 +15,6 @@ export OPENSCADPATH="$HOME/OpenSCAD/Libraries"
 # before this file. Non-secret shared environment belongs in this managed zsh
 # config.
 export MOTHERBOX_ROOT="$HOME/dev/apps/motherbox"
+
+# eza reads theme.yml from here; its macOS default is ~/Library/Application Support.
+export EZA_CONFIG_DIR="$HOME/.config/eza"
