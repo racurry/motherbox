@@ -16,6 +16,7 @@ uv = "latest"
 # whitelist its build to get the compiled binding (needs pnpm >= 10.4.0).
 "npm:obsidian-headless" = { version = "latest", allow_builds = ["better-sqlite3"] }
 "npm:markdownlint-cli2" = "latest"
+"npm:@doist/todoist-cli" = "latest"
 
 # Global tools - python
 # These would normally use homebrew, but they all pull in a brew python.  So, mise it is
