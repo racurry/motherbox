@@ -8,6 +8,8 @@ export PATH="$HOME/.opencode/bin:$PATH"
 
 export PATH="$HOME/.grok/bin:$PATH"
 
+export PATH="$HOME/.railway/bin:$PATH"
+
 # LM Studio CLI - lms.
 export PATH="$PATH:$HOME/.lmstudio/bin"
 
