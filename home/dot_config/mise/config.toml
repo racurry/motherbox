@@ -9,6 +9,7 @@ uv = "latest"
 # These would otherwise pull a Homebrew-managed Node runtime, or need fresher
 # releases than Homebrew provides and do not have a first-party installer.
 "npm:skills" = "latest"
+"npm:@sentry/dotagents" = "latest"
 "npm:@devcontainers/cli" = "latest"
 "npm:@agentclientprotocol/claude-agent-acp" = "latest"
 # better-sqlite3 is a native module; pnpm blocks build scripts by default, so
