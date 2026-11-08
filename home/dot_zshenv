@@ -12,6 +12,10 @@ export GOPATH="$XDG_DATA_HOME/go"
 export NPM_CONFIG_CACHE="$XDG_CACHE_HOME/npm"
 export PYTHON_HISTORY="$XDG_STATE_HOME/python_history"
 
+# 1Password SSH agent for tools that read SSH_AUTH_SOCK instead of ssh_config's
+# IdentityAgent. GUI apps get the same value from the ssh-auth-sock LaunchAgent.
+export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
+
 # Ensure PATH is unique.
 typeset -U path PATH
 

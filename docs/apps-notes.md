@@ -1,5 +1,19 @@
 # App Helpers
 
+## 1Password SSH agent
+
+SSH uses the 1Password agent at `~/.1password/agent.sock`, a link to the
+1Password socket. `~/.ssh/config` sets it with `IdentityAgent`. Tools that read
+`SSH_AUTH_SOCK` instead get the same socket from `~/.zshenv` in shells and from
+the `net.aaroncurry.motherbox.ssh-auth-sock` LaunchAgent in GUI apps. That job
+runs `launchctl setenv` at login, so an app sees it after it is relaunched.
+Check with:
+
+```sh
+launchctl getenv SSH_AUTH_SOCK
+ssh-add -l
+```
+
 ## Airtable
 
 Get an API token
@@ -26,8 +40,6 @@ This sets the desktop app's worktree root to `~/.worktrees/codex`. The script
 uses Codex's [configuration API](https://learn.chatgpt.com/docs/app-server#config-rpc-examples-for-app-settings)
 to update only `desktop.git-worktree-root`; Codex retains control of the rest
 of `~/.codex/config.toml`. It is safe to rerun.
-
-
 
 ## Game Mode
 
@@ -129,8 +141,6 @@ worktree location overrides empty to inherit the global directory.
 
 The CLI's `orca project setup-update --worktree-base-path` sets a
 per-project host setup override; it does not set the global default.
-
-
 
 ## Rayccast
 
