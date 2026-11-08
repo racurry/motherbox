@@ -9,6 +9,7 @@ hash -d memex=~/Notes/Memex
 
 # Shell convenience.
 rezsh() {
+	source "$HOME/.zshenv"
 	source "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/.zshrc"
 }
 
