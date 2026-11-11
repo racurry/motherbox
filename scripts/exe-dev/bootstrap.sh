@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Standalone: copy this file to a VM, paste it, or feed it to ssh ... 'bash -s'.
+# exe.dev also supports first-boot provisioning via `new --setup-script`.
+# See https://exe.dev/docs/customization.md and docs/exe-dev.md.
 set -euo pipefail
 
 usage() {
@@ -70,6 +72,8 @@ install_agents() {
 }
 
 install_herdr() {
+    # Same official installer used by exe.dev's supported Herdr deployment recipe:
+    # https://exe.dev/deploy/herdr.md (we omit its TUI and LLM-gateway setup).
     local installer version=${HERDR_CORE_VERSION:-0.1.20}
     if ! command -v herdr-core >/dev/null; then
         log "Installing herdr-core $version"

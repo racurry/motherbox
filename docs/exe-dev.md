@@ -40,6 +40,65 @@ installation/service failures are errors. The script does not launch an agent,
 consume model usage, copy secrets, clone projects, push code, or open PRs.
 This reproduces provisioning, **not** a backup of conversations or unpushed work.
 
+## Supported exe.dev provisioning options
+
+exe.dev's [customization guide](https://exe.dev/docs/customization.md) documents
+three approaches: configure an existing VM over SSH (including scripts),
+create VMs from a custom Docker/OCI image, or run a setup script once at first
+boot. SSH customization is described as the simplest and most common approach.
+The guide does not prescribe a declarative environment manifest or a particular
+configuration-management tool.
+
+For this workstation, the versioned bootstrap is our provisioning source of
+truth, not a declarative reconciler or a complete lockfile. It preserves installed
+versions rather than enforcing exact tool versions. If we later need identical
+base tool versions on every fresh VM, a versioned custom image is the documented
+next option; provider logins and integration attachments still live outside it.
+
+We can also reuse this **same script at VM creation**, rather than copying it
+afterwards:
+
+```bash
+ssh exe.dev new --name=my-vm --setup-script /dev/stdin \
+  < scripts/exe-dev/bootstrap.sh
+```
+
+On the current exeuntu image, the
+[first-boot setup service](https://github.com/boldsoftware/exeuntu/blob/main/exe-setup.service)
+runs as `exedev` with its home set, matching this script's normal-user requirement.
+Setup scripts run once, not at every boot, and have a size limit; if the payload
+is too large, use the SSH bootstrap path above. For a failed setup, inspect
+`journalctl -u exe-setup.service` on the VM and rerun this script over SSH.
+Nothing here creates a VM or changes defaults automatically.
+
+Optionally, exe.dev also documents account-wide defaults:
+
+```bash
+# Opt in: run this bootstrap on subsequently created VMs.
+ssh exe.dev defaults write dev.exe new.setup-script \
+  < scripts/exe-dev/bootstrap.sh
+
+# Remove that default later.
+ssh exe.dev defaults delete dev.exe new.setup-script
+```
+
+The same setup-script size limit applies. This is optional account configuration,
+not something the bootstrap itself changes.
+
+## Supported Herdr setup
+
+There **is** an [official exe.dev Herdr deployment recipe](https://exe.dev/deploy/herdr.md).
+It installs `herdr-core` using the same upstream installer as this script and
+connects the desktop app over SSH. This is a supported deployment path, not a
+separate credential-injecting Herdr integration like the GitHub/LLM integrations.
+Herdr's own agent-status integrations are a different feature again.
+
+The recipe additionally installs the separate Herdr TUI and configures exe.dev's
+LLM gateway. We intentionally omit both: this workstation uses the desktop app
+and direct Claude/ChatGPT subscriptions, which the recipe's FAQ also covers.
+The boot-start systemd unit in our script is our provisioning choice, not a
+service file copied from the recipe.
+
 ## Account and desktop checklist
 
 1. On the VM, authenticate directly with the existing subscriptions:
@@ -136,6 +195,7 @@ python3 scripts/exe-dev/test-bootstrap.py
 
 References:
 
+- https://exe.dev/docs/customization.md — SSH, first-boot setup scripts/defaults, custom images
 - https://exe.dev/docs/upgrade-codex.md — image tools and supported installers
 - https://exe.dev/deploy/herdr.md — remote runtime and direct-subscription caveats
 - https://exe.dev/docs/integrations-github.md — App identity and Git/CLI routing
