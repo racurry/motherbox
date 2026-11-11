@@ -32,6 +32,8 @@ Utility drawer for managing my computers. It includes scripts, notes, configurat
 
 ## words
 
+- [exe.dev workstation](docs/exe-dev.md): standalone multi-repo VM bootstrap for Herdr, Claude, and Codex
+
 - [responsibility](docs/tool-responsibility.md): what tool should own what function.  apps -> brew, languages -> mise, configs -> chezmoi
 - [project tools](docs/project-tools.md): how to do a project
 - [apps notes](docs/apps-notes.md): specific notes & instructions for various apps
