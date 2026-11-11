@@ -1,0 +1,19 @@
+// Terminal look and feel.
+{
+  // Script lives in home/dot_claude/statuslines/.
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statuslines/statusline.py",
+    "padding": 1
+  },
+
+  "spinnerTipsEnabled": true,
+  "spinnerTipsOverride": {
+    "tips": [
+      "Stop wasting time",
+      "🐊"
+    ],
+    // Show only my tips, never the built-in ones.
+    "excludeDefault": true
+  }
+}

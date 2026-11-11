@@ -1,0 +1,36 @@
+// Bash sandbox. Manage interactively with /sandbox.
+{
+  "sandbox": {
+    "enabled": true,
+    // Refuse to run Bash at all if the sandbox can't start.
+    "failIfUnavailable": true,
+    // Sandboxed commands run without a permission prompt.
+    "autoAllowBashIfSandboxed": true,
+    // Commands may retry outside the sandbox; permissions.jsonc makes that ask first.
+    "allowUnsandboxedCommands": true,
+    "enableWeakerNetworkIsolation": true,
+
+    "filesystem": {
+      // Extra writable paths beyond the project directory.
+      "allowWrite": [
+        "~/.worktrees"
+      ]
+    },
+
+    "network": {
+      // 1Password SSH agent, for git signing and ssh.
+      "allowUnixSockets": [
+        "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+      ],
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "lfs.github.com",
+        "*.githubusercontent.com",
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org"
+      ]
+    }
+  }
+}

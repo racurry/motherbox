@@ -1,0 +1,33 @@
+// Permission rules. Rule syntax: Tool, Tool(specifier), Bash(cmd:*).
+// Paths starting with // are absolute; ~/ is home.
+{
+  "permissions": {
+    "defaultMode": "auto",
+
+    "allow": [
+      "Edit(//Users/aaron/.claude/tmp/**)"
+    ],
+
+    // Tools I never want Claude to reach for.
+    "deny": [
+      "EnterPlanMode",
+      "DesignSync",
+      "NotebookEdit",
+      "ScheduleWakeup",
+      "CronCreate",
+      "CronDelete",
+      "CronList",
+      "RemoteTrigger",
+      "PushNotification",
+      "ListAgents",
+      "ReadNotifications"
+    ],
+
+    // Always prompt, even in auto mode.
+    "ask": [
+      "Bash(dangerouslyDisableSandbox:true)",
+      "Bash(git branch -d:*)",
+      "Bash(git branch -D:*)"
+    ]
+  }
+}

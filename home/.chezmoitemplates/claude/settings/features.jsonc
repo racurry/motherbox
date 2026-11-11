@@ -1,0 +1,25 @@
+// Claude Code settings shared by every machine.
+//
+// modify_settings.json.tmpl merges every *.jsonc file in this directory into
+// ~/.claude/settings.json. Rules added via /permissions survive each apply.
+{
+  "alwaysThinkingEnabled": true,
+  "autoMemoryEnabled": false,
+
+  // disable*: true turns that feature off.
+  "disableArtifact": true,
+  "disableBundledSkills": true,
+  "disableWorkflows": true,
+  "disableClaudeAiConnectors": false,
+  "disableRemoteControl": false,
+  "syncClaudeAiSkills": false,
+
+  // Trust .mcp.json servers in every project without prompting.
+  "enableAllProjectMcpServers": true,
+
+  // Empty strings drop the Claude attribution from commits and PRs.
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}

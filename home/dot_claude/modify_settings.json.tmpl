@@ -5,11 +5,13 @@ import copy
 import json
 import sys
 
+{{- $fragments := list }}
+{{- range glob (joinPath .chezmoi.sourceDir ".chezmoitemplates/claude/settings/*.jsonc") }}
+{{- $fragments = append $fragments (includeTemplate . $ | fromJsonc) }}
+{{- end }}
 
-MANAGED_SETTINGS = json.loads(r'''{{ template "claude/settings-base.json" . }}''')
-
-
-PERMISSION_LISTS = ("allow", "deny", "ask")
+# The .chezmoitemplates/claude/settings/*.jsonc files.
+FRAGMENTS = json.loads(r'''{{ $fragments | toJson }}''')
 
 
 def deep_merge(base, overlay):
@@ -18,41 +20,22 @@ def deep_merge(base, overlay):
             deep_merge(base[key], value)
         else:
             base[key] = copy.deepcopy(value)
-    return base
-
-
-def readd_user_permissions(settings, previous):
-    """deep_merge replaces lists wholesale, which would discard rules added
-    interactively via /permissions. Managed rules keep their canonical order;
-    anything else the user had is appended back."""
-    previous_perms = previous.get("permissions")
-    if not isinstance(previous_perms, dict):
-        return
-
-    perms = settings.get("permissions")
-    if not isinstance(perms, dict):
-        return
-
-    for key in PERMISSION_LISTS:
-        user_rules = previous_perms.get(key)
-        if not isinstance(user_rules, list):
-            continue
-
-        merged = perms.get(key)
-        merged = list(merged) if isinstance(merged, list) else []
-        merged.extend(rule for rule in user_rules if rule not in merged)
-        perms[key] = merged
 
 
 raw = sys.stdin.read()
 current = json.loads(raw) if raw.strip() else {}
-if not isinstance(current, dict):
-    current = {}
 
-updated = deep_merge(copy.deepcopy(current), MANAGED_SETTINGS)
-readd_user_permissions(updated, current)
+updated = copy.deepcopy(current)
+for fragment in FRAGMENTS:
+    deep_merge(updated, fragment)
 
-if raw.strip() and updated == current:
+# deep_merge replaces lists, which would drop rules added via /permissions.
+# Managed rules keep their order; the user's other rules are appended.
+for key in ("allow", "deny", "ask"):
+    rules = updated["permissions"][key]
+    rules += [r for r in current.get("permissions", {}).get(key, []) if r not in rules]
+
+if updated == current:
     sys.stdout.write(raw)
 else:
     json.dump(updated, sys.stdout, indent=2)
