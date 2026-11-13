@@ -1,9 +1,9 @@
 // Terminal look and feel.
 {
-  // Script lives in home/dot_claude/statuslines/.
+  // Scripts live in home/dot_claude/statuslines/; point command at the one to use.
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/statuslines/statusline.py",
+    "command": "~/.claude/statuslines/simple.py",
     "padding": 1
   },
 
