@@ -1,6 +1,7 @@
 {{- $machine := index . "machine" | default "" -}}
 # SSH client configuration
 
+Include ~/.ssh/1Password/config
 Include ~/.orbstack/ssh/config
 Include ~/.colima/ssh_config
 

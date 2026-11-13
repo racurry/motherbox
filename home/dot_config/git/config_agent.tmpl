@@ -1,0 +1,28 @@
+{{- $profile := index . "profile" | default "personal" -}}
+{{- if eq $profile "personal" -}}
+# Git config for coding agents. Agent sessions load this file in place of
+# `config` by setting GIT_CONFIG_GLOBAL, so their commits and pushes belong to
+# the agent GitHub account.
+
+[include]
+  path = config
+
+[user]
+  name = {{ .agent_git_name }}
+  email = {{ .agent_git_email }}
+
+# The agent account has no signing key.
+[commit]
+  gpgsign = false
+
+# Reach GitHub over HTTPS so the agent's gh login is the credential, not an SSH key.
+[url "https://github.com/"]
+  insteadOf = git@github.com:
+  insteadOf = ssh://git@github.com/
+
+# The empty helper clears any inherited helpers first. gh reads the agent's login
+# from the GH_CONFIG_DIR that agent sessions set.
+[credential "https://github.com"]
+  helper =
+  helper = !gh auth git-credential
+{{- end }}

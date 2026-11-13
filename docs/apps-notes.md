@@ -14,6 +14,10 @@ launchctl getenv SSH_AUTH_SOCK
 ssh-add -l
 ```
 
+`~/.ssh/config` also includes `~/.ssh/1Password/config`, which 1Password
+generates from its SSH bookmarks. It pins each bookmarked host to one key, so
+SSH offers that key alone instead of trying every key in the agent.
+
 ## Airtable
 
 Get an API token
@@ -72,6 +76,40 @@ xcrun gamepolicyctl game-mode set auto
 ```
 
 The next login or explicit reload of the job will force it off again.
+
+## GitHub agent identity
+
+On `personal`-profile machines, Claude Code sessions act as a separate agent
+GitHub account: commits, pushes, PRs, and comments belong to it. A normal
+terminal acts as `racurry`. On the `firsthand` profile, agents act as the work
+account.
+
+The account's username and noreply email live in chezmoi's local data as
+`agent_git_name` and `agent_git_email`. `chezmoi init` asks for them once per
+machine.
+
+Two environment variables in Claude's settings do this:
+
+- `GIT_CONFIG_GLOBAL` loads `~/.config/git/config_agent`, which sets the
+  agent's name and email, turns signing off, and sends GitHub traffic over
+  HTTPS with `gh` as the credential helper.
+- `GH_CONFIG_DIR` points `gh` at `~/.config/gh-agent`, where the agent account
+  is the only login.
+
+Each machine needs the agent account signed in once. Use a browser session
+where that account is signed in to GitHub:
+
+```sh
+GH_CONFIG_DIR=~/.config/gh-agent gh auth login --hostname github.com --git-protocol https --web
+```
+
+The agent account can only reach repositories where it is a collaborator.
+Check both identities with:
+
+```sh
+gh api user --jq .login                                    # racurry
+GH_CONFIG_DIR=~/.config/gh-agent gh api user --jq .login   # the agent account
+```
 
 ## Mail
 

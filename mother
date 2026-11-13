@@ -86,9 +86,23 @@ do_setup() {
     # sudo uses 1Password instead of a Touch ID prompt per cask.
     SUDO_ASKPASS="$SUDO_ASKPASS_HELPER" chezmoi apply
     run_forced_brew_bundle
+    check_agent_github_login
 
      # re-apply to skip the interactive bits
     printf "Setup complete!\n"
+}
+
+# ==========================================================================
+# Agent GitHub login — on personal machines, coding agents act as their own
+# GitHub account through a gh login kept in its own config directory. The login is interactive, so setup only reports when it's missing.
+# ==========================================================================
+
+check_agent_github_login() {
+    [[ "$(chezmoi execute-template '{{ .profile }}')" == "personal" ]] || return 0
+    GH_CONFIG_DIR="${HOME}/.config/gh-agent" gh auth token >/dev/null 2>&1 && return 0
+
+    printf "\nAgent GitHub login is missing. Sign in as the agent account with:\n"
+    printf "  GH_CONFIG_DIR=~/.config/gh-agent gh auth login --hostname github.com --git-protocol https --web\n\n"
 }
 
 # ==========================================================================
