@@ -84,9 +84,9 @@ GitHub account: commits, pushes, PRs, and comments belong to it. A normal
 terminal acts as `racurry`. On the `firsthand` profile, agents act as the work
 account.
 
-The account's username and noreply email live in chezmoi's local data as
-`agent_git_name` and `agent_git_email`. `chezmoi init` asks for them once per
-machine.
+The agent account is `despairbots`. Its name and noreply email are defined in
+`home/dot_config/git/config_agent`. This file only takes effect when selected
+by `GIT_CONFIG_GLOBAL` or explicitly included by another Git config.
 
 Two environment variables in Claude's settings do this:
 

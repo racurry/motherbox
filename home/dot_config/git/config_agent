@@ -1,5 +1,3 @@
-{{- $profile := index . "profile" | default "personal" -}}
-{{- if eq $profile "personal" -}}
 # Git config for coding agents. Agent sessions load this file in place of
 # `config` by setting GIT_CONFIG_GLOBAL, so their commits and pushes belong to
 # the agent GitHub account.
@@ -8,8 +6,8 @@
   path = config
 
 [user]
-  name = {{ .agent_git_name }}
-  email = {{ .agent_git_email }}
+  name = despairbots
+  email = 349459804+despairbots@users.noreply.github.com
 
 # The agent account has no signing key.
 [commit]
@@ -25,4 +23,3 @@
 [credential "https://github.com"]
   helper =
   helper = !gh auth git-credential
-{{- end }}

@@ -1,12 +1,5 @@
 {{- $profile := promptStringOnce . "profile" "Profile" -}}
 {{- $machine := promptStringOnce . "machine" "Machine" -}}
-{{- /* The GitHub account coding agents commit as; only personal machines use one. */ -}}
-{{- $agentGitName := "" -}}
-{{- $agentGitEmail := "" -}}
-{{- if eq $profile "personal" -}}
-{{-   $agentGitName = promptStringOnce . "agent_git_name" "Agent GitHub username" -}}
-{{-   $agentGitEmail = promptStringOnce . "agent_git_email" "Agent GitHub noreply email" -}}
-{{- end -}}
 
 sourceDir = {{ .chezmoi.sourceDir | quote }}
 
@@ -31,5 +24,3 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
 [data]
     profile = {{ $profile | quote }}
     machine = {{ $machine | quote }}
-    agent_git_name = {{ $agentGitName | quote }}
-    agent_git_email = {{ $agentGitEmail | quote }}
