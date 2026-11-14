@@ -47,13 +47,19 @@ change. Start a new Codex session after applying settings.
 
 ## Grok
 
-`chezmoi apply` sets the same Git and GitHub CLI identity for Grok on
-`personal` machines. The values live in
+`chezmoi apply` writes Grok settings through
 `home/.chezmoiscripts/run_onchange_after_47-grok.sh.tmpl`. The hook calls
-`scripts/apps/grok/configure.py`, which writes those keys into
-`~/.grok/config.toml` and leaves every other setting in place. On any other
-profile it removes the keys. The hook reruns when its values or the Python
-script change. Start a new Grok session after applying settings.
+`scripts/apps/grok/configure.py`, which updates those keys in
+`~/.grok/config.toml` and leaves every other setting in place. The hook
+reruns when its values or the Python script change. Start a new Grok
+session after applying settings.
+
+On `personal` machines the shell uses the agent Git and GitHub identity.
+On any other profile the hook removes those two keys.
+
+The status line script is `~/.grok/statusline.sh`
+(`home/dot_grok/executable_statusline.sh`). It shows the model, the branch,
+and the git user for the session. Ghost prompt text is off.
 
 ## Game Mode
 

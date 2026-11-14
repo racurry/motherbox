@@ -13,6 +13,9 @@ fi
 
 "$CHEZMOI_WORKING_TREE/scripts/apps/grok/configure.py" <<'JSON'
 {
+  "ui.prompt_suggestions": false,
+  "ui.status_line.type": "command",
+  "ui.status_line.command": "~/.grok/statusline.sh",
 {{- if eq .profile "personal" }}
   "shell_environment_policy.set.GIT_CONFIG_GLOBAL": {{ joinPath .chezmoi.homeDir ".config/git/config_agent" | toJson }},
   "shell_environment_policy.set.GH_CONFIG_DIR": {{ joinPath .chezmoi.homeDir ".config/gh-agent" | toJson }}
