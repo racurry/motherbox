@@ -1,0 +1,24 @@
+#!/bin/bash
+# Set Grok's git and gh identity for this machine's profile.
+# Setup: {{ include (joinPath .chezmoi.workingTree "scripts/apps/grok/configure.py") | sha256sum }}
+set -euo pipefail
+
+# chezmoi scripts do not load interactive zsh's PATH or mise activation.
+export PATH="$HOME/.local/bin:${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims:/opt/homebrew/bin:$PATH"
+
+if ! command -v uv >/dev/null 2>&1; then
+    echo "Missing uv; complete the mise install step first." >&2
+    exit 1
+fi
+
+"$CHEZMOI_WORKING_TREE/scripts/apps/grok/configure.py" <<'JSON'
+{
+{{- if eq .profile "personal" }}
+  "shell_environment_policy.set.GIT_CONFIG_GLOBAL": {{ joinPath .chezmoi.homeDir ".config/git/config_agent" | toJson }},
+  "shell_environment_policy.set.GH_CONFIG_DIR": {{ joinPath .chezmoi.homeDir ".config/gh-agent" | toJson }}
+{{- else }}
+  "shell_environment_policy.set.GIT_CONFIG_GLOBAL": null,
+  "shell_environment_policy.set.GH_CONFIG_DIR": null
+{{- end }}
+}
+JSON
