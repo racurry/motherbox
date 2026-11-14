@@ -33,17 +33,17 @@ Get an API token
 
 ## Codex
 
-After installing the Codex CLI, configure its worktree directory from the
-Motherbox checkout:
+`chezmoi apply` configures Codex after installing the CLI. The managed values
+live in `home/.chezmoiscripts/run_onchange_after_46-codex.sh.tmpl`:
 
-```sh
-python3 scripts/apps/codex/configure-worktrees.py
-```
+- Desktop worktree root: `~/.worktrees/codex`.
+- Git and GitHub CLI identity: the agent account on `personal` machines.
 
-This sets the desktop app's worktree root to `~/.worktrees/codex`. The script
+The hook calls `scripts/apps/codex/configure.py`, which
 uses Codex's [configuration API](https://learn.chatgpt.com/docs/app-server#config-rpc-examples-for-app-settings)
-to update only `desktop.git-worktree-root`; Codex retains control of the rest
-of `~/.codex/config.toml`. It is safe to rerun.
+to update individual keys; Codex retains control of the rest of
+`~/.codex/config.toml`. The hook reruns when its values or the Python script
+change. Start a new Codex session after applying settings.
 
 ## Game Mode
 
@@ -79,7 +79,7 @@ The next login or explicit reload of the job will force it off again.
 
 ## GitHub agent identity
 
-On `personal`-profile machines, Claude Code sessions act as a separate agent
+On `personal`-profile machines, Claude Code and Codex shell commands act as a separate agent
 GitHub account: commits, pushes, PRs, and comments belong to it. A normal
 terminal acts as `racurry`. On the `firsthand` profile, agents act as the work
 account.
@@ -88,7 +88,8 @@ The agent account is `despairbots`. Its name and noreply email are defined in
 `home/dot_config/git/config_agent`. This file only takes effect when selected
 by `GIT_CONFIG_GLOBAL` or explicitly included by another Git config.
 
-Two environment variables in Claude's settings do this:
+Two environment variables in Claude's settings and Codex's
+`shell_environment_policy.set` do this:
 
 - `GIT_CONFIG_GLOBAL` loads `~/.config/git/config_agent`, which sets the
   agent's name and email, turns signing off, and sends GitHub traffic over

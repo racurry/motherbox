@@ -1,0 +1,16 @@
+#!/bin/bash
+# Configure Codex after native CLI installation.
+# Setup: {{ include (joinPath .chezmoi.workingTree "scripts/apps/codex/configure.py") | sha256sum }}
+set -euo pipefail
+
+export PATH="$HOME/.local/bin:$PATH"
+python3 "$CHEZMOI_WORKING_TREE/scripts/apps/codex/configure.py" <<'JSON'
+{
+  "desktop.git-worktree-root": {{ joinPath .chezmoi.homeDir ".worktrees/codex" | toJson }}
+{{- if eq .profile "personal" }}
+  ,
+  "shell_environment_policy.set.GIT_CONFIG_GLOBAL": {{ joinPath .chezmoi.homeDir ".config/git/config_agent" | toJson }},
+  "shell_environment_policy.set.GH_CONFIG_DIR": {{ joinPath .chezmoi.homeDir ".config/gh-agent" | toJson }}
+{{- end }}
+}
+JSON

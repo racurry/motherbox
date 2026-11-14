@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Set Codex's worktree root through its configuration API."""
+"""Apply Motherbox's selected Codex settings through its configuration API."""
 
 import argparse
 import asyncio
 import json
+import sys
 from pathlib import Path
 
 
@@ -20,7 +21,7 @@ async def request(process, request_id, method, params):
     raise RuntimeError(f"Codex exited before replying to {method}")
 
 
-async def configure(root):
+async def configure(settings):
     process = await asyncio.create_subprocess_exec(
         "codex", "app-server", "--listen", "stdio://",
         stdin=asyncio.subprocess.PIPE,
@@ -32,13 +33,14 @@ async def configure(root):
         })
         process.stdin.write(b'{"method":"initialized","params":{}}\n')
         await process.stdin.drain()
-        result = await request(process, 1, "config/value/write", {
-            "keyPath": "desktop.git-worktree-root",
-            "value": str(root),
-            "mergeStrategy": "upsert",
-        })
-        if result["status"] != "ok":
-            raise RuntimeError(f"Codex configuration write returned {result['status']}")
+        for request_id, (key, value) in enumerate(settings.items(), start=1):
+            result = await request(process, request_id, "config/value/write", {
+                "keyPath": key,
+                "value": value,
+                "mergeStrategy": "upsert",
+            })
+            if result["status"] != "ok":
+                raise RuntimeError(f"Codex configuration write for {key} returned {result['status']}")
     finally:
         if process.returncode is None:
             process.terminate()
@@ -51,16 +53,20 @@ async def configure(root):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Set Codex's worktree root to ~/.worktrees/codex, preserving other settings.",
+        description="Apply Codex settings from a JSON object on stdin, preserving other settings.",
+        epilog="Keys are dotted Codex config paths. Run through the chezmoi Codex setup hook.",
     )
     parser.parse_args()
-    root = Path.home() / ".worktrees" / "codex"
     try:
-        root.mkdir(parents=True, exist_ok=True)
-        asyncio.run(asyncio.wait_for(configure(root), timeout=30))
-    except (OSError, RuntimeError, TimeoutError) as error:
+        settings = json.load(sys.stdin)
+        if not isinstance(settings, dict) or not settings:
+            raise ValueError("stdin must contain a nonempty JSON object of Codex settings")
+        if root := settings.get("desktop.git-worktree-root"):
+            Path(root).mkdir(parents=True, exist_ok=True)
+        asyncio.run(asyncio.wait_for(configure(settings), timeout=30))
+    except (OSError, ValueError, RuntimeError, TimeoutError) as error:
         parser.exit(1, f"error: {error}\n")
-    print(f"Codex worktree root: {root}")
+    print(f"Codex: applied {len(settings)} Motherbox settings")
 
 
 if __name__ == "__main__":
