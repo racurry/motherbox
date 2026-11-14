@@ -34,6 +34,12 @@
 - Only apply changes with `chezmoi apply`; Never edit the target in `~` directly or copy a file into place.
 - Only apply changes with User approval
 
+## Zsh startup
+
+- [`home/dot_zshenv`](home/dot_zshenv) sets `ZDOTDIR=~/.config/zsh`; that directory's `.zshrc` loads `zshrc.d/*.zsh`.
+- `~/.zshrc` and `~/.zprofile` are deliberately absent, enforced by [`home/.chezmoiremove`](home/.chezmoiremove). Installer additions there are inert.
+- For CLI shell integration, edit the managed [zsh fragments](home/dot_config/zsh/exact_zshrc.d/): `80-path.zsh` for PATH, `15-completion.zsh` for completions. Keep `fpath` additions before `compinit`.
+
 ## Herdr
 
 Before any herdr-app or `hc` work, read the source for the job. Don't work from memory:
