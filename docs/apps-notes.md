@@ -204,6 +204,19 @@ Make sure all of the default keyboard shortcuts are set up/turned off in macOS. 
 
 Configuration needs to be set up manually. Export from old, import to new.
 
+## TextEdit
+
+Make new documents plain text instead of rich text:
+
+```sh
+scripts/apps/textedit/plain-text.sh
+```
+
+TextEdit keeps its preferences inside its app container, which macOS only
+lets a terminal modify once that terminal has Full Disk Access. Grant it in
+**System Settings → Privacy & Security → Full Disk Access**, relaunch the
+terminal, then run the script. `mother setup` does not run it.
+
 ## VS Code
 
 Complete these steps after installation:

@@ -279,9 +279,6 @@ defaults write .GlobalPreferences com.apple.sound.beep.sound "/System/Library/So
 echo "Show battery percentage"
 defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
 
-echo "Default TextEdit to plain text"
-defaults write com.apple.TextEdit RichText -int 0
-
 echo "Refresh settings"
 killall "SystemUIServer" 2>/dev/null || true
 killall "TextInputMenuAgent" 2>/dev/null || true
