@@ -40,6 +40,13 @@
 - `~/.zshrc` and `~/.zprofile` are deliberately absent, enforced by [`home/.chezmoiremove`](home/.chezmoiremove). Installer additions there are inert.
 - For CLI shell integration, edit the managed [zsh fragments](home/dot_config/zsh/exact_zshrc.d/): `80-path.zsh` for PATH, `15-completion.zsh` for completions. Keep `fpath` additions before `compinit`.
 
+## Global agent rules
+
+- [`home/.chezmoitemplates/agents/AGENTS.md`](home/.chezmoitemplates/agents/AGENTS.md) is the single ruleset for every coding agent. Edit the rules there.
+- Each agent's global instructions file is a template that includes it: [`home/dot_claude/CLAUDE.md.tmpl`](home/dot_claude/CLAUDE.md.tmpl), [`home/dot_codex/AGENTS.md.tmpl`](home/dot_codex/AGENTS.md.tmpl), and [`home/dot_gemini/AGENTS.md.tmpl`](home/dot_gemini/AGENTS.md.tmpl) for Antigravity.
+- Put agent-specific rules below the include line in that agent's file.
+- Grok reads `~/.claude/CLAUDE.md` through its Claude compatibility, so it has no file of its own.
+
 ## Herdr
 
 Before any herdr-app or `hc` work, read the source for the job. Don't work from memory:
