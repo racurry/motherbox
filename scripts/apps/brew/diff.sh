@@ -52,7 +52,7 @@ show() {
 # "extra" side doesn't flag every transitive dependency.
 declared_formulae=$(brew bundle list --file="$BREWFILE" --formula | sort -u)
 declared_casks=$(brew bundle list --file="$BREWFILE" --cask | sort -u)
-installed_formulae=$(brew list --formula | sort -u)
+installed_formulae=$(brew list --formula --full-name | sort -u)
 installed_casks=$(brew list --cask | sort -u)
 requested_formulae=$(brew leaves --installed-on-request | sort -u)
 
