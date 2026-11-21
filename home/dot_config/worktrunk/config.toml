@@ -256,11 +256,8 @@ exclude = [
 # Command templates that run as `wt <name>`. See the Extending Worktrunk guide (https://worktrunk.dev/extending/#aliases) for usage and flags.
 #
 [aliases]
-cleanup = '''
-wt --config-set 'list.json-schema=2' list --branches --format=json \
-  | jq -r '.items[] | select(.display.state == "integrated" or .display.state == "empty") | .branch // empty' \
-  | xargs -r wt remove --foreground {{ args }}
-'''
+status = '"${MOTHERBOX_ROOT:-$HOME/dev/apps/motherbox}/scripts/apps/worktrunk/worktrees.py" status {{ args }}'
+cleanup = '"${MOTHERBOX_ROOT:-$HOME/dev/apps/motherbox}/scripts/apps/worktrunk/worktrees.py" cleanup {{ args }}'
 # wt go BRANCH [switch flags]: switch to BRANCH's worktree, creating the branch
 # if it doesn't exist locally or on origin. The shell stays put; in Herdr the
 # post-switch hook opens the worktree as a nested space.

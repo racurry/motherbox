@@ -49,3 +49,10 @@ vidmerge --delete-originals clips/ merged      # Merge videos and remove source 
 whats-on-port 3000                             # Show processes listening on a port
 whats-on-port 3000 --kill                      # Kill processes listening on a port
 ```
+
+## Worktrunk
+
+`wt status` shows which worktrees cleanup would remove and why. `wt cleanup`
+removes clean, finished worktrees and integrated local branches with evidence
+of completed work. Unused branches and ambiguous histories are kept. Run
+`wt cleanup --preview` to see the exact branch names selected.
