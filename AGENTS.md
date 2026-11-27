@@ -57,7 +57,7 @@ Before any herdr-app or `hc` work, read the source for the job. Don't work from 
 | Run, message or wait on agents and programs | `hc --skill` |
 | Customize layouts, keys, settings or mods | `~/.config/herdr-app/AGENTS.md` |
 
-Make config changes in `home/dot_config/herdr-app/`, not in `~/.config/herdr-app/`.
+Make config changes in `home/dot_config/herdr-app/`, not in `~/.config/herdr-app/`. That folder holds the keys, settings, themes, the `ya-tabs` layout and the `ya-*` and `t3-inbox` mods. [`docs/herdr-app.md`](docs/herdr-app.md) covers how they work and how to change, check and apply them.
 
 ## Using worktrees
 
