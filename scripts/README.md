@@ -16,6 +16,16 @@ avitomp4 ~/Movies/avi                          # Convert every AVI file in a dir
 backgroundify src/ out/ white                  # Add a solid background to transparent images
 batch_rename photos Vacation                   # Rename files sequentially with a base name
 chezmoi-status-better                          # Translate `chezmoi status` codes into plain English
+clod                                           # Pick project-level Claude Code flags and connectors
+clod set workflows true                        # Set one flag by any unambiguous fragment of its name
+clod unset workflows                           # Remove a flag so the user-level default applies
+clod deny slack linear                         # Deny claude.ai connectors in this project
+clod allow all                                 # Allow every claude.ai connector again
+clod init                                      # Write the standard flags and allow every claude.ai connector
+clod init isolate                              # Write the opposite flags and deny every claude.ai connector
+clod --local init isolate                      # Same, in the personal .claude/settings.local.json
+clod status                                    # One-line summary of this project's flags and connectors
+clod check                                     # Compare clod's connector list with `claude mcp list`
 claude-to-agents                               # Converge agent instruction files on one AGENTS.md
 filename_fixer downloads --dedot               # Normalize names and replace dots with spaces
 filename_fixer downloads --strip-digits        # Normalize names and remove digits

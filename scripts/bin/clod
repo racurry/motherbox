@@ -1,0 +1,703 @@
+#!/usr/bin/env -S uv run --quiet --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
+"""Manage the project-level Claude Code settings that `claude` has no command for.
+
+Reads and writes .claude/settings.json at the git root (or the current
+directory outside a repo), or .claude/settings.local.json with --local. Only the flags listed below and the
+deniedMcpServers entries for the claude.ai connectors listed below are
+touched; everything else in the file is preserved.
+"""
+
+import argparse
+import json
+import os
+import re
+import select
+import shutil
+import subprocess
+import sys
+import tempfile
+import termios
+import tty
+from pathlib import Path
+
+FLAGS = [
+    "disableArtifact",
+    "disableBundledSkills",
+    "disableWorkflows",
+    "disableClaudeAiConnectors",
+    "disableRemoteControl",
+    "syncClaudeAiSkills",
+]
+WIDTH = max(len(f) for f in FLAGS)
+UNSET = object()
+
+# Flag values written by `clod init`. `clod init isolate` writes the opposite.
+INIT_FLAGS = {
+    "disableArtifact": False,
+    "disableBundledSkills": False,
+    "disableWorkflows": False,
+    "disableClaudeAiConnectors": False,
+    "disableRemoteControl": False,
+    "syncClaudeAiSkills": True,
+}
+
+# claude.ai connectors, as reported by `claude mcp list` run outside any
+# project. Add a line here when a connector is added on claude.ai.
+CONNECTORS = {
+    "Carta": "https://mcp.app.carta.com/mcp",
+    "Claude Docs": "https://api.anthropic.com/v1/pages/mcp",
+    "CloudFlare": "https://mcp.cloudflare.com/mcp",
+    "Gmail": "https://gmailmcp.googleapis.com/mcp/v1",
+    "Google Calendar": "https://calendarmcp.googleapis.com/mcp/v1",
+    "Google Docs": "https://docsmcp.googleapis.com/mcp/v1",
+    "Google Drive": "https://drivemcp.googleapis.com/mcp/v1",
+    "Google Sheets": "https://sheetsmcp.googleapis.com/mcp/v1",
+    "Google Slides": "https://slidesmcp.googleapis.com/mcp/v1",
+    "HealthEx": "https://api.healthex.io/mcp",
+    "Home Assistant": "https://rlbeszpjipy8n6rsqsf700qlgijzdkv1.ui.nabu.casa/api/mcp",
+    "Linear": "https://mcp.linear.app/mcp",
+    "Memex": "https://notemesh-production-dd85.up.railway.app/api/mcp",
+    "Mermaid Chart": "https://chatgpt.mermaid.ai/anthropic/mcp",
+    "n8n": "https://sadly.app.n8n.cloud/mcp-server/http",
+    "Notion": "https://mcp.notion.com/mcp",
+    "Photon": "https://mcp.photon.codes/mcp",
+    "Readwise": "https://mcp2.readwise.io/mcp",
+    "Sad World": "https://mcp.sadly.online/mcp",
+    "Slack": "https://mcp.slack.com/mcp",
+    "Spotify": "https://mcp-gateway-external-pilot.spotify.net/mcp",
+    "Superhuman Docs": "https://docs.superhuman.com/apis/mcp",
+    "Superhuman Mail": "https://mcp.mail.superhuman.com/mcp",
+    "Todoist": "https://ai.todoist.net/mcp",
+    "Todoist Automations": "https://ai.todoist.net/mcp/automations",
+    "draw.io": "https://mcp.draw.io/mcp",
+}
+DENIED = "deniedMcpServers"
+
+NAMES = sorted(CONNECTORS, key=str.lower)
+NAME_WIDTH = max(len(n) for n in NAMES)
+
+USAGE = "clod [--local] [command]"
+HELP = f"""\
+usage: {USAGE}
+
+Manage Claude Code feature flags and claude.ai connector denials in this
+project's .claude/settings.json (at the git root, or the current directory
+outside a repo). Everything else in the file is preserved.
+
+options:
+  --local                    use .claude/settings.local.json, the personal file
+                             that stays out of git, for any command below
+
+commands:
+  (none)                     interactive picker in a terminal, flag table when piped
+  list [--json]              print every flag
+  get <flag>                 print true, false, or unset
+  set <flag> <true|false>    write the flag
+  unset <flag>               remove the flag so the user-level default applies
+  connectors [--json]        print every claude.ai connector as allowed or denied
+  deny <connector>...        add connectors to deniedMcpServers
+  allow <connector>...       remove connectors from deniedMcpServers
+  init                       write the standard flags and allow every connector
+  init isolate               write the opposite flags and deny every connector
+  status                     one-line summary of the flags and connectors
+  check                      compare the connector list in this script with
+                             `claude mcp list` (takes about 15 seconds)
+  help                       show this help
+
+flags:
+  {chr(10).join("  " + f for f in FLAGS).lstrip()}
+
+Flags and connectors can be named by any unambiguous, case-insensitive
+fragment: `clod set workflows true` sets disableWorkflows, `clod deny slack
+linear` denies two connectors. `clod deny all` and `clod allow all` cover every
+connector. Flag values are literal, so `disable*` flags turn a feature off
+when true.
+
+picker:
+  Two tabs, Flags and Connectors. The first row of each tab is its preset.
+
+  up/down or k/j     move           space  change the highlighted row
+  tab or left/right  switch tabs    enter  save
+  q/esc              cancel
+
+  Nothing is written until enter. Space cycles a flag through unset, true,
+  and false, and switches a connector between allowed and denied. On a
+  preset row it switches every value on that tab between claude.ai (the
+  `clod init` values) and isolated (the `clod init isolate` values). The
+  preset reads custom when the tab matches neither.
+
+connectors:
+  The {len(CONNECTORS)} claude.ai connectors are listed at the top of this script. A
+  connector is denied by a deniedMcpServers entry with its URL. Entries for
+  anything else are left alone. Denials only matter while
+  disableClaudeAiConnectors is not true; when it is true every connector is off.
+
+status:
+  Prints `flags: <preset> · connectors: <preset>` for .claude/settings.json,
+  where a preset is claude.ai, isolated, custom, or (flags only) unset. When
+  .claude/settings.local.json also sets any of these, a second line reports
+  it; Claude Code applies that file on top. With --local, only that file.
+
+check:
+  Lists connectors that claude.ai has and this script lacks, as lines to paste
+  into CONNECTORS, and connectors this script has that are gone or have a
+  different URL. Exits 1 when anything differs. A connector missing from this
+  script is enabled in every project, isolated ones included.
+
+init:
+  Sets all six flags and every connector. Safe to re-run to switch a project
+  between the two presets.
+
+    flag                       init   init isolate
+    {chr(10).join(f"    {f:<{WIDTH}}  {json.dumps(v):<5}  {json.dumps(not v)}" for f, v in INIT_FLAGS.items()).lstrip()}
+    claude.ai connectors       allow  deny
+"""
+
+
+class ClodError(Exception):
+    pass
+
+
+# --- settings file ---------------------------------------------------------
+
+
+def settings_path(local: bool) -> Path:
+    result = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True
+    )
+    root = Path(result.stdout.strip()) if result.returncode == 0 else Path.cwd()
+    return root / ".claude" / ("settings.local.json" if local else "settings.json")
+
+
+def display_path(path: Path) -> str:
+    try:
+        return os.path.relpath(path)
+    except ValueError:
+        return str(path)
+
+
+def load(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text())
+    except json.JSONDecodeError as err:
+        raise ClodError(f"{path} is not valid JSON ({err}); nothing changed")
+    if not isinstance(data, dict):
+        raise ClodError(f"{path} is not a JSON object; nothing changed")
+    if not isinstance(data.get(DENIED, []), list):
+        raise ClodError(f"{DENIED} in {path} is not a list; nothing changed")
+    return data
+
+
+def save(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".settings.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as handle:
+            json.dump(data, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+        if path.exists():
+            os.chmod(tmp, path.stat().st_mode & 0o777)
+        else:
+            os.chmod(tmp, 0o644)
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+    if path.name == "settings.local.json":
+        ignored = subprocess.run(
+            ["git", "check-ignore", "-q", path.name],
+            cwd=path.parent,
+            capture_output=True,
+        )
+        if ignored.returncode == 1:
+            print(f"clod: warning: {display_path(path)} is not ignored by git", file=sys.stderr)
+
+
+def resolve(name: str, choices: list[str], kind: str) -> str:
+    needle = name.lower()
+    for choice in choices:
+        if choice.lower() == needle:
+            return choice
+    matches = [c for c in choices if needle in c.lower()]
+    if len(matches) == 1:
+        return matches[0]
+    if matches:
+        raise ClodError(f"'{name}' is ambiguous: {', '.join(matches)}")
+    raise ClodError(f"unknown {kind} '{name}'; choose from: {', '.join(choices)}")
+
+
+def show(value) -> str:
+    return "unset" if value is UNSET else json.dumps(value)
+
+
+def show_denied(denied: bool) -> str:
+    return "denied" if denied else "allowed"
+
+
+def set_flag(data: dict, flag: str, value) -> None:
+    if value is UNSET:
+        data.pop(flag, None)
+    else:
+        data[flag] = value
+
+
+def connector_of(entry) -> str | None:
+    """Name of the connector a deniedMcpServers entry denies, if it is one of ours."""
+    if not isinstance(entry, dict):
+        return None
+    for name, url in CONNECTORS.items():
+        if entry.get("serverUrl") == url or entry.get("serverName") == f"claude.ai {name}":
+            return name
+    return None
+
+
+def denied_connectors(data: dict) -> set[str]:
+    return {name for entry in data.get(DENIED, []) if (name := connector_of(entry))}
+
+
+def set_connectors(data: dict, wanted: dict[str, bool]) -> None:
+    """Deny (True) or allow (False) each named connector; keep every other entry."""
+    already = denied_connectors(data)
+    entries = [
+        entry
+        for entry in data.get(DENIED, [])
+        if wanted.get(connector_of(entry), True)
+    ]
+    entries += [
+        {"serverUrl": CONNECTORS[name]}
+        for name, deny in wanted.items()
+        if deny and name not in already
+    ]
+    if entries:
+        data[DENIED] = entries
+    else:
+        data.pop(DENIED, None)
+
+
+def preset(page: int, isolate: bool) -> dict:
+    """Values of the claude.ai (isolate=False) or isolated preset for flags (0) or connectors (1)."""
+    if page == 1:
+        return {n: isolate for n in NAMES}
+    return {f: v != isolate for f, v in INIT_FLAGS.items()}
+
+
+def preset_name(page: int, values: dict) -> str:
+    if values == preset(page, False):
+        return "claude.ai"
+    if values == preset(page, True):
+        return "isolated"
+    return "custom"
+
+
+def flag_values(data: dict) -> dict:
+    return {f: data.get(f, UNSET) for f in FLAGS}
+
+
+def connector_values(data: dict) -> dict:
+    denied = denied_connectors(data)
+    return {n: n in denied for n in NAMES}
+
+
+# --- commands --------------------------------------------------------------
+
+
+def cmd_list(path: Path, as_json: bool) -> int:
+    data = load(path)
+    if as_json:
+        print(json.dumps({f: data.get(f) for f in FLAGS}, indent=2))
+    else:
+        for flag in FLAGS:
+            print(f"{flag:<{WIDTH}}  {show(data.get(flag, UNSET))}")
+    return 0
+
+
+def cmd_get(path: Path, name: str) -> int:
+    print(show(load(path).get(resolve(name, FLAGS, "flag"), UNSET)))
+    return 0
+
+
+def cmd_write(path: Path, name: str, value) -> int:
+    flag = resolve(name, FLAGS, "flag")
+    data = load(path)
+    if data.get(flag, UNSET) == value and (value is not UNSET or flag not in data):
+        print(f"{flag} already {show(value)}")
+        return 0
+    if value is UNSET and not path.exists():
+        print(f"{flag} already unset")
+        return 0
+    set_flag(data, flag, value)
+    save(path, data)
+    print(f"{flag} = {show(value)}  ({display_path(path)})")
+    return 0
+
+
+def cmd_connectors(path: Path, as_json: bool) -> int:
+    denied = denied_connectors(load(path))
+    if as_json:
+        print(json.dumps({n: show_denied(n in denied) for n in NAMES}, indent=2))
+    else:
+        for name in NAMES:
+            print(f"{name:<{NAME_WIDTH}}  {show_denied(name in denied)}")
+    return 0
+
+
+def cmd_toggle(path: Path, names: list[str], deny: bool) -> int:
+    if [n.lower() for n in names] == ["all"]:
+        chosen = NAMES
+    else:
+        chosen = list(dict.fromkeys(resolve(n, NAMES, "connector") for n in names))
+    data = load(path)
+    denied = denied_connectors(data)
+    changes = [n for n in chosen if (n in denied) != deny]
+    for name in chosen:
+        if name not in changes:
+            print(f"{name} already {show_denied(deny)}")
+    if not changes:
+        return 0
+    set_connectors(data, {name: deny for name in changes})
+    save(path, data)
+    for name in changes:
+        print(f"{name} {show_denied(deny)}")
+    print(f"Saved {display_path(path)}")
+    return 0
+
+
+def cmd_init(path: Path, isolate: bool) -> int:
+    data = load(path)
+    for flag, value in INIT_FLAGS.items():
+        data[flag] = value != isolate
+    set_connectors(data, {name: isolate for name in NAMES})
+    save(path, data)
+    for flag in FLAGS:
+        print(f"{flag:<{WIDTH}}  {show(data[flag])}")
+    print(f"{'claude.ai connectors':<{WIDTH}}  {len(NAMES)} {show_denied(isolate)}")
+    print(f"Saved {display_path(path)}")
+    return 0
+
+
+def summary(data: dict) -> str:
+    flags = flag_values(data)
+    flag_state = "unset" if all(v is UNSET for v in flags.values()) else preset_name(0, flags)
+    connectors = connector_values(data)
+    connector_state = preset_name(1, connectors)
+    if connector_state == "custom":
+        connector_state += f" ({sum(connectors.values())} denied)"
+    return f"flags: {flag_state} · connectors: {connector_state}"
+
+
+def cmd_status(path: Path, local: bool) -> int:
+    print(summary(load(path)))
+    if not local:
+        local_path = settings_path(local=True)
+        local_data = load(local_path)
+        if any(f in local_data for f in FLAGS) or denied_connectors(local_data):
+            print(f"{local_path.name}: {summary(local_data)}")
+    return 0
+
+
+def cmd_check() -> int:
+    print("Asking claude for its connectors (about 15 seconds)...", file=sys.stderr)
+    # An empty directory has no project settings, so nothing is denied or hidden.
+    with tempfile.TemporaryDirectory(prefix="clod-check-") as empty:
+        try:
+            result = subprocess.run(
+                ["claude", "mcp", "list"],
+                cwd=empty,
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+        except FileNotFoundError:
+            raise ClodError("`claude` is not on PATH")
+        except subprocess.TimeoutExpired:
+            raise ClodError("`claude mcp list` did not finish within 120 seconds")
+    live = dict(re.findall(r"^claude\.ai (.+): (https?://\S+) - ", result.stdout, re.M))
+    if not live:
+        raise ClodError(
+            "`claude mcp list` reported no claude.ai connectors; check that claude "
+            "is signed in and disableClaudeAiConnectors is not true in ~/.claude/settings.json"
+        )
+
+    added = {n: u for n, u in live.items() if n not in CONNECTORS}
+    gone = [n for n in CONNECTORS if n not in live]
+    moved = {n: u for n, u in live.items() if n in CONNECTORS and CONNECTORS[n] != u}
+    if not (added or gone or moved):
+        print(f"All {len(live)} claude.ai connectors match this script")
+        return 0
+    script = Path(__file__).resolve()
+    if added:
+        print(f"On claude.ai but not in {script.name} (enabled in every project). Add to CONNECTORS:")
+        for name, url in sorted(added.items(), key=lambda item: item[0].lower()):
+            print(f"    {json.dumps(name)}: {json.dumps(url)},")
+    if moved:
+        print("URL differs from this script. Replace in CONNECTORS:")
+        for name, url in moved.items():
+            print(f"    {json.dumps(name)}: {json.dumps(url)},")
+    if gone:
+        print("In this script but no longer on claude.ai. Remove from CONNECTORS:")
+        for name in gone:
+            print(f"    {name}")
+    print(f"Edit {script}")
+    return 1
+
+
+# --- interactive picker ----------------------------------------------------
+
+BOLD, DIM, RESET = "\033[1m", "\033[2m", "\033[0m"
+GREEN, RED = "\033[32m", "\033[31m"
+FLAG_CYCLE = [UNSET, True, False]
+PAGES = [("Flags", FLAGS, WIDTH), ("Connectors", NAMES, NAME_WIDTH)]
+KEYS = {
+    b"k": "up",
+    b"j": "down",
+    b"h": "prev",
+    b"l": "next",
+    b"\t": "next",
+    b" ": "change",
+    b"\r": "save",
+    b"\n": "save",
+    b"q": "cancel",
+    b"\x03": "cancel",
+}
+ARROWS = {b"A": "up", b"B": "down", b"C": "next", b"D": "prev"}
+
+
+def read_key(fd: int) -> str:
+    char = os.read(fd, 1)
+    if char != b"\x1b":
+        return KEYS.get(char, "")
+    # A bare escape arrives alone; arrow keys follow it immediately.
+    if not select.select([fd], [], [], 0.05)[0]:
+        return "cancel"
+    return ARROWS.get(os.read(fd, 2)[1:], "")
+
+
+def same(a, b) -> bool:
+    return a is b or (a is not UNSET and b is not UNSET and a == b)
+
+
+class Picker:
+    def __init__(self, path: Path, data: dict):
+        self.path = path
+        self.original = [flag_values(data), connector_values(data)]
+        self.values = [dict(page) for page in self.original]
+        self.page = 0
+        self.cursor = [0] * len(PAGES)
+        self.top = [0] * len(PAGES)
+        self.drawn = 0
+
+    def changes(self, page: int) -> dict:
+        return {
+            key: value
+            for key, value in self.values[page].items()
+            if not same(value, self.original[page][key])
+        }
+
+    def change(self) -> None:
+        """Act on the highlighted row. Row 0 is the tab's preset control."""
+        page, values = self.page, self.values[self.page]
+        row = self.cursor[page]
+        if row == 0:
+            isolate = preset_name(page, values) == "claude.ai"
+            self.values[page] = preset(page, isolate)
+            return
+        key = PAGES[page][1][row - 1]
+        if page == 1:
+            values[key] = not values[key]
+        else:
+            position = next(
+                (i for i, v in enumerate(FLAG_CYCLE) if v is values[key]), -1
+            )
+            values[key] = FLAG_CYCLE[(position + 1) % len(FLAG_CYCLE)]
+
+    def cell(self, key: str) -> str:
+        value = self.values[self.page][key]
+        if self.page == 1:
+            return f"{RED if value else GREEN}{show_denied(value)}{RESET}"
+        color = DIM if value is UNSET else GREEN if value is True else RED
+        return f"{color}{show(value)}{RESET}"
+
+    def row(self, here: bool, label: str, width: int, cell: str, changed: bool) -> str:
+        name = f"{BOLD}{label:<{width}}{RESET}" if here else f"{label:<{width}}"
+        return f"{'>' if here else ' '} {name}  {cell}{' *' if changed else ''}"
+
+    def render(self) -> None:
+        page = self.page
+        _, keys, width = PAGES[page]
+        values = self.values[page]
+        cursor = self.cursor[page] - 1  # index into keys; -1 is the preset row
+        height = max(3, shutil.get_terminal_size().lines - 8)
+        top = min(self.top[page], max(cursor, 0))
+        top = max(top, cursor - height + 1)
+        self.top[page] = top
+        window = keys[top : top + height]
+
+        tabs = "   ".join(
+            f"{BOLD}[{title}]{RESET}" if index == page else f"{DIM} {title} {RESET}"
+            for index, (title, _, _) in enumerate(PAGES)
+        )
+        preset = preset_name(page, values)
+        lines = [
+            f"{DIM}{display_path(self.path)}{RESET}",
+            tabs,
+            "",
+            self.row(
+                cursor == -1,
+                "preset",
+                width,
+                f"{DIM}{preset}{RESET}" if preset == "custom" else preset,
+                preset != preset_name(page, self.original[page]),
+            ),
+            "",
+        ]
+        changed = self.changes(page)
+        for index, key in enumerate(window, start=top):
+            lines.append(
+                self.row(index == cursor, key, width, self.cell(key), key in changed)
+            )
+        notes = []
+        if len(window) < len(keys):
+            notes.append(f"{top + 1}-{top + len(window)} of {len(keys)}")
+        if page == 1 and self.values[0]["disableClaudeAiConnectors"] is True:
+            notes.append("disableClaudeAiConnectors is true, so every connector is off")
+        lines.append(f"{DIM}{' · '.join(notes)}{RESET}")
+
+        out = f"\033[{self.drawn}A" if self.drawn else ""
+        out += "\r\033[J" + "".join(f"{line}\n" for line in lines)
+        self.drawn = len(lines)
+        sys.stdout.write(out)
+        sys.stdout.flush()
+
+    def run(self) -> bool:
+        """Drive the picker. True means save, False means cancel."""
+        fd = sys.stdin.fileno()
+        saved_term = termios.tcgetattr(fd)
+        sys.stdout.write("\033[?25l\033[?7l")  # hide cursor, no line wrap
+        try:
+            tty.setcbreak(fd)
+            while True:
+                self.render()
+                try:
+                    key = read_key(fd)
+                except KeyboardInterrupt:
+                    key = "cancel"
+                rows = len(PAGES[self.page][1]) + 1  # plus the preset row
+                if key == "up":
+                    self.cursor[self.page] = (self.cursor[self.page] - 1) % rows
+                elif key == "down":
+                    self.cursor[self.page] = (self.cursor[self.page] + 1) % rows
+                elif key in ("next", "prev"):
+                    step = 1 if key == "next" else -1
+                    self.page = (self.page + step) % len(PAGES)
+                elif key == "change":
+                    self.change()
+                elif key == "save":
+                    return True
+                elif key == "cancel":
+                    return False
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, saved_term)
+            sys.stdout.write("\033[?25h\033[?7h")
+            sys.stdout.flush()
+
+
+def cmd_pick(path: Path) -> int:
+    data = load(path)
+    picker = Picker(path, data)
+    if not picker.run():
+        print("Cancelled; nothing changed")
+        return 1
+    flags, connectors = picker.changes(0), picker.changes(1)
+    if not flags and not connectors:
+        print("No changes")
+        return 0
+    for flag, value in flags.items():
+        set_flag(data, flag, value)
+    set_connectors(data, connectors)
+    save(path, data)
+    for flag, value in flags.items():
+        print(f"{flag} = {show(value)}")
+    for name, denied in connectors.items():
+        print(f"{name} {show_denied(denied)}")
+    print(f"Saved {display_path(path)}")
+    return 0
+
+
+# --- entry point -----------------------------------------------------------
+
+
+def build_parser() -> argparse.ArgumentParser:
+    # --local is accepted before or after the command.
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--local", action="store_true", default=argparse.SUPPRESS)
+    parser = argparse.ArgumentParser(
+        prog="clod", usage=USAGE, add_help=False, parents=[common]
+    )
+    sub = parser.add_subparsers(dest="command")
+
+    def command(name: str) -> argparse.ArgumentParser:
+        return sub.add_parser(name, add_help=False, parents=[common])
+
+    command("list").add_argument("--json", action="store_true")
+    command("get").add_argument("flag")
+    setter = command("set")
+    setter.add_argument("flag")
+    setter.add_argument("value", choices=["true", "false"])
+    command("unset").add_argument("flag")
+    command("connectors").add_argument("--json", action="store_true")
+    command("deny").add_argument("names", nargs="+")
+    command("allow").add_argument("names", nargs="+")
+    command("init").add_argument("preset", nargs="?", choices=["isolate"])
+    command("status")
+    command("check")
+    command("help")
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    if any(arg in ("-h", "--help") for arg in sys.argv[1:]):
+        print(HELP, end="")
+        return 0
+    args = parser.parse_args()
+    if args.command == "help":
+        print(HELP, end="")
+        return 0
+
+    local = getattr(args, "local", False)
+    try:
+        if args.command == "check":
+            return cmd_check()
+        path = settings_path(local)
+        if args.command == "status":
+            return cmd_status(path, local)
+        if args.command == "list":
+            return cmd_list(path, args.json)
+        if args.command == "get":
+            return cmd_get(path, args.flag)
+        if args.command == "set":
+            return cmd_write(path, args.flag, args.value == "true")
+        if args.command == "unset":
+            return cmd_write(path, args.flag, UNSET)
+        if args.command == "connectors":
+            return cmd_connectors(path, args.json)
+        if args.command in ("deny", "allow"):
+            return cmd_toggle(path, args.names, args.command == "deny")
+        if args.command == "init":
+            return cmd_init(path, args.preset == "isolate")
+        if sys.stdin.isatty() and sys.stdout.isatty():
+            return cmd_pick(path)
+        return cmd_list(path, as_json=False)
+    except ClodError as err:
+        print(f"clod: {err}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
