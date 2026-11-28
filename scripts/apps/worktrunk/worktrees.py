@@ -7,8 +7,39 @@ import subprocess
 import sys
 
 
+# These directories hold reproducible dependencies, build output, or caches.
+GENERATED_DIRECTORIES = {
+    b".mypy_cache",
+    b".next",
+    b".pytest_cache",
+    b".ruff_cache",
+    b".turbo",
+    b".vite",
+    b"__pycache__",
+    b"build",
+    b"coverage",
+    b"dist",
+    b"node_modules",
+}
+
+
 def git(path, *args):
     return subprocess.check_output(["git", "-C", path, *args])
+
+
+def ignored_paths_to_review(status):
+    paths = []
+    for entry in status:
+        if not entry.startswith(b"!! "):
+            continue
+        path = entry[3:]
+        # Git marks directories with a trailing slash. A file with the same name
+        # could contain local data.
+        if path.endswith(b"/") and path.rsplit(b"/", 2)[-2] in GENERATED_DIRECTORIES:
+            continue
+        name = path.decode(errors="backslashreplace")
+        paths.append(name if name.isprintable() else repr(name))
+    return paths
 
 
 def branch_status(item, base):
@@ -57,8 +88,10 @@ def assess(item, base):
         return "Keep", "In progress", reason
 
     decision, stage, reason = branch_status(item, base)
-    if decision == "Delete OK" and any(entry.startswith(b"!! ") for entry in status):
-        return "Review", stage, "ignored files would be deleted"
+    if decision == "Delete OK":
+        paths = ignored_paths_to_review(status)
+        if paths:
+            return "Review", stage, f"local files would be deleted ({', '.join(paths)})"
     return decision, stage, reason
 
 

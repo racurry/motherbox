@@ -26,6 +26,10 @@ clod init isolate                              # Write the opposite flags and de
 clod --local init isolate                      # Same, in the personal .claude/settings.local.json
 clod status                                    # One-line summary of this project's flags and connectors
 clod check                                     # Compare clod's connector list with `claude mcp list`
+clod plug                                      # Show which of clod's plugins are on in this project
+clod plug on pocock                            # Install and enable a plugin at local scope
+clod plug off pocock                           # Disable it again
+clod plug marketplaces                         # Add any missing plugin marketplaces, user-wide
 claude-to-agents                               # Converge agent instruction files on one AGENTS.md
 filename_fixer downloads --dedot               # Normalize names and replace dots with spaces
 filename_fixer downloads --strip-digits        # Normalize names and remove digits
@@ -64,5 +68,9 @@ whats-on-port 3000 --kill                      # Kill processes listening on a p
 
 `wt status` shows which worktrees cleanup would remove and why. `wt cleanup`
 removes clean, finished worktrees and integrated local branches with evidence
-of completed work. Unused branches and ambiguous histories are kept. Run
+of completed work. Known ignored directories for dependencies, build output,
+and caches, such as `node_modules/` and `dist/`, are eligible for removal.
+Other ignored paths, such as local environment files and databases, are
+listed for review and block cleanup. Unused branches and ambiguous histories
+are kept. Run
 `wt cleanup --preview` to see the exact branch names selected.

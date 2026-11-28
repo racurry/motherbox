@@ -3,12 +3,13 @@
 # requires-python = ">=3.11"
 # dependencies = []
 # ///
-"""Manage the project-level Claude Code settings that `claude` has no command for.
+"""Manage project-level Claude Code settings: feature flags, claude.ai connectors, plugins.
 
-Reads and writes .claude/settings.json at the git root (or the current
-directory outside a repo), or .claude/settings.local.json with --local. Only the flags listed below and the
-deniedMcpServers entries for the claude.ai connectors listed below are
-touched; everything else in the file is preserved.
+Flags and connector denials live in .claude/settings.json at the git root (or
+the current directory outside a repo), or .claude/settings.local.json with
+--local. Only the flags and connectors listed below are touched; everything
+else in the file is preserved. Plugins are switched through `claude plugin`,
+always at local scope.
 """
 
 import argparse
@@ -80,83 +81,64 @@ DENIED = "deniedMcpServers"
 NAMES = sorted(CONNECTORS, key=str.lower)
 NAME_WIDTH = max(len(n) for n in NAMES)
 
+# Plugins `clod plug` can switch, by short name, as plugin@marketplace.
+PLUGINS = {
+    "pocock": "mattpocock-skills@claude-plugins-official",
+    "addy": "agent-skills@addy-agent-skills",
+}
+# Marketplaces those plugins come from, as `claude plugin marketplace add` sources.
+MARKETPLACES = {
+    "claude-plugins-official": "anthropics/claude-plugins-official",
+    "addy-agent-skills": "addyosmani/agent-skills",
+}
+ENABLED = "enabledPlugins"
+
 USAGE = "clod [--local] [command]"
 HELP = f"""\
 usage: {USAGE}
 
-Manage Claude Code feature flags and claude.ai connector denials in this
-project's .claude/settings.json (at the git root, or the current directory
-outside a repo). Everything else in the file is preserved.
+Manage Claude Code flags, claude.ai connectors, and plugins for this project.
+Flags and connectors are written to .claude/settings.json at the git root.
 
-options:
-  --local                    use .claude/settings.local.json, the personal file
-                             that stays out of git, for any command below
-
-commands:
-  (none)                     interactive picker in a terminal, flag table when piped
-  list [--json]              print every flag
-  get <flag>                 print true, false, or unset
-  set <flag> <true|false>    write the flag
-  unset <flag>               remove the flag so the user-level default applies
-  connectors [--json]        print every claude.ai connector as allowed or denied
-  deny <connector>...        add connectors to deniedMcpServers
-  allow <connector>...       remove connectors from deniedMcpServers
-  init                       write the standard flags and allow every connector
-  init isolate               write the opposite flags and deny every connector
-  status                     one-line summary of the flags and connectors
-  check                      compare the connector list in this script with
-                             `claude mcp list` (takes about 15 seconds)
-  help                       show this help
+  --local                  write .claude/settings.local.json instead
 
 flags:
-  {chr(10).join("  " + f for f in FLAGS).lstrip()}
-
-Flags and connectors can be named by any unambiguous, case-insensitive
-fragment: `clod set workflows true` sets disableWorkflows, `clod deny slack
-linear` denies two connectors. `clod deny all` and `clod allow all` cover every
-connector. Flag values are literal, so `disable*` flags turn a feature off
-when true.
-
-picker:
-  Two tabs, Flags and Connectors. The first row of each tab is its preset.
-
-  up/down or k/j     move           space  change the highlighted row
-  tab or left/right  switch tabs    enter  save
-  q/esc              cancel
-
-  Nothing is written until enter. Space cycles a flag through unset, true,
-  and false, and switches a connector between allowed and denied. On a
-  preset row it switches every value on that tab between claude.ai (the
-  `clod init` values) and isolated (the `clod init isolate` values). The
-  preset reads custom when the tab matches neither.
+  (no command)             interactive picker; flag table when piped
+  list [--json]            print every flag
+  get <flag>               print true, false, or unset
+  set <flag> <true|false>  write a flag
+  unset <flag>             remove a flag so the user-level default applies
 
 connectors:
-  The {len(CONNECTORS)} claude.ai connectors are listed at the top of this script. A
-  connector is denied by a deniedMcpServers entry with its URL. Entries for
-  anything else are left alone. Denials only matter while
-  disableClaudeAiConnectors is not true; when it is true every connector is off.
+  connectors [--json]      print every claude.ai connector as allowed or denied
+  deny <name>...|all       deny connectors in this project
+  allow <name>...|all      allow them again
+  check                    compare clod's connector list with `claude mcp list`
 
-status:
-  Prints `flags: <preset> · connectors: <preset>` for .claude/settings.json,
-  where a preset is claude.ai, isolated, custom, or (flags only) unset. When
-  .claude/settings.local.json also sets any of these, a second line reports
-  it; Claude Code applies that file on top. With --local, only that file.
+both:
+  init                     standard flags, every connector allowed
+  init isolate             opposite flags, every connector denied
+  status                   one-line summary
 
-check:
-  Lists connectors that claude.ai has and this script lacks, as lines to paste
-  into CONNECTORS, and connectors this script has that are gone or have a
-  different URL. Exits 1 when anything differs. A connector missing from this
-  script is enabled in every project, isolated ones included.
+plugins (always local scope):
+  plug                     print each plugin as on or off in this project
+  plug on <name>           install and enable a plugin
+  plug off <name>          disable it
+  plug marketplaces        add any missing plugin marketplaces, user-wide
 
-init:
-  Sets all six flags and every connector. Safe to re-run to switch a project
-  between the two presets.
+flag names:
+  {chr(10).join("  " + f for f in FLAGS).lstrip()}
 
-    flag                       init   init isolate
-    {chr(10).join(f"    {f:<{WIDTH}}  {json.dumps(v):<5}  {json.dumps(not v)}" for f, v in INIT_FLAGS.items()).lstrip()}
-    claude.ai connectors       allow  deny
+plugin names:
+  {chr(10).join(f"  {n:<8} {p}" for n, p in PLUGINS.items()).lstrip()}
+
+Flags and connectors match on any unambiguous, case-insensitive fragment:
+`clod set workflows true`, `clod deny slack linear`. Flag values are literal,
+so a `disable*` flag turns its feature off when true.
+
+picker keys: up/down move, tab switches tabs, space changes a row, enter
+saves, q cancels. The first row of each tab applies an `init` preset.
 """
-
 
 class ClodError(Exception):
     pass
@@ -399,6 +381,67 @@ def cmd_status(path: Path, local: bool) -> int:
         if any(f in local_data for f in FLAGS) or denied_connectors(local_data):
             print(f"{local_path.name}: {summary(local_data)}")
     return 0
+
+
+def claude_plugin(root: Path, *args: str, capture: bool = False) -> subprocess.CompletedProcess:
+    try:
+        return subprocess.run(
+            ["claude", "plugin", *args], cwd=root, capture_output=capture, text=True
+        )
+    except FileNotFoundError:
+        raise ClodError("claude is not on PATH")
+
+
+def plugin_enabled(root: Path, plugin: str) -> bool:
+    data = load(root / ".claude" / "settings.local.json")
+    enabled = data.get(ENABLED, {})
+    return isinstance(enabled, dict) and enabled.get(plugin) is True
+
+
+def cmd_plug_list(root: Path) -> int:
+    width = max(len(name) for name in PLUGINS)
+    for name, plugin in PLUGINS.items():
+        state = "on" if plugin_enabled(root, plugin) else "off"
+        print(f"{name:<{width}}  {state:<3}  {plugin}")
+    return 0
+
+
+def cmd_plug(root: Path, name: str, on: bool) -> int:
+    if name not in PLUGINS:
+        raise ClodError(f"unknown plugin '{name}'; choose from: {', '.join(PLUGINS)}")
+    plugin = PLUGINS[name]
+    if plugin_enabled(root, plugin) == on:
+        print(f"{name} already {'on' if on else 'off'}")
+        return 0
+    if on:
+        # Installing is a no-op when this project already has the plugin.
+        steps = [("install", plugin, "--scope", "local"), ("enable", plugin, "--scope", "local")]
+    else:
+        steps = [("disable", plugin, "--scope", "local")]
+    for step in steps:
+        if plugin_enabled(root, plugin) == on:
+            break
+        result = claude_plugin(root, *step)
+        if result.returncode != 0:
+            hint = "; try `clod plug marketplaces`" if step[0] == "install" else ""
+            raise ClodError(f"`claude plugin {' '.join(step)}` failed{hint}")
+    print(f"{name} {'on' if on else 'off'}; run /reload-plugins in open sessions")
+    return 0
+
+
+def cmd_plug_marketplaces(root: Path) -> int:
+    result = claude_plugin(root, "marketplace", "list", "--json", capture=True)
+    try:
+        have = {entry["name"] for entry in json.loads(result.stdout)}
+    except (json.JSONDecodeError, KeyError, TypeError):
+        raise ClodError("could not read `claude plugin marketplace list --json`")
+    failed = False
+    for name, source in MARKETPLACES.items():
+        if name in have:
+            print(f"{name} already added")
+        elif claude_plugin(root, "marketplace", "add", source).returncode != 0:
+            failed = True
+    return 1 if failed else 0
 
 
 def cmd_check() -> int:
@@ -655,6 +698,9 @@ def build_parser() -> argparse.ArgumentParser:
     command("allow").add_argument("names", nargs="+")
     command("init").add_argument("preset", nargs="?", choices=["isolate"])
     command("status")
+    plug = command("plug")
+    plug.add_argument("action", nargs="?", choices=["on", "off", "marketplaces"])
+    plug.add_argument("name", nargs="?")
     command("check")
     command("help")
     return parser
@@ -675,6 +721,15 @@ def main() -> int:
         if args.command == "check":
             return cmd_check()
         path = settings_path(local)
+        if args.command == "plug":
+            root = path.parent.parent
+            if args.action is None:
+                return cmd_plug_list(root)
+            if args.action == "marketplaces":
+                return cmd_plug_marketplaces(root)
+            if args.name is None:
+                raise ClodError(f"usage: clod plug {args.action} <{'|'.join(PLUGINS)}>")
+            return cmd_plug(root, args.name, args.action == "on")
         if args.command == "status":
             return cmd_status(path, local)
         if args.command == "list":
