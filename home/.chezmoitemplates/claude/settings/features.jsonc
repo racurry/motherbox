@@ -6,6 +6,9 @@
   "alwaysThinkingEnabled": true,
   "autoMemoryEnabled": false,
 
+  // Keep session transcripts for 180 days before startup cleanup deletes them.
+  "cleanupPeriodDays": 180,
+
   // disable*: true turns that feature off.
   "disableArtifact": false,
   "disableBundledSkills": false,
