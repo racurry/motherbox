@@ -18,3 +18,10 @@
 .config/ruff/ruff.toml
 .config/yamllint/config
 .config/shellcheckrc
+
+# Retire the standalone Herdr TUI.
+.config/herdr/config.toml
+.config/herdr/.plugins.lock
+.config/herdr/plugins
+.config/herdr/plugins.json
+.local/bin/herdr

@@ -208,12 +208,12 @@ const lastPart = (p) => {
 export default class Spaces extends View {
   init(_props, cx) {
     // As an overlay of the sidebar: a folder's menu, or the dialog editing one.
-    const { folderMenu, machineMenu, machineList, edit, spaceMenu, iconEdit, group = false, look, repo, checkout, nested = false, on = [], fresh = false, overlay, carousel = false } = props() ?? {};
+    const { folderMenu, machineMenu, machineList, edit, spaceMenu, iconEdit, group = false, look, repo, checkout, folder, primary, nested = false, on = [], fresh = false, overlay, carousel = false } = props() ?? {};
     this.carousel = Boolean(carousel);
     if (folderMenu) { this.folderMenu = { id: folderMenu, overlay }; return; }
     if (machineMenu) { this.machineMenu = { id: machineMenu, on, overlay }; return; }
     if (machineList) { this.machineList = { ...machineList, overlay }; return; }
-    if (spaceMenu) { this.spaceMenu = { id: spaceMenu, look, repo, checkout, nested, overlay }; return; }
+    if (spaceMenu) { this.spaceMenu = { id: spaceMenu, look, repo, checkout, folder, primary, nested, overlay }; return; }
     if (iconEdit) {
       this.iconEdit = { name: iconEdit, group, overlay };
       const was = group ? groups().find((x) => x.id === iconEdit)?.icon : looks()[iconEdit]?.icon;
@@ -514,9 +514,15 @@ export default class Spaces extends View {
   // A space's menu: its color and icon, its group (a nested space goes where
   // its parent goes), then Herdr's own space items.
   menu(w, g, nested) {
+    const ps = panes();
+    const primary = g?.linked && spaces().find((s) => {
+      const info = this.git[where(s, ps)];
+      return info && !info.linked && info.repo === g.repo;
+    });
     // A popup is as tall as its items; height is only the most.
     openOverlay({ mod: "ya-spaces", kind: "popup", width: 236, height: 520, props: {
       carousel: this.carousel, spaceMenu: w.id, look: lookKey(w, g), repo: Boolean(g), checkout: g ? (g.linked ? "linked" : "main") : null, nested,
+      folder: g?.top, primary: primary ? { id: primary.id, folder: this.git[where(primary, ps)].top } : null,
     } });
   }
 
@@ -583,10 +589,17 @@ export default class Spaces extends View {
   }
 
   spaceMenuView(t) {
-    const { id, look: name, repo, checkout, nested, overlay } = this.spaceMenu;
+    const { id, look: name, repo, checkout, folder, primary, nested, overlay } = this.spaceMenu;
     const cfg = looks()[name] ?? {};
     const current = groupOf(id);
     const close = () => closeOverlay(overlay);
+    const local = spaces().some((s) => s.id === id && !s.machine);
+    const worktreeDialog = (action) => openOverlay({
+      mod: local && action !== "open" ? "ya-worktree" : "worktree",
+      kind: "dialog", width: action === "open" ? 560 : 440,
+      height: action === "open" ? 480 : 260,
+      props: { space: id, action, folder, primary },
+    });
     const item = (key, label, icon, action, { on = false, dim = false } = {}) => h_flex().id(key).h(30).px(8).gap(9).items_center().rounded(6).cursor_pointer()
       .text_color(dim ? t.muted : t.foreground).hover((x) => x.bg(t.hover)).on_click(() => { close(); action(); })
       .child(div().w(14).flex_none().flex().justify_center().child(icon ? svg(`mods/workspace-chrome/${icon}.svg`).size(14).text_color(t.muted) : ""))
@@ -609,9 +622,9 @@ export default class Spaces extends View {
       .child(rule())
       .child(item("space-rename", "Rename", "square-pen", () => run("space.rename", { id })))
       .when(repo, (el) => el
-        .child(item("space-wt-new", "New worktree", "git-branch", () => openOverlay({ mod: "worktree", kind: "dialog", width: 440, height: 260, props: { space: id, action: "new" } })))
-        .child(item("space-wt-open", "Open worktree", "git-branch", () => openOverlay({ mod: "worktree", kind: "dialog", width: 560, height: 480, props: { space: id, action: "open" } }))))
-      .when(checkout === "linked", (el) => el.child(item("space-wt-rm", "Remove worktree", "git-branch", () => openOverlay({ mod: "worktree", kind: "dialog", width: 440, height: 260, props: { space: id, action: "remove" } }))))
+        .child(item("space-wt-new", "New worktree", "git-branch", () => worktreeDialog("new")))
+        .child(item("space-wt-open", "Open worktree", "git-branch", () => worktreeDialog("open"))))
+      .when(checkout === "linked", (el) => el.child(item("space-wt-rm", "Remove worktree", "git-branch", () => worktreeDialog("remove"))))
       .child(rule())
       .child(item("space-close", "Close", "x", () => run("space.close", { id })));
   }

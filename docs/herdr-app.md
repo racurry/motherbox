@@ -12,6 +12,7 @@ All of it lives in [`home/dot_config/herdr-app/`](../home/dot_config/herdr-app/)
 |---|---|
 | `layouts/ya-tabs.json` | The `ya-tabs` layout: Herdr's `main` with a tabbed sidebar and the mods below |
 | `mods/ya-spaces/` | Spaces sidebar: every machine's spaces in one list, groups, per-repo icons and colors, a space menu, and the machines |
+| `mods/ya-worktree/` | Worktrunk branch prompt and removal confirmation for the Spaces sidebar |
 | `mods/ya-sidebar/` | The sidebar's tab strip, with a "needs you" pill while an agent is blocked, and the sidebar's commands |
 | `mods/ya-status/` | Powerline status bar: agent, machine, folder, GitHub, git status, branch, git user |
 | `mods/t3-inbox/` | Agents inbox, from [JinJieBeWater/herdr-t3-inbox](https://github.com/JinJieBeWater/herdr-t3-inbox) |
@@ -79,6 +80,12 @@ Forked from [jankeesvw/herdr-space-folders](https://github.com/jankeesvw/herdr-s
 **One list for every machine.** Spaces from this computer and from other machines sit in the same list, in any order. A space on another machine shows that machine's name after its own.
 
 **Same repo, together.** A worktree sits under its checkout. A repo that is open on another machine too sits under this computer's space for it, showing just the machine's name. Rows under a space move with it and share its group.
+
+**Worktrees on this Mac.** Use `wt go <branch>` or right-click a repo in the Spaces sidebar and choose **New worktree**. Worktrunk runs the user and project hooks, and an open Herdr App window opens or focuses the checkout under its main space. **Open worktree** shows a checkout that already exists.
+
+Use `wt remove <branch>` or right-click a linked checkout and choose **Remove worktree**. Worktrunk runs its removal hooks and applies its branch deletion settings. Herdr closes the checkout's space when the checkout is gone. Worktrunk runs post-remove hooks in the background. Cleanup that needs the checkout or its terminals belongs in `pre-remove`.
+
+The sidebar runs Worktrunk in a terminal tab so it can show approval prompts and errors. Worktree paths and user hooks live in [Worktrunk config](../home/dot_config/worktrunk/config.toml), and project hooks live in the project's `.config/wt.toml`. The user hooks call [`herdr-spaces.py`](../scripts/apps/worktrunk/herdr-spaces.py) to update the app.
 
 **Order.** Drag a space onto another to put it next to it. The list keeps its own order.
 

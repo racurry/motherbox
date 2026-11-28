@@ -259,8 +259,8 @@ exclude = [
 status = '"${MOTHERBOX_ROOT:-$HOME/dev/apps/motherbox}/scripts/apps/worktrunk/worktrees.py" status {{ args }}'
 cleanup = '"${MOTHERBOX_ROOT:-$HOME/dev/apps/motherbox}/scripts/apps/worktrunk/worktrees.py" cleanup {{ args }}'
 # wt go BRANCH [switch flags]: switch to BRANCH's worktree, creating the branch
-# if it doesn't exist locally or on origin. The shell stays put; in Herdr the
-# post-switch hook opens the worktree as a nested space.
+# if it doesn't exist locally or on origin. The shell stays put; the
+# post-switch hook opens the checkout in Herdr App when a window is running.
 go = '''
 {% if args | length == 0 %}
 wt switch --no-cd
@@ -449,11 +449,10 @@ fi
 # copy = "wt step copy-ignored"
 upstream = 'git config branch.{{ branch }}.remote origin && git config branch.{{ branch }}.merge refs/heads/{{ branch }}'
 
-# Inside Herdr, show the destination worktree as a grouped workspace and focus it.
+# Open or focus the destination worktree in Herdr App.
 [post-switch]
-herdr = '"$MOTHERBOX_ROOT/scripts/apps/herdr/worktrees/worktrees.sh" open {{ worktree_path }}'
+herdr-app = '"${MOTHERBOX_ROOT:-$HOME/dev/apps/motherbox}/scripts/apps/worktrunk/herdr-spaces.py" open {{ worktree_path }}'
 
-# Close the worktree's Herdr workspace once it's removed. Runs after removal so
-# closing the pane can't interrupt `wt merge`/`wt remove` run from inside it.
+# Close the Herdr App space once the checkout is gone.
 [post-remove]
-herdr = '"$MOTHERBOX_ROOT/scripts/apps/herdr/worktrees/worktrees.sh" close {{ worktree_path }}'
+herdr-app = '"${MOTHERBOX_ROOT:-$HOME/dev/apps/motherbox}/scripts/apps/worktrunk/herdr-spaces.py" close {{ worktree_path }} --repo {{ primary_worktree_path }}'
