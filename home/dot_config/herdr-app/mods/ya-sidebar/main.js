@@ -2,11 +2,16 @@
 // "needs you" pill while any agent is blocked. The pill shows the agents tab
 // and goes to the blocked agent the inbox lists first.
 //
-// props: { stack: "<stack id>", tabs: [{ id: "<child id>", label }], agents: "<child id>" }
+// props: { stack: "<stack id>", tabs: [{ id: "<child id>", label }], agents: "<child id>", spaces: "<child id>" }
+//
+// Commands, for keys.json and the palette (mod.json): "ya-sidebar.swap" shows
+// the next tab. Any other ("ya-sidebar.find", ".group-next", ".group-prev",
+// ".group-all", ".group-1" to ".group-9") shows the spaces tab and passes the
+// command on to ya-spaces there, which a key can't reach while its tab is hidden.
 
 import { View, div } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { agents, layout, props, run, theme } from "herdr";
+import { agents, layout, props, run, theme, nextCommand, setShared } from "herdr";
 
 const COMPACT_BELOW = 190;
 
@@ -26,8 +31,25 @@ export function waiting(all) {
 }
 
 export default class Sidebar extends View {
-  init() {
+  init(_props, cx) {
     this.width = null;
+    cx.spawn(async (cx) => {
+      for (;;) {
+        this.command(String(await nextCommand()).split(".").pop());
+        cx.notify();
+      }
+    });
+  }
+
+  command(c) {
+    const { stack = "sidebar-stack", tabs = [], spaces: spacesTab = "spaces" } = props() ?? {};
+    if (c === "swap") {
+      const node = find(layout(), stack), at = tabs.findIndex((x) => x.id === (node?.active ?? node?.children?.[0]?.id));
+      if (tabs.length) run("layout.select", { stack, child: tabs[(at + 1) % tabs.length].id });
+      return;
+    }
+    run("layout.select", { stack, child: spacesTab });
+    setShared("ya-spaces.do", { c, at: Date.now() });
   }
 
   render() {

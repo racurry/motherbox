@@ -1,1 +1,11 @@
-{ "place": "none", "title": "Sidebar tabs" }
+{
+  "place": "none",
+  "title": "Sidebar tabs",
+  "palette": [
+    { "title": "Switch between spaces and agents", "command": "ya-sidebar.swap", "group": "Sidebar", "words": "sidebar tab inbox list toggle" },
+    { "title": "Find a space", "command": "ya-sidebar.find", "group": "Sidebar", "words": "search filter spaces" },
+    { "title": "Show all groups", "command": "ya-sidebar.group-all", "group": "Sidebar", "words": "spaces every" },
+    { "title": "Next group", "command": "ya-sidebar.group-next", "group": "Sidebar", "words": "spaces" },
+    { "title": "Previous group", "command": "ya-sidebar.group-prev", "group": "Sidebar", "words": "spaces" }
+  ]
+}

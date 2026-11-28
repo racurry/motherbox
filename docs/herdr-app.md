@@ -12,7 +12,7 @@ All of it lives in [`home/dot_config/herdr-app/`](../home/dot_config/herdr-app/)
 |---|---|
 | `layouts/ya-tabs.json` | The `ya-tabs` layout: Herdr's `main` with a tabbed sidebar and the mods below |
 | `mods/ya-spaces/` | Spaces sidebar: every machine's spaces in one list, groups, per-repo icons and colors, a space menu, and the machines |
-| `mods/ya-sidebar/` | The sidebar's tab strip, with a "needs you" pill while an agent is blocked |
+| `mods/ya-sidebar/` | The sidebar's tab strip, with a "needs you" pill while an agent is blocked, and the sidebar's commands |
 | `mods/ya-status/` | Powerline status bar: agent, machine, folder, GitHub, git status, branch, git user |
 | `mods/t3-inbox/` | Agents inbox, from [JinJieBeWater/herdr-t3-inbox](https://github.com/JinJieBeWater/herdr-t3-inbox) |
 | `keys.json`, `settings.json`, `themes/` | Keys, personal settings, and themes |
@@ -49,7 +49,28 @@ The sidebar is tabbed: a `stack` holding `ya-spaces` as a carousel and `t3-inbox
 | `cmd-alt-1` | Switch to Herdr's `main` layout |
 | `cmd-alt-2` | Switch to `ya-tabs` |
 | `cmd-shift-l` | Cycle through the layouts |
-| `cmd-alt-right`, `cmd-alt-left` | Next and previous group in the spaces carousel |
+| `cmd-shift-b` | Switch between the spaces and agents tabs |
+| `cmd-g` | Go to a group: type to narrow the groups, Enter to show one |
+| `cmd-shift-g` | Show all groups |
+| `cmd-alt-right`, `cmd-alt-left` | Next and previous stop of the group filter |
+| `cmd-shift-f` | Search the spaces |
+
+### Sidebar commands (`ya-sidebar`)
+
+Bind these in `keys.json`. The palette (`cmd-k`) lists them under "Sidebar", from the `palette` entries in each mod's `mod.json`.
+
+| Command | Does |
+|---|---|
+| `ya-sidebar.swap` | Show the sidebar's next tab |
+| `ya-sidebar.find` | Show the spaces tab and put the cursor in its search field |
+| `ya-sidebar.group-next`, `ya-sidebar.group-prev` | Show the spaces tab and move the group filter one stop: all groups, then each group |
+| `ya-sidebar.group-all` | Show the spaces tab with all groups |
+| `ya-sidebar.group-1` to `ya-sidebar.group-9` | Show the spaces tab with only that group, counted from the first |
+| `mod.open:ya-spaces` | Open the group filter in the middle of the window |
+
+A key reaches a mod only while it is on screen, and `ya-spaces` is off screen while the agents tab shows. `ya-sidebar` is always on screen, so it takes the command, shows the spaces tab, and passes the command to `ya-spaces` through the shared value `ya-spaces.do`. Add a sidebar command that `ya-spaces` should handle by adding it to `command()` in `ya-spaces/main.js`. `ya-sidebar` passes on any name it doesn't know.
+
+The palette can't list one entry per group: `mod.json` is a fixed file and a mod command takes no arguments. "Go to group…" opens the group filter instead.
 
 ## Spaces sidebar (`ya-spaces`)
 
@@ -68,7 +89,10 @@ Forked from [jankeesvw/herdr-space-folders](https://github.com/jankeesvw/herdr-s
 - Right-click a group to change its color or icon, edit it, or delete it.
 - **Edit group…** sets "Start new spaces in", the folder the group's new spaces open in. `~` is the home folder of whichever machine the space is on.
 
-**Carousel.** With props `{"carousel": true}`, as in `ya-tabs`, the mod shows one group at a time under a header with the group's name, arrows to the previous and next group, a new-space button, a new-group button and a machines button. Every space is in a group there: a space in none joins the group showing, and going to a space in another group shows that group.
+**Carousel.** With props `{"carousel": true}`, as in `ya-tabs`, the header holds a search field, the group filter, a new-group button and a machines button.
+
+- **Group filter.** The filter button opens a list of "All groups" and each group; type to narrow it, then click or press Enter. "All groups" shows every group with its spaces under it. A group shows that group alone, and the button shows its icon. While one group shows, every space is in a group: a space in none joins the group showing, and going to a space in another group shows that group.
+- **Search.** Typing in the search field lists the matching spaces from every group, best match first. A space matches on its name, branch, repo or machine, and the letters only need to appear in order (`mbx` finds `motherbox`). Up and Down move through the results, Enter goes to the space, Escape clears the field.
 
 **Machines.** The header's monitor button opens a popup listing this computer and the machines from `hc machine ls`. A connected machine's **+** opens a space there, a remote machine's gear opens Herdr's Settings → Machines, and **New machine** opens Herdr's `machine-add` dialog. Machines are added, renamed and removed in Herdr's own screens, never in the mod.
 
@@ -79,7 +103,7 @@ Forked from [jankeesvw/herdr-space-folders](https://github.com/jankeesvw/herdr-s
 - `groups`: the groups, in order
 - `of`: which space is in which group
 - `order`: the list's order
-- `page`: the group the carousel shows
+- `page`: the group the carousel shows, or `"*"` for all groups
 - `icons`: looks keyed by repo name, or by space name outside a repo, e.g. `{ "sadly.online": { "icon": "🌐", "color": "#22a99a" } }`. Image paths are absolute, from home (`~/logo.png`), or relative to `~/.config/herdr-app` (`icons/python.svg` uses Herdr's own program icons).
 
 **Commands.** Bind these in `keys.json`. Herdr's own next and previous space keys follow Herdr's order, not the list's.
@@ -88,9 +112,9 @@ Forked from [jankeesvw/herdr-space-folders](https://github.com/jankeesvw/herdr-s
 |---|---|
 | `ya-spaces.next`, `ya-spaces.prev` | Step through the list as it's drawn |
 | `ya-spaces.menu` | Open the shown space's menu |
-| `ya-spaces.group-next`, `ya-spaces.group-prev` | Show the next or previous group in the carousel |
+| `ya-spaces.group-next`, `ya-spaces.group-prev`, `ya-spaces.group-all`, `ya-spaces.group-1` to `ya-spaces.group-9`, `ya-spaces.find` | The same as the `ya-sidebar` commands of those names, but only while the spaces tab shows |
 
-The mod's overlays (group menu, machine menu, machines popup, group dialog, space menu, icon dialog) are modes of the same mod, picked by `props()`.
+The mod's overlays (group filter, group menu, machine menu, machines popup, group dialog, space menu, icon dialog) are modes of the same mod, picked by `props()`. Opened with no mode, as `mod.open` does, it is the group filter.
 
 ## Status bar (`ya-status`)
 

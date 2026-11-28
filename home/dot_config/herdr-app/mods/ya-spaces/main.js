@@ -13,14 +13,19 @@
 // folder, on this computer (+) or another machine. Spaces and groups can have
 // icons (see `look`).
 //
-// With props `{ carousel: true }` one group shows at a time, under a header
-// that names it and steps to the next or the one before ("ya-spaces.group-next"
-// and ".group-prev" in keys.json do the same). Every space is in a group there:
-// one that's in none joins the group showing. Going to a space in another
-// group (the agents list, a key) shows that group.
+// With props `{ carousel: true }` the header is a search field and a group
+// filter. The filter shows every group with its spaces under it, or one group
+// alone; "ya-spaces.group-next", ".group-prev", ".group-all" and ".group-1" to
+// ".group-9" in keys.json pick the same. While one group shows, every space is
+// in a group: one that's in none joins it, and going to a space in another
+// group (the agents list, a key) shows that group. Typing in the search field
+// lists the matching spaces of every group, best first.
+//
+// Opened by itself (`mod.open`, as mod.json's overlay), it is the group filter:
+// type to narrow the groups, Enter to show one.
 
 import { View, div, svg, image } from "gpui-kit";
-import { v_flex, h_flex, InputState, Input } from "gpui-base";
+import { v_flex, h_flex, InputState, Input, ScrollHandle } from "gpui-base";
 import { spaces, machines, panes, run, openOverlay, closeOverlay, props, exec, hc, theme, shared, setShared, watchFolder, window, layout, pickFolder, home, nextCommand } from "herdr";
 
 // Everything lives in one file on this computer: { v: 2, groups: [{ id, name,
@@ -36,8 +41,37 @@ const store = () => { const s = shared("ya-spaces"); return s?.v === 2 ? s : EMP
 const groups = () => store().groups ?? [];
 // The group a space was put in, null for none. A nested space goes where its parent goes.
 const groupOf = (id) => { const g = store().of?.[id]; return g && groups().some((f) => f.id === g) ? g : null; };
-// The group a carousel shows: the one last gone to, else the first; null with no groups.
-const pageId = () => { const p = store().page; return groups().some((g) => g.id === p) ? p : groups()[0]?.id ?? null; };
+// `page` when every group shows.
+const ALL = "*";
+// The one group a carousel shows: the one last gone to, else the first; null
+// when every group shows or there are none.
+const pageId = () => { const p = store().page; return p === ALL ? null : groups().some((g) => g.id === p) ? p : groups()[0]?.id ?? null; };
+// How well `text` matches the typed letters `q` (lowercase, no spaces): 0 for
+// not at all. The letters in a row beat the letters in order, and a match at
+// the start of a word beats one inside it.
+function fuzzy(text, q) {
+  const s = String(text ?? "").toLowerCase();
+  if (!q || !s) return 0;
+  const edge = (i) => i === 0 || !/[a-z0-9]/.test(s[i - 1]);
+  const at = s.indexOf(q);
+  if (at >= 0) return 100 + (edge(at) ? 50 : 0) - Math.min(at, 40);
+  let i = 0, score = 0, last = -2;
+  for (let j = 0; j < s.length && i < q.length; j++) {
+    if (s[j] !== q[i]) continue;
+    score += j === last + 1 ? 3 : edge(j) ? 2 : 1;
+    last = j;
+    i++;
+  }
+  return i === q.length ? score : 0;
+}
+const typed = (input) => input.value().trim().toLowerCase().replace(/\s+/g, "");
+// Shows the sidebar tab the spaces list is on.
+function reveal(node = layout()) {
+  for (const c of node?.children ?? []) {
+    if (node.type === "stack" && c.content?.mod === "ya-spaces") run("layout.select", { stack: node.id, child: c.id });
+    else reveal(c);
+  }
+}
 // A space that isn't listed because its machine is away: its place is kept.
 const away = (id) => id.includes("/") && machines().find((m) => m.name === id.split("/")[0])?.layout !== "ready";
 
@@ -206,6 +240,26 @@ export default class Spaces extends View {
       cx.timer.after(300, () => this.name.focus());
       return;
     }
+    // Opened by itself, or from the header's filter button: the group filter.
+    if (overlay) {
+      this.picking = { overlay };
+      this.pickAt = null;
+      this.pickScroll = ScrollHandle.new();
+      this.pickInput = InputState.new({ placeholder: "Search groups…" });
+      this.pickInput.on("change", (_e, cx) => { this.pickAt = 0; cx.notify(); });
+      this.pickInput.on("submit", () => this.pickGo(this.pickRows()[this.pickAt]));
+      this.pickInput.focus();
+      cx.timer.after(300, () => this.pickInput.focus());
+      cx.timer.every(250, (cx) => this.copyImages(cx));
+      return;
+    }
+    this.find = InputState.new({ placeholder: "Search" });
+    this.find.on("change", (_e, cx) => { this.findAt = 0; cx.notify(); });
+    this.find.on("submit", (_e, cx) => { this.goFound(); cx.notify(); });
+    this.findAt = 0;
+    this.found = []; // the spaces the search lists, best first
+    // Commands another mod passes on (shared "ya-spaces.do"), newer than this.
+    this.did = shared("ya-spaces.do")?.at ?? 0;
     this.overFolder = null;
     this.moving = null; // a group being dragged: { id, index }
     this.overMove = null;
@@ -250,16 +304,37 @@ export default class Spaces extends View {
     this.seen = [];
     cx.spawn(async (cx) => {
       for (;;) {
-        const c = String(await nextCommand()).split(".").pop();
-        if (c === "next" || c === "prev") this.step(c === "next" ? 1 : -1);
-        else if (c === "group-next" || c === "group-prev") this.turn(c === "group-next" ? 1 : -1);
-        else if (c === "menu") {
-          const w = spaces().find((x) => x.active);
-          if (w) this.menu(w, this.git[where(w, panes())] ?? null, this.top[w.id] !== w.id);
-        }
+        this.command(String(await nextCommand()).split(".").pop());
         cx.notify();
       }
     });
+  }
+
+  // A key or palette command, by its last part ("ya-spaces.group-next": "group-next").
+  command(c) {
+    const nth = /^group-([1-9])$/.exec(c);
+    if (c === "next" || c === "prev") this.step(c === "next" ? 1 : -1);
+    else if (c === "group-next" || c === "group-prev") this.turn(c === "group-next" ? 1 : -1);
+    else if (c === "group-all") saveStore({ page: ALL });
+    else if (nth) { const g = groups()[Number(nth[1]) - 1]; if (g) saveStore({ page: g.id }); }
+    // The field may not be drawn yet (its tab was just shown): checkNew asks again.
+    else if (c === "find" && this.carousel) { this.find.focus(); this.focusUntil = Date.now() + 400; }
+    else if (c === "menu") {
+      const w = spaces().find((x) => x.active);
+      if (w) this.menu(w, this.git[where(w, panes())] ?? null, this.top[w.id] !== w.id);
+    }
+  }
+
+  // The space the search has lit: go there, and the list is whole again.
+  goFound() {
+    const id = this.found[this.findAt];
+    if (id) run("space.select", { id });
+    this.clearFind();
+  }
+
+  clearFind() {
+    this.find.set_value("");
+    this.find.blur();
   }
 
   // One space down (1) or up (-1) from the one in front, past the spaces in
@@ -275,14 +350,14 @@ export default class Spaces extends View {
     }
   }
 
-  // The carousel, one group on (1) or back (-1), round from the end to the first.
+  // The filter, one stop on (1) or back (-1): every group, then each group, round again.
   turn(dir) {
-    const list = groups(), i = list.findIndex((g) => g.id === pageId());
-    if (list.length > 1) saveStore({ page: list[(i + dir + list.length) % list.length].id });
+    const list = [ALL, ...groups().map((g) => g.id)], i = list.indexOf(pageId() ?? ALL);
+    if (list.length > 1) saveStore({ page: list[(i + dir + list.length) % list.length] });
   }
 
-  // In a carousel: the group of the space that just came in front shows, and
-  // the spaces in no group join the group showing.
+  // While a carousel shows one group: the group of the space that just came in
+  // front shows, and the spaces in no group join the group showing.
   gather(sp) {
     const page = pageId();
     if (!page || shared("ya-spaces")?.v !== 2) return;
@@ -299,6 +374,9 @@ export default class Spaces extends View {
   checkNew(cx) {
     const now = Date.now();
     const sp = spaces();
+    const todo = shared("ya-spaces.do");
+    if (todo?.at > this.did) { this.did = todo.at; this.command(todo.c); cx.notify(); }
+    if (this.focusUntil) { this.find.focus(); if (now > this.focusUntil) this.focusUntil = 0; }
     for (const s of sp) if (!this.shown.has(s.id)) this.born[s.id] ??= now;
     this.closed(sp);
     this.copyImages(cx);
@@ -744,36 +822,60 @@ export default class Spaces extends View {
     return tops;
   }
 
-  // The groups, each with its spaces, then the spaces in none. Every space goes
-  // in `seen` in this order, folded away or not, for the keys that step through
-  // the list.
+  // The groups, each with its spaces, then the spaces in none; a carousel
+  // showing one group lists that one alone. Every space listed goes in `seen`
+  // in this order, folded away or not, for the keys that step through the list.
   listing(t, collapsed, seen = []) {
     const tops = this.tree();
-    // A carousel's one group is drawn as a plain list: its header is the sidebar's.
-    const page = this.carousel ? pageId() : null;
-    const sections = page ? [{ f: null, rows: tops.filter((r) => groupOf(r.w.id) === page) }] : [
-      ...groups().map((f) => ({ f, rows: tops.filter((r) => groupOf(r.w.id) === f.id) })),
+    const all = [
+      ...groups().map((f, n) => ({ f, n, rows: tops.filter((r) => groupOf(r.w.id) === f.id) })),
       { f: null, rows: tops.filter((r) => !groupOf(r.w.id)) },
     ];
+    // Every top row has its place, listed or not: a drag keeps the order of the rest.
     this.pos = {};
     this.top = {};
     let n = 0;
     for (const r of tops) for (const x of [r, ...r.kids]) this.top[x.w.id] = r.w.id;
-    for (const { rows } of sections) for (const r of rows) this.pos[r.w.id] = n++;
+    for (const { rows } of all) for (const r of rows) this.pos[r.w.id] = n++;
+    if (!tops.length && machines().find((m) => m.name === null)?.layout === "loading") {
+      return [div().id("spaces-loading").h(28).flex_none().px(8).text_size(12).text_color(t.dim).child(collapsed ? "…" : "Loading…")];
+    }
+    const note = (id, text) => div().id(id).h(28).flex_none().px(8).flex().items_center().text_size(12).text_color(t.dim).child(text);
+    const q = this.carousel && !collapsed ? typed(this.find) : "";
+    this.searching = Boolean(q);
+    if (q) return this.results(tops, q, t, seen, note);
+    this.found = [];
+    const page = this.carousel ? pageId() : null;
+    // One group alone is always open, under a head that doesn't fold.
+    const sections = page ? all.filter((s) => s.f?.id === page).map((s) => ({ ...s, f: { ...s.f, folded: false }, solo: true })) : all;
     const draw = (r, f) => [r, ...r.kids].flatMap((x) => {
       seen.push({ id: x.w.id, shown: !f?.folded, folder: f?.id ?? null });
       return f?.folded ? [] : [collapsed ? this.compact(x, t) : this.row(x, f, t)];
     });
-    if (!tops.length && machines().find((m) => m.name === null)?.layout === "loading") {
-      return [div().id("spaces-loading").h(28).flex_none().px(8).text_size(12).text_color(t.dim).child(collapsed ? "…" : "Loading…")];
-    }
-    if (page && !sections[0].rows.length && !collapsed) {
-      return [div().id("group-empty").h(28).flex_none().px(8).flex().items_center().text_size(12).text_color(t.dim).child("No spaces in this group")];
-    }
-    return sections.flatMap(({ f, rows }, i) => [
-      ...(f ? [this.folderHead(f, i, rows.flatMap((r) => [r, ...r.kids]), t, collapsed)] : []),
+    return sections.flatMap(({ f, n, rows, solo }) => [
+      // The rail's own header already shows the one group.
+      ...(f && !(solo && collapsed) ? [this.folderHead(f, n, rows.flatMap((r) => [r, ...r.kids]), t, collapsed, solo)] : []),
       ...rows.flatMap((r) => draw(r, f)),
+      ...(solo && !rows.length && !collapsed ? [note("group-empty", "No spaces in this group")] : []),
     ]);
+  }
+
+  // What the search lists: each top row that matches, or has a row under it
+  // that does, with those rows; the best match first. A space matches by its
+  // name, then its branch, repo and machine.
+  results(tops, q, t, seen, note) {
+    const score = (x) => Math.max(fuzzy(x.w.name, q), 0.6 * fuzzy(x.g?.branch, q), 0.6 * fuzzy(x.g?.name, q), 0.5 * fuzzy(x.w.machine, q));
+    const hits = tops.map((r) => {
+      const best = [r, ...r.kids].map((x) => ({ id: x.w.id, s: score(x) })).sort((a, b) => b.s - a.s)[0];
+      return { r, ...best };
+    }).filter((h) => h.s > 0).sort((a, b) => b.s - a.s);
+    this.found = hits.map((h) => h.id);
+    this.findAt = Math.max(0, Math.min(this.findAt, hits.length - 1));
+    if (!hits.length) return [note("spaces-none", "No matching spaces")];
+    return hits.flatMap((h) => [h.r, ...h.r.kids].map((x) => {
+      seen.push({ id: x.w.id, shown: true, folder: groupOf(h.r.w.id) });
+      return this.row(x, null, t, x.w.id === this.found[this.findAt]);
+    }));
   }
 
   // The machines that aren't this computer, and whether a space can be made there.
@@ -785,7 +887,8 @@ export default class Spaces extends View {
     });
   }
 
-  folderHead(f, n, inside, t, collapsed) {
+  // A group's head. `solo`: the one group a carousel shows, which doesn't fold.
+  folderHead(f, n, inside, t, collapsed, solo = false) {
     const status = URGENT.find((s) => inside.some((r) => r.w.status === s));
     const target = this.pressed !== null && this.overFolder === f.id;
     // A group dragged over this one: a line where it would go, as for spaces.
@@ -813,7 +916,7 @@ export default class Spaces extends View {
         this.pressed = null; this.tap = null; this.over = null; this.overFolder = null; this.moving = null; this.overMove = null;
         cx.notify();
       })
-      .on_click(() => this.toggleFolder(f.id))
+      .on_click(() => { if (!solo) this.toggleFolder(f.id); })
       .on_mouse_down("right", () => openOverlay({ mod: "ya-spaces", kind: "popup", width: 210, height: 200, props: { folderMenu: f.id } }));
     // Built like a space's avatar: a filled 18px tile in the group's color, its mark in white.
     const tile = this.mark(f.icon ?? null, f.color ?? null, f.color ?? t.dim, svg("mods/workspace-chrome/layers.svg").size(12).text_color("#ffffff"), t);
@@ -830,28 +933,102 @@ export default class Spaces extends View {
         () => openOverlay({ mod: "ya-spaces", kind: "popup", width: 210, height: 240, props: { machineMenu: f.id, on: there } }),
         svg("mods/workspace-chrome/server.svg").size(12))))
       .child(div().flex_none().text_size(11.5).text_color(t.dim).child(String(inside.length)))
-      .child(svg(`mods/workspace-chrome/chevron-${f.folded ? "right" : "down"}.svg`).size(11).flex_none().text_color(t.dim));
+      .when(!solo, (el) => el.child(svg(`mods/workspace-chrome/chevron-${f.folded ? "right" : "down"}.svg`).size(11).flex_none().text_color(t.dim)));
   }
 
-  // A carousel's header: the group showing, between the steps to the one before
-  // and the next, then a new space in it and a new group. The name opens the
-  // group's menu (color, icon, edit, delete).
-  pageHead(f, t, collapsed, button) {
-    const list = groups(), at = list.findIndex((g) => g.id === f.id);
-    const tile = this.mark(f.icon ?? null, f.color ?? null, f.color ?? t.dim, svg("mods/workspace-chrome/layers.svg").size(12).text_color("#ffffff"), t);
-    const menu = () => openOverlay({ mod: "ya-spaces", kind: "popup", width: 210, height: 200, props: { folderMenu: f.id } });
-    if (collapsed) return h_flex().id("group-page").h(36).flex_none().items_center().justify_center().cursor_pointer().on_click(() => this.turn(1)).child(tile);
-    return h_flex().id("group-page").h(36).flex_none().pl(8).pr(8).gap(2).items_center().text_color(t.dim)
-      .child(button("group-prev", "chevron-left", () => this.turn(-1)))
-      .child(h_flex().id("group-name").flex_1().min_w(0).h(26).px(6).gap(8).items_center().rounded(6).cursor_pointer()
-        .hover((s) => s.bg(t.hover)).on_click(menu).on_mouse_down("right", menu)
-        .child(tile)
-        .child(div().min_w(0).truncate().text_size(13).font_medium().text_color(t.foreground).child(f.name))
-        .child(div().flex_none().text_size(11).child(`${at + 1}/${list.length}`)))
-      .child(button("group-next", "chevron-right", () => this.turn(1)))
-      .child(button("group-space-new", "plus", () => newSpaceIn(null, f.id)))
-      .child(button("folder-new", "folder-plus", () => this.newFolder()))
+  // A group's 18px tile, as its head draws it.
+  groupTile(f, t) {
+    return this.mark(f.icon ?? null, f.color ?? null, f.color ?? t.dim, svg("mods/workspace-chrome/layers.svg").size(12).text_color("#ffffff"), t);
+  }
+
+  // A carousel's header: the search field, then the group filter (showing the
+  // one group's tile while it filters), a new group and the machines. As a
+  // rail it's the filter alone, and a click goes to the next stop.
+  filterHead(f, t, collapsed, button) {
+    const mark = f ? this.groupTile(f, t) : svg("mods/t3-inbox/icons/list-filter.svg").size(14);
+    if (collapsed) return h_flex().id("group-page").h(36).flex_none().items_center().justify_center().cursor_pointer().text_color(t.dim).on_click(() => this.turn(1)).child(mark);
+    const q = this.find.value();
+    return h_flex().id("spaces-top").h(36).flex_none().pl(8).pr(8).gap(4).items_center().text_color(t.dim)
+      .child(h_flex().id("spaces-search").flex_1().min_w(0).h(28).px(8).gap(8).items_center().rounded(6)
+        .hover((s) => s.bg(t.hover)).when(Boolean(q), (el) => el.bg(t.hover))
+        .on_mouse_down("left", () => this.find.focus())
+        .on_key_down((e, cx) => {
+          const len = this.found.length;
+          if (e.key === "escape") this.clearFind();
+          else if (e.key === "down" && len) this.findAt = (this.findAt + 1) % len;
+          else if (e.key === "up" && len) this.findAt = (this.findAt + len - 1) % len;
+          else return;
+          cx.stop_propagation();
+          cx.notify();
+        })
+        .child(svg("mods/workspace-chrome/search.svg").size(14).flex_none())
+        .child(Input.new(this.find).flex_1().min_w(0).text_size(13).text_color(t.foreground))
+        .when(Boolean(q), (el) => el.child(div().id("spaces-search-clear").size(18).flex_none().flex().items_center().justify_center().rounded(4).cursor_pointer()
+          .hover((s) => s.text_color(t.foreground))
+          .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
+          .on_click((_e, cx) => { this.clearFind(); cx.notify(); })
+          .child(svg("mods/workspace-chrome/x.svg").size(12)))))
+      .child(div().id("group-filter").size(26).flex_none().flex().items_center().justify_center().rounded(6).cursor_pointer()
+        .tooltip(f ? `Filter by group: ${f.name}` : "Filter by group")
+        .hover((s) => s.bg(t.hover).text_color(t.foreground))
+        .on_click(() => openOverlay({ mod: "ya-spaces", kind: "popup", width: 288, height: 420, props: { groupPick: true } }))
+        .child(mark))
+      .child(button("folder-new", "folder-plus", () => this.newFolder()).tooltip("New group"))
       .child(this.machinesButton(t, button));
+  }
+
+  // The group filter's rows: every group, then each group; narrowed and ranked by what's typed.
+  pickRows() {
+    const rows = [{ id: null, name: "All groups" }, ...groups()], q = typed(this.pickInput);
+    if (!q) return rows;
+    return rows.map((g) => ({ g, s: fuzzy(g.name, q) })).filter((x) => x.s > 0).sort((a, b) => b.s - a.s).map((x) => x.g);
+  }
+
+  // Shows the picked group (or every group), on the sidebar's spaces tab.
+  pickGo(g) {
+    if (!g) return;
+    saveStore({ page: g.id ?? ALL });
+    reveal();
+    closeOverlay(this.picking.overlay);
+  }
+
+  // The group filter: a search field over the groups. ↑/↓ and Enter pick, as a click does.
+  pickView(t) {
+    const rows = this.pickRows(), page = pageId();
+    if (this.pickAt === null) this.pickAt = Math.max(0, rows.findIndex((g) => (g.id ?? null) === page));
+    this.pickAt = Math.max(0, Math.min(this.pickAt, rows.length - 1));
+    const count = (g) => Object.keys(store().of ?? {}).filter((id) => store().of[id] === g.id && spaces().some((s) => s.id === id)).length;
+    const choice = (g, i) => {
+      const on = (g.id ?? null) === page;
+      return h_flex().id(`pick-${g.id ?? "all"}`).h(32).px(8).gap(8).flex_none().items_center().rounded(4).cursor_pointer()
+        .when(i === this.pickAt, (el) => el.bg(t.selected))
+        .on_hover((over, cx) => { if (over && this.pickAt !== i) { this.pickAt = i; cx.notify(); } })
+        .on_click(() => this.pickGo(g))
+        .child(div().relative().flex_none()
+          .child(g.id ? this.groupTile(g, t) : h_flex().size(18).items_center().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(16).text_color(t.muted)))
+          // What shows now has a check on its tile.
+          .when(on, (el) => el.child(h_flex().absolute().right(-6).bottom(-6).size(16).rounded_full().bg(t.accent)
+            .border(2).border_color(t.popover).items_center().justify_center()
+            .child(svg("mods/workspace-chrome/check.svg").size(8).text_color("#ffffff")))))
+        .child(div().flex_1().min_w(0).truncate().child(g.name))
+        .when(Boolean(g.id), (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child(String(count(g)))));
+    };
+    this.pickScroll.scroll_to_item(this.pickAt);
+    return v_flex().id("group-pick").w_full().p(4).bg(t.popover).text_color(t.foreground).text_size(14)
+      .on_key_down((e, cx) => {
+        const len = rows.length;
+        if (e.key === "escape") closeOverlay(this.picking.overlay);
+        else if (e.key === "down" && len) this.pickAt = (this.pickAt + 1) % len;
+        else if (e.key === "up" && len) this.pickAt = (this.pickAt + len - 1) % len;
+        else return;
+        cx.stop_propagation();
+        cx.notify();
+      })
+      .child(h_flex().mx(8).mt(5).h(33).pb(6).gap(6).flex_none().items_center().border_b_1().border_color(t.border)
+        .child(svg("mods/workspace-chrome/search.svg").size(16).flex_none().text_color(t.dim))
+        .child(Input.new(this.pickInput).flex_1().h_full().text_size(14).text_color(t.foreground)))
+      .when(rows.length > 0, (el) => el.child(v_flex().id("group-pick-list").pt(5).max_h(293).overflow_y_scrollbar().track_scroll(this.pickScroll).children(rows.map(choice))))
+      .when(rows.length === 0, (el) => el.child(div().p(8).text_center().text_color(t.dim).child("No matching groups.")));
   }
 
   // The machines a group's new space can be made on.
@@ -981,7 +1158,8 @@ export default class Spaces extends View {
   // A top row, or (with `parent`) one under it: a worktree, or the repo on
   // another machine. Only top rows drag; the rows under one go with it, and a
   // space dropped on them lands by their top row.
-  row({ w, g, parent, elsewhere }, f, t) {
+  // `lit`: the row the search would go to.
+  row({ w, g, parent, elsewhere }, f, t, lit = false) {
     const on = w.active;
     const target = parent ? parent.w.id : w.id;
     const aimed = !parent && this.pressed !== null && this.pressed !== w.id && this.over === w.id;
@@ -997,6 +1175,7 @@ export default class Spaces extends View {
       .justify_center()
       .rounded(8)
       .when(on, (el) => el.bg(t.selected))
+      .when(!on && lit, (el) => el.bg(t.hover))
       .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
       .when(this.pressed === w.id && this.over !== w.id, (el) => el.opacity(0.5))
       .when(aimed, (el) => el.child(
@@ -1005,7 +1184,8 @@ export default class Spaces extends View {
           .when(this.pos[this.pressed] > this.pos[w.id], line => line.top(0)),
       ))
       .on_mouse_down("left", () => {
-        this.pressed = parent ? null : w.id;
+        // Search results don't drag: they aren't in the list's order.
+        this.pressed = parent || this.searching ? null : w.id;
         this.tap = w.id;
         this.over = target;
       })
@@ -1060,6 +1240,7 @@ export default class Spaces extends View {
     if (this.spaceMenu) return this.spaceMenuView(t);
     if (this.iconEdit) return this.iconView(t);
     if (this.editing) return this.editView(t);
+    if (this.picking) return this.pickView(t);
     const collapsed = narrow();
     const palette = ["ansi6", "ansi3", "ansi4", "ansi5", "ansi2", "ansi1"];
     const sp = spaces();
@@ -1087,8 +1268,8 @@ export default class Spaces extends View {
     this.seen = seen;
     const page = this.carousel ? groups().find((g) => g.id === pageId()) ?? null : null;
     return v_flex().size_full().min_h(0).bg(t.chrome).text_size(13)
-      .when(Boolean(page), el => el.child(this.pageHead(page, t, collapsed, button)))
-      .when(!page, el => el.child(h_flex().h(31).pl(16).pr(10).items_center().justify_between().text_size(11.5).text_color(t.dim)
+      .when(this.carousel, el => el.child(this.filterHead(page, t, collapsed, button)))
+      .when(!this.carousel, el => el.child(h_flex().h(31).pl(16).pr(10).items_center().justify_between().text_size(11.5).text_color(t.dim)
         .when(!collapsed, el => el.child("Spaces"))
         .when(!collapsed, el => el.child(h_flex().gap(2).items_center()
           .child(button("folder-new", "folder-plus", () => this.newFolder()))

@@ -1,1 +1,8 @@
-{ "place": "none", "title": "Spaces" }
+{
+  "place": "none",
+  "title": "Spaces",
+  "overlay": { "kind": "popup", "at": "top", "offset": 40, "width": 420 },
+  "palette": [
+    { "title": "Go to group…", "command": "mod.open", "args": { "name": "ya-spaces" }, "group": "Sidebar", "words": "search find filter spaces groups" }
+  ]
+}
